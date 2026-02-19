@@ -17,7 +17,7 @@
 use super::math_utils::MathUtils;
 
 /// A color in the ARGB color space.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Argb(pub u32);
 
 /// A color in the L*a*b* color space.
