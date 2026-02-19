@@ -224,10 +224,10 @@ mod tests {
         let mut hct = Hct::from(120.0, 60.0, 50.0);
         hct.set_hue(200.0);
         assert!((hct.hue() - 200.0).abs() < 1.0);
-        
+
         hct.set_chroma(30.0);
         assert!((hct.chroma() - 30.0).abs() < 1.0);
-        
+
         hct.set_tone(80.0);
         assert!((hct.tone() - 80.0).abs() < 1.0);
     }
@@ -249,5 +249,37 @@ mod tests {
         assert!(!Hct::is_blue(100.0));
         assert!(Hct::is_yellow(110.0));
         assert!(Hct::is_cyan(180.0));
+    }
+
+    #[test]
+    fn test_hct_roundtrip_in_gamut() {
+        let hue = 67.0;
+        let chroma = 20.0;
+        let tone = 52.0;
+        let hct = Hct::from(hue, chroma, tone);
+        
+        // HCT -> RGB -> HCT should be stable for in-gamut colors
+        let argb = hct.to_int();
+        let argb_string = format!("{:X}", argb.0);
+        assert_eq!(argb_string, "FF967655");
+        let back_convert = Hct::from_int(argb);
+        
+        assert!((back_convert.hue - hue).abs() < 0.5);
+        assert!((back_convert.chroma - chroma).abs() < 0.5);
+        assert!((back_convert.tone - tone).abs() < 0.5);
+    }
+
+    #[test]
+    fn test_hct_clipping() {
+        // HCT(67, 91, 52) is out of gamut in sRGB.
+        // It should be clipped to the maximum possible chroma (~49.2).
+        let hct = Hct::from(67.0, 91.0, 52.0);
+        
+        assert!((hct.hue() - 67.0).abs() < 1.0);
+        assert!(hct.chroma() < 50.0); // Clipped!
+        assert!((hct.tone() - 52.0).abs() < 1.0);
+        
+        // The resulting ARGB should be #B26C00
+        assert_eq!(format!("{:X}", hct.to_int().0), "FFB26C00");
     }
 }
