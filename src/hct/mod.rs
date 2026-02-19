@@ -15,9 +15,11 @@
  */
 
 pub mod cam16;
+pub mod hct;
 pub mod hct_solver;
 pub mod viewing_conditions;
 
 pub use cam16::Cam16;
+pub use hct::Hct;
 pub use hct_solver::HctSolver;
 pub use viewing_conditions::ViewingConditions;
