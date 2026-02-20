@@ -14,5 +14,17 @@
  * limitations under the License.
  */
 
-pub mod point_provider;
-pub mod point_provider_lab;
+use crate::utils::color_utils::Argb;
+
+/// An interface to allow use of different color spaces by quantizers.
+pub trait PointProvider {
+    /// The components in the color space of an sRGB color.
+    fn from_argb(argb: Argb) -> [f64; 3];
+
+    /// The ARGB (i.e. hex code) representation of this color.
+    fn to_argb(point: [f64; 3]) -> Argb;
+
+    /// Squared distance between two colors. Distance is defined by scientific color spaces and
+    /// referred to as delta E.
+    fn distance(a: [f64; 3], b: [f64; 3]) -> f64;
+}
