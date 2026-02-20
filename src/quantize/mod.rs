@@ -16,3 +16,10 @@
 
 pub mod point_provider;
 pub mod point_provider_lab;
+pub mod quantizer;
+pub mod quantizer_map;
+pub mod quantizer_wsmeans;
+
+pub use quantizer::{Quantizer, QuantizerResult};
+pub use quantizer_map::QuantizerMap;
+pub use quantizer_wsmeans::QuantizerWsmeans;
