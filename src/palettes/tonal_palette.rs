@@ -30,6 +30,22 @@ pub struct TonalPalette {
     cache: [AtomicU32; 101],
 }
 
+impl Clone for TonalPalette {
+    fn clone(&self) -> Self {
+        let new_cache: [AtomicU32; 101] = std::array::from_fn(|_| AtomicU32::new(0));
+        for i in 0..101 {
+            let val = self.cache[i].load(Ordering::Relaxed);
+            new_cache[i].store(val, Ordering::Relaxed);
+        }
+        Self {
+            hue: self.hue,
+            chroma: self.chroma,
+            key_color: self.key_color,
+            cache: new_cache,
+        }
+    }
+}
+
 impl TonalPalette {
     fn new(hue: f64, chroma: f64, key_color: Hct) -> Self {
         Self {
