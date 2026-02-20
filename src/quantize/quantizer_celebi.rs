@@ -83,12 +83,9 @@ mod tests {
         assert!(!result.color_to_count.is_empty());
         assert!(result.color_to_count.len() <= 3);
 
-        dbg!(&result);
-
         // Check if there's 3 blue, 2 green, 4 red
         for (argb, count) in result.color_to_count {
             let hue = Hct::from_int(argb).hue();
-            println!("{:?}", hue);
             // RED:
             if (0.0 - hue).abs() < 55.0 {
                 assert_eq!(count, 4);
