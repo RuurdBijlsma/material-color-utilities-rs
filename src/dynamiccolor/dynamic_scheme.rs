@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-use crate::hct::hct::Hct;
-use crate::palettes::tonal_palette::TonalPalette;
-use crate::dynamiccolor::variant::Variant;
 use crate::dynamiccolor::color_spec::{Platform, SpecVersion};
 use crate::dynamiccolor::dynamic_color::DynamicColor;
+use crate::dynamiccolor::variant::Variant;
+use crate::hct::hct::Hct;
+use crate::palettes::tonal_palette::TonalPalette;
+use crate::utils::math_utils::MathUtils;
 
 /// Provides important settings for creating colors dynamically, and 6 color palettes.
 pub struct DynamicScheme {
@@ -78,6 +79,24 @@ impl DynamicScheme {
         dynamic_color.get_argb(self)
     }
 
+    pub fn get_piecewise_value(
+        source_color_hct: &Hct,
+        hue_breakpoints: &[f64],
+        hues: &[f64],
+    ) -> f64 {
+        let size = (hue_breakpoints.len().saturating_sub(1)).min(hues.len());
+        let source_hue = source_color_hct.hue();
+
+        for i in 0..size {
+            if source_hue >= hue_breakpoints[i] && source_hue < hue_breakpoints[i + 1] {
+                return MathUtils::sanitize_degrees_double(hues[i]);
+            }
+        }
+
+        // No condition matched, return the source value.
+        source_hue
+    }
+
     /// Given a hue and set of hue thresholds / rotations, returns the rotated hue.
     ///
     /// This mirrors the Kotlin `DynamicScheme.getRotatedHue` companion function used by
@@ -87,21 +106,17 @@ impl DynamicScheme {
     /// `source_color_hct`: the source HCT used for the scheme.
     /// `hues`: sorted array of hue thresholds (must contain one more entry than `rotations`).
     /// `rotations`: amount to rotate the hue for each segment.
-    pub fn get_rotated_hue(source_color_hct: &Hct, hues: &[f64], rotations: &[f64]) -> f64 {
-        let source_hue = source_color_hct.hue();
-        if rotations.len() + 1 != hues.len() {
-            // Malformed input — just return the source hue
-            return source_hue;
+    pub fn get_rotated_hue(
+        source_color_hct: &Hct,
+        hue_breakpoints: &[f64],
+        rotations: &[f64],
+    ) -> f64 {
+        // Get the rotation value from the piecewise function
+        let mut rotation = Self::get_piecewise_value(source_color_hct, hue_breakpoints, rotations);
+        let size = (hue_breakpoints.len().saturating_sub(1)).min(rotations.len());
+        if size == 0 {
+            rotation = 0.0;
         }
-        for i in 0..rotations.len() {
-            let this_hue = hues[i];
-            let next_hue = hues[i + 1];
-            if this_hue <= source_hue && source_hue < next_hue {
-                return crate::utils::math_utils::MathUtils::sanitize_degrees_double(
-                    source_hue + rotations[i],
-                );
-            }
-        }
-        source_hue
+        MathUtils::sanitize_degrees_double(source_color_hct.hue() + rotation)
     }
 }

@@ -236,12 +236,12 @@ impl ColorSpecs {
     ///
     /// Unrecognised / future variants fall through to the latest available
     /// implementation.
+    #[must_use]
     pub fn get(spec_version: SpecVersion) -> Box<dyn ColorSpec> {
         match spec_version {
-            // All versions currently fall back to 2021 until the other specs
-            // are fully ported.  Add `SpecVersion::Spec2025 => …` etc. as
-            // ColorSpec2025 / ColorSpec2026 are implemented.
-            _ => Box::new(ColorSpec2021::new()),
+            SpecVersion::Spec2021 => Box::new(ColorSpec2021::new()),
+            SpecVersion::Spec2025 => todo!(),
+            SpecVersion::Spec2026 => todo!(),
         }
     }
 }
