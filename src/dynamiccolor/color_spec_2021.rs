@@ -40,25 +40,24 @@ fn is_monochrome(scheme: &DynamicScheme) -> bool {
 /// Find a tone that best achieves `chroma` for the given `hue`.
 fn find_desired_chroma_by_tone(hue: f64, chroma: f64, tone: f64, by_decreasing_tone: bool) -> f64 {
     let mut answer = tone;
-    let mut closest = Hct::from(hue, chroma, tone);
-    if closest.chroma() < chroma {
-        let mut chroma_peak = closest.chroma();
-        loop {
+    let mut closest_to_chroma = Hct::from(hue, chroma, tone);
+    if closest_to_chroma.chroma() < chroma {
+        let mut chroma_peak = closest_to_chroma.chroma();
+        while closest_to_chroma.chroma() < chroma {
             answer += if by_decreasing_tone { -1.0 } else { 1.0 };
-            let candidate = Hct::from(hue, chroma, answer);
-            if chroma_peak > candidate.chroma() {
+            let potential_solution = Hct::from(hue, chroma, answer);
+            if chroma_peak > potential_solution.chroma() {
                 break;
             }
-            if (candidate.chroma() - chroma).abs() < 0.4 {
+            if (potential_solution.chroma() - chroma).abs() < 0.4 {
                 break;
             }
-            if (candidate.chroma() - chroma).abs() < (closest.chroma() - chroma).abs() {
-                closest = candidate.clone();
+            let potential_delta = (potential_solution.chroma() - chroma).abs();
+            let current_delta = (closest_to_chroma.chroma() - chroma).abs();
+            if potential_delta < current_delta {
+                closest_to_chroma = potential_solution.clone();
             }
-            chroma_peak = chroma_peak.max(candidate.chroma());
-            if closest.chroma() >= chroma {
-                break;
-            }
+            chroma_peak = chroma_peak.max(potential_solution.chroma());
         }
     }
     answer
