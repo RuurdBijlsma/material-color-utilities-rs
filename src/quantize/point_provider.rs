@@ -1,30 +1,18 @@
-/*
- * Copyright 2025 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 use crate::utils::color_utils::Argb;
-
 /// An interface to allow use of different color spaces by quantizers.
+///
+/// This trait defines how to map sRGB colors into a coordinate system
+/// where distance measurements (Delta E) can be performed.
 pub trait PointProvider {
-    /// The components in the color space of an sRGB color.
-    fn from_argb(argb: Argb) -> [f64; 3];
+    /// Converts an ARGB color into coordinates in the provider's color space.
+    fn from_argb(&self, argb: Argb) -> [f64; 3];
 
-    /// The ARGB (i.e. hex code) representation of this color.
-    fn to_argb(point: [f64; 3]) -> Argb;
+    /// Converts coordinates back into an ARGB color.
+    fn to_argb(&self, point: [f64; 3]) -> Argb;
 
-    /// Squared distance between two colors. Distance is defined by scientific color spaces and
-    /// referred to as delta E.
-    fn distance(a: [f64; 3], b: [f64; 3]) -> f64;
+    /// Returns the squared Euclidean distance between two points.
+    ///
+    /// Squared distance is used as an optimization, as it preserves the 
+    /// relative ordering required for K-Means without the cost of `sqrt`.
+    fn distance(&self, a: [f64; 3], b: [f64; 3]) -> f64;
 }
