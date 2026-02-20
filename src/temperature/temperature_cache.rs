@@ -51,28 +51,28 @@ impl TemperatureCache {
         *self.precomputed_complement.get_or_init(|| {
             let coldest = self.coldest();
             let temps = self.temps_by_hct();
-            
+
             let coldest_hue = coldest.hue();
             let coldest_temp = *temps.get(&coldest.to_int()).unwrap();
-            
+
             let warmest = self.warmest();
             let warmest_hue = warmest.hue();
             let warmest_temp = *temps.get(&warmest.to_int()).unwrap();
-            
+
             let range = warmest_temp - coldest_temp;
             let start_hue_is_coldest_to_warmest = Self::is_between(self.input.hue(), coldest_hue, warmest_hue);
-            
+
             let start_hue = if start_hue_is_coldest_to_warmest { warmest_hue } else { coldest_hue };
             let end_hue = if start_hue_is_coldest_to_warmest { coldest_hue } else { warmest_hue };
-            
+
             let direction_of_rotation = 1.0;
             let mut smallest_error = 1000.0;
-            
+
             let hcts_by_hue = self.hcts_by_hue();
             let mut answer = hcts_by_hue[self.input.hue().round() as usize % 360];
-            
+
             let complement_relative_temp = 1.0 - self.get_relative_temperature(&self.input);
-            
+
             // Find the color in the other section, closest to the inverse percentile
             // of the input color. This is the complement.
             let mut hue_addend = 0.0;
@@ -82,7 +82,7 @@ impl TemperatureCache {
                     hue_addend += 1.0;
                     continue;
                 }
-                
+
                 let possible_answer = hcts_by_hue[hue.round() as usize % 360];
                 let relative_temp = (*temps.get(&possible_answer.to_int()).unwrap() - coldest_temp) / range;
                 let error = (complement_relative_temp - relative_temp).abs();
@@ -120,10 +120,10 @@ impl TemperatureCache {
         let hcts_by_hue = self.hcts_by_hue();
         let start_hct = hcts_by_hue[MathUtils::sanitize_degrees_int(start_hue) as usize % 360];
         let mut last_temp = self.get_relative_temperature(&start_hct);
-        
+
         let mut all_colors: Vec<Hct> = Vec::new();
         all_colors.push(start_hct);
-        
+
         let mut absolute_total_temp_delta = 0.0;
         for i in 0..360 {
             let hue = MathUtils::sanitize_degrees_int(start_hue + i);
@@ -133,23 +133,23 @@ impl TemperatureCache {
             last_temp = temp;
             absolute_total_temp_delta += temp_delta;
         }
-        
+
         let mut hue_addend = 1;
         let temp_step = absolute_total_temp_delta / divisions as f64;
         let mut total_temp_delta = 0.0;
         last_temp = self.get_relative_temperature(&start_hct);
-        
+
         while all_colors.len() < divisions {
             let hue = MathUtils::sanitize_degrees_int(start_hue + hue_addend);
             let hct = hcts_by_hue[hue as usize % 360];
             let temp = self.get_relative_temperature(&hct);
             let temp_delta = (temp - last_temp).abs();
             total_temp_delta += temp_delta;
-            
+
             let mut desired_total_temp_delta_for_index = all_colors.len() as f64 * temp_step;
             let mut index_satisfied = total_temp_delta >= desired_total_temp_delta_for_index;
             let mut index_addend = 1;
-            
+
             // Keep adding this hue to the answers until its temperature is
             // insufficient. This ensures consistent behavior when there aren't
             // `divisions` discrete steps between 0 and 360 in hue with `temp_step`
@@ -162,7 +162,7 @@ impl TemperatureCache {
             }
             last_temp = temp;
             hue_addend += 1;
-            
+
             if hue_addend > 360 {
                 while all_colors.len() < divisions {
                     all_colors.push(hct);
@@ -170,10 +170,10 @@ impl TemperatureCache {
                 break;
             }
         }
-        
+
         let mut answers: Vec<Hct> = Vec::new();
         answers.push(self.input);
-        
+
         let ccw_count = ((count as f64 - 1.0) / 2.0).floor() as usize;
         for i in 1..=ccw_count {
             let mut index = 0i32 - i as i32;
@@ -183,14 +183,14 @@ impl TemperatureCache {
             let idx = (index as usize) % all_colors.len();
             answers.insert(0, all_colors[idx]);
         }
-        
+
         let cw_count = count - ccw_count - 1;
         for i in 1..=cw_count {
             let index = i;
             let idx = index % all_colors.len();
             answers.push(all_colors[idx]);
         }
-        
+
         answers
     }
 
@@ -199,13 +199,14 @@ impl TemperatureCache {
     /// @param hct HCT to find the relative temperature of.
     /// @return Value on a scale from 0 to 1.
     pub fn get_relative_temperature(&self, hct: &Hct) -> f64 {
-        let temps = self.temps_by_hct();
-        let coldest_temp = *temps.get(&self.coldest().to_int()).unwrap();
-        let warmest_temp = *temps.get(&self.warmest().to_int()).unwrap();
-        
+        let coldest_temp = self.get_temp(&self.coldest());
+        let warmest_temp = self.get_temp(&self.warmest());
+
         let range = warmest_temp - coldest_temp;
-        let difference_from_coldest = *temps.get(&hct.to_int()).unwrap() - coldest_temp;
-        
+        let hct_temp = self.get_temp(hct);
+
+        let difference_from_coldest = hct_temp - coldest_temp;
+
         // Handle when there's no difference in temperature between warmest and
         // coldest: for example, at T100, only one color is available, white.
         if range == 0.0 {
@@ -213,6 +214,11 @@ impl TemperatureCache {
         } else {
             difference_from_coldest / range
         }
+    }
+
+    fn get_temp(&self, hct: &Hct) -> f64 {
+        *self.temps_by_hct().get(&hct.to_int())
+            .unwrap_or(&Self::raw_temperature(hct))
     }
 
     /// Coldest color with same chroma and tone as input.
@@ -264,7 +270,7 @@ impl TemperatureCache {
         self.precomputed_temps_by_hct.get_or_init(|| {
             let mut all_hcts = self.hcts_by_hue().to_vec();
             all_hcts.push(self.input);
-            
+
             let mut temperatures_by_hct = HashMap::new();
             for hct in all_hcts {
                 temperatures_by_hct.insert(hct.to_int(), Self::raw_temperature(&hct));
@@ -281,7 +287,7 @@ impl TemperatureCache {
         let lab = color.to_int().to_lab();
         let hue = MathUtils::sanitize_degrees_double(lab.b.atan2(lab.a).to_degrees());
         let chroma = lab.a.hypot(lab.b);
-        
+
         -0.5 + 0.02 * chroma.powf(1.07) * (MathUtils::sanitize_degrees_double(hue - 50.0).to_radians()).cos()
     }
 
@@ -305,7 +311,7 @@ mod tests {
     fn test_raw_temperature() {
         let blue = Hct::from_int(Argb(0xFF0000FF));
         let red = Hct::from_int(Argb(0xFFFF0000));
-        
+
         assert!(TemperatureCache::raw_temperature(&blue) < TemperatureCache::raw_temperature(&red));
     }
 
@@ -328,7 +334,7 @@ mod tests {
         let blue = Hct::from_int(Argb(0xFF0000FF));
         let cache = TemperatureCache::new(blue);
         let analogous = cache.get_analogous_colors();
-        
+
         assert_eq!(analogous.len(), 5);
     }
 }
