@@ -6,3 +6,5 @@
 
 # TODO: 
 * port cache for get_hct from DynamicColor.kt to dynamic_color.rs
+* fix color_spec.rs en color_spec_2021.rs to match kotlin impl
+* Make tests for color_spec.rs en color_spec_2021.rs

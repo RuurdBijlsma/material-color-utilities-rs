@@ -17,14 +17,8 @@
 use crate::hct::hct::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::dynamiccolor::variant::Variant;
-use crate::dynamiccolor::color_spec::SpecVersion;
+use crate::dynamiccolor::color_spec::{Platform, SpecVersion};
 use crate::dynamiccolor::dynamic_color::DynamicColor;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Platform {
-    Phone,
-    Watch,
-}
 
 /// Provides important settings for creating colors dynamically, and 6 color palettes.
 pub struct DynamicScheme {
@@ -71,11 +65,43 @@ impl DynamicScheme {
         }
     }
 
+    /// Returns the primary source color in HCT.
+    pub fn source_color_hct(&self) -> &Hct {
+        &self.source_color_hct_list[0]
+    }
+
     pub fn get_hct(&self, dynamic_color: &DynamicColor) -> Hct {
         dynamic_color.get_hct(self)
     }
 
     pub fn get_argb(&self, dynamic_color: &DynamicColor) -> u32 {
         dynamic_color.get_argb(self)
+    }
+
+    /// Given a hue and set of hue thresholds / rotations, returns the rotated hue.
+    ///
+    /// This mirrors the Kotlin `DynamicScheme.getRotatedHue` companion function used by
+    /// color specs to compute hue-rotated tertiary / secondary palette hues for some
+    /// variants (Expressive, Vibrant, …).
+    ///
+    /// `source_color_hct`: the source HCT used for the scheme.
+    /// `hues`: sorted array of hue thresholds (must contain one more entry than `rotations`).
+    /// `rotations`: amount to rotate the hue for each segment.
+    pub fn get_rotated_hue(source_color_hct: &Hct, hues: &[f64], rotations: &[f64]) -> f64 {
+        let source_hue = source_color_hct.hue();
+        if rotations.len() + 1 != hues.len() {
+            // Malformed input — just return the source hue
+            return source_hue;
+        }
+        for i in 0..rotations.len() {
+            let this_hue = hues[i];
+            let next_hue = hues[i + 1];
+            if this_hue <= source_hue && source_hue < next_hue {
+                return crate::utils::math_utils::MathUtils::sanitize_degrees_double(
+                    source_hue + rotations[i],
+                );
+            }
+        }
+        source_hue
     }
 }
