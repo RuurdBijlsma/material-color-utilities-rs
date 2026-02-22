@@ -51,14 +51,13 @@ impl TemperatureCache {
     pub fn complement(&self) -> Hct {
         *self.precomputed_complement.get_or_init(|| {
             let coldest = self.coldest();
-            let temps = self.temps_by_hct();
 
             let coldest_hue = coldest.hue();
-            let coldest_temp = *temps.get(&coldest.to_int()).unwrap();
+            let coldest_temp = self.get_temp(&coldest);
 
             let warmest = self.warmest();
             let warmest_hue = warmest.hue();
-            let warmest_temp = *temps.get(&warmest.to_int()).unwrap();
+            let warmest_temp = self.get_temp(&warmest);
 
             let range = warmest_temp - coldest_temp;
             let start_hue_is_coldest_to_warmest =
@@ -97,7 +96,7 @@ impl TemperatureCache {
 
                 let possible_answer = hcts_by_hue[hue.round() as usize % 360];
                 let relative_temp =
-                    (*temps.get(&possible_answer.to_int()).unwrap() - coldest_temp) / range;
+                    (self.get_temp(&possible_answer) - coldest_temp) / range;
                 let error = (complement_relative_temp - relative_temp).abs();
                 if error < smallest_error {
                     smallest_error = error;
@@ -271,12 +270,11 @@ impl TemperatureCache {
         self.precomputed_hcts_by_temp.get_or_init(|| {
             let mut hcts = self.hcts_by_hue().to_vec();
             hcts.push(self.input);
-            let temps = self.temps_by_hct();
             hcts.sort_by(|a, b| {
-                let temp_a = temps.get(&a.to_int()).unwrap();
-                let temp_b = temps.get(&b.to_int()).unwrap();
+                let temp_a = self.get_temp(a);
+                let temp_b = self.get_temp(b);
                 temp_a
-                    .partial_cmp(temp_b)
+                    .partial_cmp(&temp_b)
                     .unwrap_or(std::cmp::Ordering::Equal)
             });
             hcts
@@ -301,7 +299,7 @@ impl TemperatureCache {
     /// warm.
     ///
     /// Implementation of Ou, Woodcock and Wright's algorithm, which uses Lab/LCH color space.
-    #[must_use] 
+    #[must_use]
     pub fn raw_temperature(color: &Hct) -> f64 {
         let lab = color.to_int().to_lab();
         let hue = MathUtils::sanitize_degrees_double(lab.b.atan2(lab.a).to_degrees());

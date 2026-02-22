@@ -484,7 +484,7 @@ impl HctSolver {
         let mut right = segment[1];
 
         for axis in 0..3 {
-            if left[axis] != right[axis] {
+            if (left[axis] - right[axis]).abs() > 1e-9 {
                 let mut l_plane = if left[axis] < right[axis] {
                     Self::critical_plane_below(Self::true_delinearized(left[axis]))
                 } else {

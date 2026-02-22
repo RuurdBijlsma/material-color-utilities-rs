@@ -518,7 +518,7 @@ mod tests {
         let pixels = vec![Argb::from_rgb(255, 0, 0); 100];
         let result = quantizer.quantize(&pixels, 10);
         assert_eq!(result.color_to_count.len(), 1);
-        let color = result.color_to_count.keys().next().unwrap();
+        let color = result.color_to_count.keys().next().expect("Next fail");
         // Wu quantizer might slightly shift the color due to index mapping
         assert!(color.red() > 240);
         assert!(color.green() < 10);

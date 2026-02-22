@@ -82,10 +82,10 @@ impl QuantizerWsmeans {
             *pixel_count += 1;
         }
 
-        let mut counts = Vec::with_capacity(point_count);
-        for pixel in pixels.iter().take(point_count) {
-            counts.push(*pixel_to_count.get(pixel).unwrap());
-        }
+        let counts: Vec<u32> = pixels
+            .iter()
+            .filter_map(|pixel| pixel_to_count.get(pixel).copied())
+            .collect();
 
         let mut cluster_count = max_colors.min(point_count);
         if !starting_clusters.is_empty() {
