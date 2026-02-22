@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-use std::sync::Arc;
 use crate::dynamiccolor::dynamic_color::DynamicColor;
+use std::sync::Arc;
 
 /// Describes how to fulfill a tone delta pair constraint.
 ///

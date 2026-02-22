@@ -44,18 +44,54 @@ impl SchemeTonalSpot {
         let spec = ColorSpecs::get(spec_version);
         let source_color_hct = &source_color_hct_list[0];
         let mut scheme = DynamicScheme::new_with_platform_and_spec(
-            source_color_hct.clone(),
+            *source_color_hct,
             Variant::TonalSpot,
             is_dark,
             contrast_level,
             platform,
             spec_version,
-            spec.get_primary_palette(Variant::TonalSpot, source_color_hct, is_dark, platform, contrast_level),
-            spec.get_secondary_palette(Variant::TonalSpot, source_color_hct, is_dark, platform, contrast_level),
-            spec.get_tertiary_palette(Variant::TonalSpot, source_color_hct, is_dark, platform, contrast_level),
-            spec.get_neutral_palette(Variant::TonalSpot, source_color_hct, is_dark, platform, contrast_level),
-            spec.get_neutral_variant_palette(Variant::TonalSpot, source_color_hct, is_dark, platform, contrast_level),
-            spec.get_error_palette(Variant::TonalSpot, source_color_hct, is_dark, platform, contrast_level),
+            spec.get_primary_palette(
+                Variant::TonalSpot,
+                source_color_hct,
+                is_dark,
+                platform,
+                contrast_level,
+            ),
+            spec.get_secondary_palette(
+                Variant::TonalSpot,
+                source_color_hct,
+                is_dark,
+                platform,
+                contrast_level,
+            ),
+            spec.get_tertiary_palette(
+                Variant::TonalSpot,
+                source_color_hct,
+                is_dark,
+                platform,
+                contrast_level,
+            ),
+            spec.get_neutral_palette(
+                Variant::TonalSpot,
+                source_color_hct,
+                is_dark,
+                platform,
+                contrast_level,
+            ),
+            spec.get_neutral_variant_palette(
+                Variant::TonalSpot,
+                source_color_hct,
+                is_dark,
+                platform,
+                contrast_level,
+            ),
+            spec.get_error_palette(
+                Variant::TonalSpot,
+                source_color_hct,
+                is_dark,
+                platform,
+                contrast_level,
+            ),
         );
         scheme.source_color_hct_list = source_color_hct_list;
         scheme

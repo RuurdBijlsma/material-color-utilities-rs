@@ -2,19 +2,19 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use rust::hct::hct::Hct;
-use rust::dynamiccolor::material_dynamic_colors::MaterialDynamicColors;
-use rust::dynamiccolor::dynamic_scheme::DynamicScheme;
 use rust::dynamiccolor::color_spec::SpecVersion;
+use rust::dynamiccolor::dynamic_scheme::DynamicScheme;
+use rust::dynamiccolor::material_dynamic_colors::MaterialDynamicColors;
+use rust::hct::hct::Hct;
 use rust::utils::color_utils::Argb;
 
 // Import all schemes
-use rust::scheme::scheme_tonal_spot::SchemeTonalSpot;
-use rust::scheme::scheme_content::SchemeContent;
-use rust::scheme::scheme_vibrant::SchemeVibrant;
-use rust::scheme::scheme_monochrome::SchemeMonochrome;
-use rust::scheme::scheme_expressive::SchemeExpressive;
 use color_eyre::Result;
+use rust::scheme::scheme_content::SchemeContent;
+use rust::scheme::scheme_expressive::SchemeExpressive;
+use rust::scheme::scheme_monochrome::SchemeMonochrome;
+use rust::scheme::scheme_tonal_spot::SchemeTonalSpot;
+use rust::scheme::scheme_vibrant::SchemeVibrant;
 
 /// Helper to parse the reference file into a Map: { TestName -> { ColorName -> ArgbValue } }
 fn parse_reference_file() -> Result<HashMap<String, HashMap<String, u32>>> {
@@ -45,11 +45,11 @@ fn parse_reference_file() -> Result<HashMap<String, HashMap<String, u32>>> {
             let parts: Vec<&str> = line.split(':').collect();
             let key = parts[0].trim().to_string();
             let val_str = parts[1].trim().trim_matches(',');
-            
+
             // Parse hex string (e.g., 0xFF445E91)
             let val = u32::from_str_radix(val_str.trim_start_matches("0x"), 16)
                 .expect(&format!("Failed to parse hex value: {}", val_str));
-            
+
             current_colors.insert(key, val);
         }
     }
@@ -66,21 +66,27 @@ fn parse_reference_file() -> Result<HashMap<String, HashMap<String, u32>>> {
 /// Source colors must match your Kotlin main() values.
 fn get_scheme_by_name(name: &str) -> DynamicScheme {
     match name {
-        "test_tonal_spot_light" => SchemeTonalSpot::new(Hct::from_int(Argb(0xFF4285F4)), false, 0.0),
+        "test_tonal_spot_light" => {
+            SchemeTonalSpot::new(Hct::from_int(Argb(0xFF4285F4)), false, 0.0)
+        }
         "test_tonal_spot_dark" => SchemeTonalSpot::new(Hct::from_int(Argb(0xFF4285F4)), true, 0.0),
-        
+
         "test_content_light" => SchemeContent::new(Hct::from_int(Argb(0xFFEA4335)), false, 0.0),
         "test_content_dark" => SchemeContent::new(Hct::from_int(Argb(0xFFEA4335)), true, 0.0),
-        
+
         "test_vibrant_light" => SchemeVibrant::new(Hct::from_int(Argb(0xFFFBBC04)), false, 0.0),
         "test_vibrant_dark" => SchemeVibrant::new(Hct::from_int(Argb(0xFFFBBC04)), true, 0.0),
-        
-        "test_monochrome_light" => SchemeMonochrome::new(Hct::from_int(Argb(0xFF34A853)), false, 0.0),
+
+        "test_monochrome_light" => {
+            SchemeMonochrome::new(Hct::from_int(Argb(0xFF34A853)), false, 0.0)
+        }
         "test_monochrome_dark" => SchemeMonochrome::new(Hct::from_int(Argb(0xFF34A853)), true, 0.0),
-        
-        "test_expressive_light" => SchemeExpressive::new(Hct::from_int(Argb(0xFF6200EE)), false, 0.0),
+
+        "test_expressive_light" => {
+            SchemeExpressive::new(Hct::from_int(Argb(0xFF6200EE)), false, 0.0)
+        }
         "test_expressive_dark" => SchemeExpressive::new(Hct::from_int(Argb(0xFF6200EE)), true, 0.0),
-        
+
         _ => panic!("Unknown test scheme name in reference file: {}", name),
     }
 }
@@ -132,11 +138,11 @@ fn get_color_argb(mdc: &MaterialDynamicColors, scheme: &DynamicScheme, color_nam
 }
 
 #[test]
-fn test_material_schemes_against_reference() ->Result<()> {
+fn test_material_schemes_against_reference() -> Result<()> {
     let references = parse_reference_file()?;
-    
-    // Kotlin's MaterialDynamicColors() defaults to Spec2021 logic in older versions 
-    // or Spec2026 in newest. Based on your Kotlin snippet comments, we'll try 2021 
+
+    // Kotlin's MaterialDynamicColors() defaults to Spec2021 logic in older versions
+    // or Spec2026 in newest. Based on your Kotlin snippet comments, we'll try 2021
     // first to match your previous test logic, but you can change this to 2026.
     let mdc = MaterialDynamicColors::new_with_spec(SpecVersion::Spec2021);
 
@@ -147,10 +153,12 @@ fn test_material_schemes_against_reference() ->Result<()> {
         for (color_name, &expected_argb) in &expected_colors {
             let actual_argb = get_color_argb(&mdc, &scheme, color_name);
 
-            println!("\nTest: {}\nColor: {}\nExpected: {:#010X}\nActual:   {:#010X}",test_name, color_name, actual_argb, expected_argb);
+            println!(
+                "\nTest: {}\nColor: {}\nExpected: {:#010X}\nActual:   {:#010X}",
+                test_name, color_name, actual_argb, expected_argb
+            );
             assert_eq!(
-                actual_argb, 
-                expected_argb,
+                actual_argb, expected_argb,
                 "\nTest: {}\nColor: {}\nExpected: {:#010X}\nActual:   {:#010X}",
                 test_name, color_name, expected_argb, actual_argb
             );

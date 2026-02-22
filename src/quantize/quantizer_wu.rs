@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
 use crate::quantize::quantizer::{Quantizer, QuantizerResult};
 use crate::quantize::quantizer_map::QuantizerMap;
 use crate::utils::color_utils::Argb;
+use std::collections::HashMap;
 
 // A histogram of all the input colors is constructed. It has the shape of a cube. The cube
 // would be too large if it contained all 16 million colors: historical best practice is to use
@@ -73,17 +73,16 @@ impl QuantizerWu {
             let i_g = (green >> bits_to_remove) + 1;
             let i_b = (blue >> bits_to_remove) + 1;
             let index = Self::get_index(i_r as usize, i_g as usize, i_b as usize);
-            
+
             let count_i = count as i32;
             self.weights[index] += count_i;
             self.moments_r[index] += (red as i32) * count_i;
             self.moments_g[index] += (green as i32) * count_i;
             self.moments_b[index] += (blue as i32) * count_i;
-            self.moments[index] += (count as f64) * (
-                (red as f64) * (red as f64) + 
-                (green as f64) * (green as f64) + 
-                (blue as f64) * (blue as f64)
-            );
+            self.moments[index] += (count as f64)
+                * ((red as f64) * (red as f64)
+                    + (green as f64) * (green as f64)
+                    + (blue as f64) * (blue as f64));
         }
     }
 
@@ -128,7 +127,7 @@ impl QuantizerWu {
     fn create_boxes(&mut self, max_color_count: usize) -> CreateBoxesResult {
         self.cubes = vec![Box::default(); max_color_count];
         let mut volume_variance = vec![0.0; max_color_count];
-        
+
         let first_box = &mut self.cubes[0];
         first_box.r1 = (INDEX_COUNT - 1) as i32;
         first_box.g1 = (INDEX_COUNT - 1) as i32;
@@ -147,9 +146,38 @@ impl QuantizerWu {
                 (&mut right[0], &mut left[i])
             };
 
-            if Self::cut(one, two, &self.moments_r, &self.moments_g, &self.moments_b, &self.weights) {
-                volume_variance[next] = if one.vol > 1 { Self::variance(one, &self.moments, &self.moments_r, &self.moments_g, &self.moments_b, &self.weights) } else { 0.0 };
-                volume_variance[i] = if two.vol > 1 { Self::variance(two, &self.moments, &self.moments_r, &self.moments_g, &self.moments_b, &self.weights) } else { 0.0 };
+            if Self::cut(
+                one,
+                two,
+                &self.moments_r,
+                &self.moments_g,
+                &self.moments_b,
+                &self.weights,
+            ) {
+                volume_variance[next] = if one.vol > 1 {
+                    Self::variance(
+                        one,
+                        &self.moments,
+                        &self.moments_r,
+                        &self.moments_g,
+                        &self.moments_b,
+                        &self.weights,
+                    )
+                } else {
+                    0.0
+                };
+                volume_variance[i] = if two.vol > 1 {
+                    Self::variance(
+                        two,
+                        &self.moments,
+                        &self.moments_r,
+                        &self.moments_g,
+                        &self.moments_b,
+                        &self.weights,
+                    )
+                } else {
+                    0.0
+                };
             } else {
                 volume_variance[next] = 0.0;
                 i -= 1;
@@ -192,7 +220,14 @@ impl QuantizerWu {
         colors
     }
 
-    fn variance(cube: &Box, moments: &[f64], moments_r: &[i32], moments_g: &[i32], moments_b: &[i32], weights: &[i32]) -> f64 {
+    fn variance(
+        cube: &Box,
+        moments: &[f64],
+        moments_r: &[i32],
+        moments_g: &[i32],
+        moments_b: &[i32],
+        weights: &[i32],
+    ) -> f64 {
         let dr = Self::volume(cube, moments_r);
         let dg = Self::volume(cube, moments_g);
         let db = Self::volume(cube, moments_b);
@@ -205,20 +240,67 @@ impl QuantizerWu {
             + moments[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b1 as usize)]
             - moments[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)];
 
-        let hypotenuse = (dr as f64) * (dr as f64) + (dg as f64) * (dg as f64) + (db as f64) * (db as f64);
+        let hypotenuse =
+            (dr as f64) * (dr as f64) + (dg as f64) * (dg as f64) + (db as f64) * (db as f64);
         let volume = Self::volume(cube, weights);
         xx - (hypotenuse / volume as f64)
     }
 
-    fn cut(one: &mut Box, two: &mut Box, moments_r: &[i32], moments_g: &[i32], moments_b: &[i32], weights: &[i32]) -> bool {
+    fn cut(
+        one: &mut Box,
+        two: &mut Box,
+        moments_r: &[i32],
+        moments_g: &[i32],
+        moments_b: &[i32],
+        weights: &[i32],
+    ) -> bool {
         let whole_r = Self::volume(one, moments_r);
         let whole_g = Self::volume(one, moments_g);
         let whole_b = Self::volume(one, moments_b);
         let whole_w = Self::volume(one, weights);
 
-        let max_r_result = Self::maximize(one, Direction::Red, one.r0 + 1, one.r1, whole_r, whole_g, whole_b, whole_w, moments_r, moments_g, moments_b, weights);
-        let max_g_result = Self::maximize(one, Direction::Green, one.g0 + 1, one.g1, whole_r, whole_g, whole_b, whole_w, moments_r, moments_g, moments_b, weights);
-        let max_b_result = Self::maximize(one, Direction::Blue, one.b0 + 1, one.b1, whole_r, whole_g, whole_b, whole_w, moments_r, moments_g, moments_b, weights);
+        let max_r_result = Self::maximize(
+            one,
+            Direction::Red,
+            one.r0 + 1,
+            one.r1,
+            whole_r,
+            whole_g,
+            whole_b,
+            whole_w,
+            moments_r,
+            moments_g,
+            moments_b,
+            weights,
+        );
+        let max_g_result = Self::maximize(
+            one,
+            Direction::Green,
+            one.g0 + 1,
+            one.g1,
+            whole_r,
+            whole_g,
+            whole_b,
+            whole_w,
+            moments_r,
+            moments_g,
+            moments_b,
+            weights,
+        );
+        let max_b_result = Self::maximize(
+            one,
+            Direction::Blue,
+            one.b0 + 1,
+            one.b1,
+            whole_r,
+            whole_g,
+            whole_b,
+            whole_w,
+            moments_r,
+            moments_g,
+            moments_b,
+            weights,
+        );
 
         let max_r = max_r_result.maximum;
         let max_g = max_g_result.maximum;
@@ -298,7 +380,9 @@ impl QuantizerWu {
                 continue;
             }
 
-            let mut temp_numerator = (half_r as f64) * (half_r as f64) + (half_g as f64) * (half_g as f64) + (half_b as f64) * (half_b as f64);
+            let mut temp_numerator = (half_r as f64) * (half_r as f64)
+                + (half_g as f64) * (half_g as f64)
+                + (half_b as f64) * (half_b as f64);
             let mut temp_denominator = half_w as f64;
             let mut temp = temp_numerator / temp_denominator;
 
@@ -311,7 +395,9 @@ impl QuantizerWu {
                 continue;
             }
 
-            temp_numerator = (half_r as f64) * (half_r as f64) + (half_g as f64) * (half_g as f64) + (half_b as f64) * (half_b as f64);
+            temp_numerator = (half_r as f64) * (half_r as f64)
+                + (half_g as f64) * (half_g as f64)
+                + (half_b as f64) * (half_b as f64);
             temp_denominator = half_w as f64;
             temp += temp_numerator / temp_denominator;
 
@@ -346,21 +432,21 @@ impl QuantizerWu {
         match direction {
             Direction::Red => {
                 -moment[Self::get_index(cube.r0 as usize, cube.g1 as usize, cube.b1 as usize)]
-                + moment[Self::get_index(cube.r0 as usize, cube.g1 as usize, cube.b0 as usize)]
-                + moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b1 as usize)]
-                - moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)]
+                    + moment[Self::get_index(cube.r0 as usize, cube.g1 as usize, cube.b0 as usize)]
+                    + moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b1 as usize)]
+                    - moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)]
             }
             Direction::Green => {
                 -moment[Self::get_index(cube.r1 as usize, cube.g0 as usize, cube.b1 as usize)]
-                + moment[Self::get_index(cube.r1 as usize, cube.g0 as usize, cube.b0 as usize)]
-                + moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b1 as usize)]
-                - moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)]
+                    + moment[Self::get_index(cube.r1 as usize, cube.g0 as usize, cube.b0 as usize)]
+                    + moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b1 as usize)]
+                    - moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)]
             }
             Direction::Blue => {
                 -moment[Self::get_index(cube.r1 as usize, cube.g1 as usize, cube.b0 as usize)]
-                + moment[Self::get_index(cube.r1 as usize, cube.g0 as usize, cube.b0 as usize)]
-                + moment[Self::get_index(cube.r0 as usize, cube.g1 as usize, cube.b0 as usize)]
-                - moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)]
+                    + moment[Self::get_index(cube.r1 as usize, cube.g0 as usize, cube.b0 as usize)]
+                    + moment[Self::get_index(cube.r0 as usize, cube.g1 as usize, cube.b0 as usize)]
+                    - moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)]
             }
         }
     }
@@ -369,21 +455,21 @@ impl QuantizerWu {
         match direction {
             Direction::Red => {
                 moment[Self::get_index(position as usize, cube.g1 as usize, cube.b1 as usize)]
-                - moment[Self::get_index(position as usize, cube.g1 as usize, cube.b0 as usize)]
-                - moment[Self::get_index(position as usize, cube.g0 as usize, cube.b1 as usize)]
-                + moment[Self::get_index(position as usize, cube.g0 as usize, cube.b0 as usize)]
+                    - moment[Self::get_index(position as usize, cube.g1 as usize, cube.b0 as usize)]
+                    - moment[Self::get_index(position as usize, cube.g0 as usize, cube.b1 as usize)]
+                    + moment[Self::get_index(position as usize, cube.g0 as usize, cube.b0 as usize)]
             }
             Direction::Green => {
                 moment[Self::get_index(cube.r1 as usize, position as usize, cube.b1 as usize)]
-                - moment[Self::get_index(cube.r1 as usize, position as usize, cube.b0 as usize)]
-                - moment[Self::get_index(cube.r0 as usize, position as usize, cube.b1 as usize)]
-                + moment[Self::get_index(cube.r0 as usize, position as usize, cube.b0 as usize)]
+                    - moment[Self::get_index(cube.r1 as usize, position as usize, cube.b0 as usize)]
+                    - moment[Self::get_index(cube.r0 as usize, position as usize, cube.b1 as usize)]
+                    + moment[Self::get_index(cube.r0 as usize, position as usize, cube.b0 as usize)]
             }
             Direction::Blue => {
                 moment[Self::get_index(cube.r1 as usize, cube.g1 as usize, position as usize)]
-                - moment[Self::get_index(cube.r1 as usize, cube.g0 as usize, position as usize)]
-                - moment[Self::get_index(cube.r0 as usize, cube.g1 as usize, position as usize)]
-                + moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, position as usize)]
+                    - moment[Self::get_index(cube.r1 as usize, cube.g0 as usize, position as usize)]
+                    - moment[Self::get_index(cube.r0 as usize, cube.g1 as usize, position as usize)]
+                    + moment[Self::get_index(cube.r0 as usize, cube.g0 as usize, position as usize)]
             }
         }
     }
@@ -393,7 +479,7 @@ impl Quantizer for QuantizerWu {
     fn quantize(&mut self, pixels: &[Argb], max_colors: usize) -> QuantizerResult {
         let mut map_quantizer = QuantizerMap::new();
         let map_result = map_quantizer.quantize(pixels, max_colors);
-        
+
         self.construct_histogram(&map_result.color_to_count);
         self.create_moments();
         let create_boxes_result = self.create_boxes(max_colors);
@@ -403,7 +489,7 @@ impl Quantizer for QuantizerWu {
         for color in colors {
             result_map.insert(color, 0);
         }
-        
+
         QuantizerResult::new(result_map)
     }
 }

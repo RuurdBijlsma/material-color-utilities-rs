@@ -25,9 +25,21 @@ pub struct HctSolver;
 
 impl HctSolver {
     const SCALED_DISCOUNT_FROM_LINRGB: [[f64; 3]; 3] = [
-        [0.001200833568784504, 0.002389694492170889, 0.0002795742885861124],
-        [0.0005891086651375999, 0.0029785502573438758, 0.0003270666104008398],
-        [0.00010146692491640572, 0.0005364214359186694, 0.0032979401770712076],
+        [
+            0.001200833568784504,
+            0.002389694492170889,
+            0.0002795742885861124,
+        ],
+        [
+            0.0005891086651375999,
+            0.0029785502573438758,
+            0.0003270666104008398,
+        ],
+        [
+            0.00010146692491640572,
+            0.0005364214359186694,
+            0.0032979401770712076,
+        ],
     ];
 
     const LINRGB_FROM_SCALED_DISCOUNT: [[f64; 3]; 3] = [
@@ -350,7 +362,12 @@ impl HctSolver {
     }
 
     /// Intersects a segment with a plane.
-    pub fn set_coordinate(source: [f64; 3], coordinate: f64, target: [f64; 3], axis: usize) -> [f64; 3] {
+    pub fn set_coordinate(
+        source: [f64; 3],
+        coordinate: f64,
+        target: [f64; 3],
+        axis: usize,
+    ) -> [f64; 3] {
         let t = Self::intercept(source[axis], coordinate, target[axis]);
         Self::lerp_point(source, t, target)
     }
@@ -431,7 +448,11 @@ impl HctSolver {
     }
 
     pub fn midpoint(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
-        [(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0, (a[2] + b[2]) / 2.0]
+        [
+            (a[0] + b[0]) / 2.0,
+            (a[1] + b[1]) / 2.0,
+            (a[2] + b[2]) / 2.0,
+        ]
     }
 
     fn critical_plane_below(x: f64) -> i32 {
@@ -510,9 +531,11 @@ impl HctSolver {
                 chroma / j_normalized.sqrt()
             };
             let t = (alpha * t_inner_coeff).powf(1.0 / 0.9);
-            let ac = viewing_conditions.aw * j_normalized.powf(1.0 / viewing_conditions.c / viewing_conditions.z);
+            let ac = viewing_conditions.aw
+                * j_normalized.powf(1.0 / viewing_conditions.c / viewing_conditions.z);
             let p2 = ac / viewing_conditions.nbb;
-            let gamma = 23.0 * (p2 + 0.305) * t / (23.0 * p1 + 11.0 * t * h_cos + 108.0 * t * h_sin);
+            let gamma =
+                23.0 * (p2 + 0.305) * t / (23.0 * p1 + 11.0 * t * h_cos + 108.0 * t * h_sin);
             let a = gamma * h_cos;
             let b = gamma * h_sin;
             let r_a = (460.0 * p2 + 451.0 * a + 288.0 * b) / 1403.0;
@@ -552,7 +575,7 @@ impl HctSolver {
 
     /// Finds an sRGB color with the given hue, chroma, and L*, if possible.
     pub fn solve_to_int(hue_degrees: f64, chroma: f64, lstar: f64) -> Argb {
-        if chroma < 0.0001 || lstar < 0.0001 || lstar > 99.9999 {
+        if chroma < 0.0001 || !(0.0001..=99.9999).contains(&lstar) {
             return Argb::from_lstar(lstar);
         }
         let hue_radians = MathUtils::sanitize_degrees_double(hue_degrees).to_radians();

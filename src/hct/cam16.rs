@@ -134,7 +134,8 @@ impl Cam16 {
         let t = (alpha / (1.64 - 0.29_f64.powf(viewing_conditions.n)).powf(0.73)).powf(1.0 / 0.9);
         let h_rad = self.hue.to_radians();
         let e_hue = 0.25 * ((h_rad + 2.0).cos() + 3.8);
-        let ac = viewing_conditions.aw * (self.j / 100.0).powf(1.0 / viewing_conditions.c / viewing_conditions.z);
+        let ac = viewing_conditions.aw
+            * (self.j / 100.0).powf(1.0 / viewing_conditions.c / viewing_conditions.z);
         let p1 = e_hue * (50000.0 / 13.0) * viewing_conditions.nc * viewing_conditions.ncb;
         let p2 = ac / viewing_conditions.nbb;
         let h_sin = h_rad.sin();
@@ -168,7 +169,10 @@ impl Cam16 {
     }
 
     /// Create a CAM16 color from a color in defined viewing conditions.
-    pub fn from_int_in_viewing_conditions(argb: Argb, viewing_conditions: &ViewingConditions) -> Self {
+    pub fn from_int_in_viewing_conditions(
+        argb: Argb,
+        viewing_conditions: &ViewingConditions,
+    ) -> Self {
         let red = argb.red();
         let green = argb.green();
         let blue = argb.blue();
@@ -216,8 +220,12 @@ impl Cam16 {
 
         let ac = p2 * viewing_conditions.nbb;
 
-        let j = 100.0 * (ac / viewing_conditions.aw).powf(viewing_conditions.c * viewing_conditions.z);
-        let q = 4.0 / viewing_conditions.c * (j / 100.0).sqrt() * (viewing_conditions.aw + 4.0) * viewing_conditions.fl_root;
+        let j =
+            100.0 * (ac / viewing_conditions.aw).powf(viewing_conditions.c * viewing_conditions.z);
+        let q = 4.0 / viewing_conditions.c
+            * (j / 100.0).sqrt()
+            * (viewing_conditions.aw + 4.0)
+            * viewing_conditions.fl_root;
 
         let hue_prime = if hue < 20.14 { hue + 360.0 } else { hue };
         let e_hue = 0.25 * ((hue_prime.to_radians() + 2.0).cos() + 3.8);
@@ -246,7 +254,10 @@ impl Cam16 {
         h: f64,
         viewing_conditions: &ViewingConditions,
     ) -> Self {
-        let q = 4.0 / viewing_conditions.c * (j / 100.0).sqrt() * (viewing_conditions.aw + 4.0) * viewing_conditions.fl_root;
+        let q = 4.0 / viewing_conditions.c
+            * (j / 100.0).sqrt()
+            * (viewing_conditions.aw + 4.0)
+            * viewing_conditions.fl_root;
         let m = c * viewing_conditions.fl_root;
         let alpha = c / (j / 100.0).sqrt();
         let s = 50.0 * (alpha * viewing_conditions.c / (viewing_conditions.aw + 4.0)).sqrt();

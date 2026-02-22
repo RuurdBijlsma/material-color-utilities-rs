@@ -89,17 +89,17 @@ mod tests {
             // RED:
             if (0.0 - hue).abs() < 55.0 {
                 assert_eq!(count, 4);
-                continue
+                continue;
             }
             // GREEN:
             if (120.0 - hue).abs() < 55.0 {
                 assert_eq!(count, 2);
-                continue
+                continue;
             }
             // BLUE:
             if (240.0 - hue).abs() < 55.0 {
                 assert_eq!(count, 3);
-                continue
+                continue;
             }
             panic!("Unknown color in result.color_to_count");
         }

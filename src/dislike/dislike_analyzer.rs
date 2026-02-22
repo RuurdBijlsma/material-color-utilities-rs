@@ -70,7 +70,7 @@ mod tests {
     fn test_fix_if_disliked() {
         let disliked = Hct::from(100.0, 50.0, 50.0);
         let fixed = DislikeAnalyzer::fix_if_disliked(disliked);
-        
+
         assert!(!DislikeAnalyzer::is_disliked(&fixed));
         assert!((fixed.tone() - 70.0).abs() < 1.0);
     }

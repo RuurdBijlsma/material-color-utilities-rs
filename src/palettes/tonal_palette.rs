@@ -108,7 +108,7 @@ impl TonalPalette {
     ///
     /// ARGB representation of a color with that tone.
     pub fn tone(&self, tone: i32) -> Argb {
-        if tone < 0 || tone > 100 {
+        if !(0..=100).contains(&tone) {
             return Hct::from(self.hue, self.chroma, tone as f64).to_int();
         }
 
@@ -183,12 +183,13 @@ impl KeyColor {
         let mut upper_tone = 100;
         while lower_tone < upper_tone {
             let mid_tone = (lower_tone + upper_tone) / 2;
-            let is_ascending = self.max_chroma(mid_tone) < self.max_chroma(mid_tone + tone_step_size);
+            let is_ascending =
+                self.max_chroma(mid_tone) < self.max_chroma(mid_tone + tone_step_size);
             let sufficient_chroma = self.max_chroma(mid_tone) >= self.requested_chroma - epsilon;
             if sufficient_chroma {
                 // Either range [lowerTone, midTone] or [midTone, upperTone] has
                 // the answer, so search in the range that is closer the pivot tone.
-                if (lower_tone as i32 - pivot_tone).abs() < (upper_tone as i32 - pivot_tone).abs() {
+                if (lower_tone - pivot_tone).abs() < (upper_tone - pivot_tone).abs() {
                     upper_tone = mid_tone;
                 } else {
                     if lower_tone == mid_tone {
@@ -234,7 +235,7 @@ mod tests {
         let color1 = palette.tone(50);
         let color2 = palette.tone(50);
         assert_eq!(color1, color2);
-        
+
         let cached = palette.cache[50].load(Ordering::Relaxed);
         assert_eq!(cached, color1.0);
     }
@@ -246,13 +247,13 @@ mod tests {
         let tone99 = palette.tone(99);
         let tone98 = palette.tone(98);
         let tone100 = palette.tone(100);
-        
+
         // tone 99 should be average of 98 and 100
         let red = ((tone98.red() as f32 + tone100.red() as f32) / 2.0).round() as u8;
         let green = ((tone98.green() as f32 + tone100.green() as f32) / 2.0).round() as u8;
         let blue = ((tone98.blue() as f32 + tone100.blue() as f32) / 2.0).round() as u8;
         let expected = Argb::from_rgb(red, green, blue);
-        
+
         assert_eq!(tone99, expected);
     }
 
@@ -261,7 +262,7 @@ mod tests {
         let hue = 200.0;
         let chroma = 30.0;
         let palette = TonalPalette::from_hue_and_chroma(hue, chroma);
-        
+
         // Key color should have the requested hue and roughly the requested chroma
         assert!((palette.key_color.hue() - hue).abs() < 1.0);
         assert!((palette.key_color.chroma() - chroma).abs() < 1.0);
@@ -273,7 +274,7 @@ mod tests {
         // Should not panic and should return a color
         let color = palette.tone(150);
         assert!(color.0 != 0);
-        
+
         let color_neg = palette.tone(-10);
         assert!(color_neg.0 != 0);
     }

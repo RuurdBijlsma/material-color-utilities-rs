@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-use std::sync::Arc;
-use crate::hct::hct::Hct;
-use crate::palettes::tonal_palette::TonalPalette;
-use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
-use crate::dynamiccolor::contrast_curve::ContrastCurve;
-use crate::dynamiccolor::tone_delta_pair::ToneDeltaPair;
+use crate::contrast::contrast::Contrast;
 use crate::dynamiccolor::color_spec::SpecVersion;
 use crate::dynamiccolor::color_specs::ColorSpecs;
-use crate::contrast::contrast::Contrast;
+use crate::dynamiccolor::contrast_curve::ContrastCurve;
+use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
+use crate::dynamiccolor::tone_delta_pair::ToneDeltaPair;
+use crate::hct::hct::Hct;
+use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
+use std::sync::Arc;
 
 pub type DynamicColorFunction<T> = Arc<dyn Fn(&DynamicScheme) -> T + Send + Sync>;
 
@@ -56,22 +56,31 @@ impl DynamicColor {
     ) -> Self {
         // Validation logic from Kotlin init block
         if background.is_none() && second_background.is_some() {
-            panic!("Color {} has second_background defined, but background is not defined.", name);
+            panic!(
+                "Color {} has second_background defined, but background is not defined.",
+                name
+            );
         }
         if background.is_none() && contrast_curve.is_some() {
-            panic!("Color {} has contrast_curve defined, but background is not defined.", name);
+            panic!(
+                "Color {} has contrast_curve defined, but background is not defined.",
+                name
+            );
         }
         if background.is_some() && contrast_curve.is_none() {
-            panic!("Color {} has background defined, but contrast_curve is not defined.", name);
+            panic!(
+                "Color {} has background defined, but contrast_curve is not defined.",
+                name
+            );
         }
 
         let tone = tone.unwrap_or_else(|| {
             let bg_func = background.clone();
             Arc::new(move |scheme| {
-                if let Some(ref bg) = bg_func {
-                    if let Some(bg_color) = bg(scheme) {
-                        return bg_color.get_tone(scheme);
-                    }
+                if let Some(ref bg) = bg_func
+                    && let Some(bg_color) = bg(scheme)
+                {
+                    return bg_color.get_tone(scheme);
                 }
                 50.0
             })
@@ -93,12 +102,12 @@ impl DynamicColor {
 
     pub fn get_argb(&self, scheme: &DynamicScheme) -> Argb {
         let argb = self.get_hct(scheme).to_int();
-        if let Some(ref opacity_func) = self.opacity {
-            if let Some(opacity_percentage) = opacity_func(scheme) {
-                let alpha = (opacity_percentage * 255.0).round() as u32;
-                let alpha = alpha.clamp(0, 255);
-                return Argb((argb.0 & 0x00ffffff) | (alpha << 24));
-            }
+        if let Some(ref opacity_func) = self.opacity
+            && let Some(opacity_percentage) = opacity_func(scheme)
+        {
+            let alpha = (opacity_percentage * 255.0).round() as u32;
+            let alpha = alpha.clamp(0, 255);
+            return Argb((argb.0 & 0x00ffffff) | (alpha << 24));
         }
         argb
     }
@@ -149,12 +158,10 @@ impl DynamicColor {
             } else {
                 darker_tone
             }
+        } else if darker_ratio >= ratio || darker_ratio >= lighter_ratio {
+            darker_tone
         } else {
-            if darker_ratio >= ratio || darker_ratio >= lighter_ratio {
-                darker_tone
-            } else {
-                lighter_tone
-            }
+            lighter_tone
         }
     }
 
@@ -284,9 +291,17 @@ impl DynamicColor {
             panic!(
                 "Attempting to extend color {} as a {} with color {} as a {} for spec version {:?}.",
                 this.name,
-                if this.is_background { "background" } else { "foreground" },
+                if this.is_background {
+                    "background"
+                } else {
+                    "foreground"
+                },
                 extended_color.name,
-                if extended_color.is_background { "background" } else { "foreground" },
+                if extended_color.is_background {
+                    "background"
+                } else {
+                    "foreground"
+                },
                 spec_version
             );
         }

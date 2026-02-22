@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
 use crate::utils::color_utils::Argb;
+use std::collections::HashMap;
 
 /// Represents result of a quantizer run.
 #[derive(Debug, Clone, Default)]

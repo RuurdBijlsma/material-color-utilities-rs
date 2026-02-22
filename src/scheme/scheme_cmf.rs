@@ -45,14 +45,25 @@ impl SchemeCmf {
             panic!("SchemeCmf can only be used with spec version 2026.");
         }
 
-        let source_color_hct = source_color_hct_list[0].clone();
+        let source_color_hct = source_color_hct_list[0];
 
-        let primary_palette = TonalPalette::from_hue_and_chroma(source_color_hct.hue(), source_color_hct.chroma());
-        let secondary_palette = TonalPalette::from_hue_and_chroma(source_color_hct.hue(), source_color_hct.chroma() * 0.5);
+        let primary_palette =
+            TonalPalette::from_hue_and_chroma(source_color_hct.hue(), source_color_hct.chroma());
+        let secondary_palette = TonalPalette::from_hue_and_chroma(
+            source_color_hct.hue(),
+            source_color_hct.chroma() * 0.5,
+        );
         let tertiary_palette = Self::tertiary_palette(&source_color_hct_list);
-        let neutral_palette = TonalPalette::from_hue_and_chroma(source_color_hct.hue(), source_color_hct.chroma() * 0.2);
-        let neutral_variant_palette = TonalPalette::from_hue_and_chroma(source_color_hct.hue(), source_color_hct.chroma() * 0.2);
-        let error_palette = TonalPalette::from_hue_and_chroma(23.0, source_color_hct.chroma().max(50.0));
+        let neutral_palette = TonalPalette::from_hue_and_chroma(
+            source_color_hct.hue(),
+            source_color_hct.chroma() * 0.2,
+        );
+        let neutral_variant_palette = TonalPalette::from_hue_and_chroma(
+            source_color_hct.hue(),
+            source_color_hct.chroma() * 0.2,
+        );
+        let error_palette =
+            TonalPalette::from_hue_and_chroma(23.0, source_color_hct.chroma().max(50.0));
 
         let mut scheme = DynamicScheme::new_with_platform_and_spec(
             source_color_hct,
@@ -76,11 +87,17 @@ impl SchemeCmf {
     fn tertiary_palette(source_color_hct_list: &[Hct]) -> TonalPalette {
         let source_color_hct = &source_color_hct_list[0];
         let secondary_source_color_hct = source_color_hct_list.get(1).unwrap_or(source_color_hct);
-        
+
         if source_color_hct.to_int() == secondary_source_color_hct.to_int() {
-            TonalPalette::from_hue_and_chroma(source_color_hct.hue(), source_color_hct.chroma() * 0.75)
+            TonalPalette::from_hue_and_chroma(
+                source_color_hct.hue(),
+                source_color_hct.chroma() * 0.75,
+            )
         } else {
-            TonalPalette::from_hue_and_chroma(secondary_source_color_hct.hue(), secondary_source_color_hct.chroma())
+            TonalPalette::from_hue_and_chroma(
+                secondary_source_color_hct.hue(),
+                secondary_source_color_hct.chroma(),
+            )
         }
     }
 }

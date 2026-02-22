@@ -16,13 +16,13 @@
 
 use crate::dynamiccolor::color_spec::{Platform, SpecVersion};
 use crate::dynamiccolor::dynamic_color::DynamicColor;
+use crate::dynamiccolor::material_dynamic_colors::MaterialDynamicColors;
 use crate::dynamiccolor::variant::Variant;
 use crate::hct::hct::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
+use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
 use std::sync::OnceLock;
-use crate::dynamiccolor::material_dynamic_colors::MaterialDynamicColors;
-use crate::utils::color_utils::Argb;
 
 /// Provides important settings for creating colors dynamically, and 6 color palettes.
 #[derive(Debug)]
@@ -440,10 +440,8 @@ mod tests {
 
         // Should fall into 200.0..300.0 bucket, rotation is -30
         let expected_hue = MathUtils::sanitize_degrees_double(hct.hue() - 30.0);
-        
+
         let rotated = DynamicScheme::get_rotated_hue(&hct, &hue_breakpoints, &rotations);
         assert!((rotated - expected_hue).abs() < 1e-4);
     }
 }
-
-

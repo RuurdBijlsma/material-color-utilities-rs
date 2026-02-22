@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-pub mod contrast_curve;
-pub mod variant;
-pub mod tone_delta_pair;
-pub mod dynamic_color;
 pub mod color_spec;
-pub mod color_specs;
 pub mod color_spec_2021;
-pub mod dynamic_scheme;
 pub mod color_spec_2025;
 pub mod color_spec_2026;
+pub mod color_specs;
+pub mod contrast_curve;
+pub mod dynamic_color;
+pub mod dynamic_scheme;
 pub mod material_dynamic_colors;
+pub mod tone_delta_pair;
+pub mod variant;

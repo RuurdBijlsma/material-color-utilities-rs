@@ -261,39 +261,81 @@ impl ColorSpec for ColorSpec2025 {
         todo!()
     }
 
-    fn highest_surface(&self, scheme: &DynamicScheme) -> Arc<DynamicColor> {
+    fn highest_surface(&self, _scheme: &DynamicScheme) -> Arc<DynamicColor> {
         todo!()
     }
 
-    fn get_hct(&self, scheme: &DynamicScheme, color: &DynamicColor) -> Hct {
+    fn get_hct(&self, _scheme: &DynamicScheme, _color: &DynamicColor) -> Hct {
         todo!()
     }
 
-    fn get_tone(&self, scheme: &DynamicScheme, color: &DynamicColor) -> f64 {
+    fn get_tone(&self, _scheme: &DynamicScheme, _color: &DynamicColor) -> f64 {
         todo!()
     }
 
-    fn get_primary_palette(&self, variant: Variant, source_color_hct: &Hct, is_dark: bool, platform: Platform, contrast_level: f64) -> TonalPalette {
+    fn get_primary_palette(
+        &self,
+        _variant: Variant,
+        _source_color_hct: &Hct,
+        _is_dark: bool,
+        _platform: Platform,
+        _contrast_level: f64,
+    ) -> TonalPalette {
         todo!()
     }
 
-    fn get_secondary_palette(&self, variant: Variant, source_color_hct: &Hct, is_dark: bool, platform: Platform, contrast_level: f64) -> TonalPalette {
+    fn get_secondary_palette(
+        &self,
+        _variant: Variant,
+        _source_color_hct: &Hct,
+        _is_dark: bool,
+        _platform: Platform,
+        _contrast_level: f64,
+    ) -> TonalPalette {
         todo!()
     }
 
-    fn get_tertiary_palette(&self, variant: Variant, source_color_hct: &Hct, is_dark: bool, platform: Platform, contrast_level: f64) -> TonalPalette {
+    fn get_tertiary_palette(
+        &self,
+        _variant: Variant,
+        _source_color_hct: &Hct,
+        _is_dark: bool,
+        _platform: Platform,
+        _contrast_level: f64,
+    ) -> TonalPalette {
         todo!()
     }
 
-    fn get_neutral_palette(&self, variant: Variant, source_color_hct: &Hct, is_dark: bool, platform: Platform, contrast_level: f64) -> TonalPalette {
+    fn get_neutral_palette(
+        &self,
+        _variant: Variant,
+        _source_color_hct: &Hct,
+        _is_dark: bool,
+        _platform: Platform,
+        _contrast_level: f64,
+    ) -> TonalPalette {
         todo!()
     }
 
-    fn get_neutral_variant_palette(&self, variant: Variant, source_color_hct: &Hct, is_dark: bool, platform: Platform, contrast_level: f64) -> TonalPalette {
+    fn get_neutral_variant_palette(
+        &self,
+        _variant: Variant,
+        _source_color_hct: &Hct,
+        _is_dark: bool,
+        _platform: Platform,
+        _contrast_level: f64,
+    ) -> TonalPalette {
         todo!()
     }
 
-    fn get_error_palette(&self, variant: Variant, source_color_hct: &Hct, is_dark: bool, platform: Platform, contrast_level: f64) -> TonalPalette {
+    fn get_error_palette(
+        &self,
+        _variant: Variant,
+        _source_color_hct: &Hct,
+        _is_dark: bool,
+        _platform: Platform,
+        _contrast_level: f64,
+    ) -> TonalPalette {
         todo!()
     }
 }

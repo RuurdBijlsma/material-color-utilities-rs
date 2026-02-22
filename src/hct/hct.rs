@@ -173,15 +173,15 @@ impl Hct {
     }
 
     pub fn is_blue(hue: f64) -> bool {
-        hue >= 250.0 && hue < 270.0
+        (250.0..270.0).contains(&hue)
     }
 
     pub fn is_yellow(hue: f64) -> bool {
-        hue >= 105.0 && hue < 125.0
+        (105.0..125.0).contains(&hue)
     }
 
     pub fn is_cyan(hue: f64) -> bool {
-        hue >= 170.0 && hue < 207.0
+        (170.0..207.0).contains(&hue)
     }
 }
 
@@ -257,13 +257,13 @@ mod tests {
         let chroma = 20.0;
         let tone = 52.0;
         let hct = Hct::from(hue, chroma, tone);
-        
+
         // HCT -> RGB -> HCT should be stable for in-gamut colors
         let argb = hct.to_int();
         let argb_string = format!("{:X}", argb.0);
         assert_eq!(argb_string, "FF967655");
         let back_convert = Hct::from_int(argb);
-        
+
         assert!((back_convert.hue - hue).abs() < 0.5);
         assert!((back_convert.chroma - chroma).abs() < 0.5);
         assert!((back_convert.tone - tone).abs() < 0.5);
@@ -274,11 +274,11 @@ mod tests {
         // HCT(67, 91, 52) is out of gamut in sRGB.
         // It should be clipped to the maximum possible chroma (~49.2).
         let hct = Hct::from(67.0, 91.0, 52.0);
-        
+
         assert!((hct.hue() - 67.0).abs() < 1.0);
         assert!(hct.chroma() < 50.0); // Clipped!
         assert!((hct.tone() - 52.0).abs() < 1.0);
-        
+
         // The resulting ARGB should be #B26C00
         assert_eq!(format!("{:X}", hct.to_int().0), "FFB26C00");
     }

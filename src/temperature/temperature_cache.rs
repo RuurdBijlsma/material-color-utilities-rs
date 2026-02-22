@@ -60,10 +60,19 @@ impl TemperatureCache {
             let warmest_temp = *temps.get(&warmest.to_int()).unwrap();
 
             let range = warmest_temp - coldest_temp;
-            let start_hue_is_coldest_to_warmest = Self::is_between(self.input.hue(), coldest_hue, warmest_hue);
+            let start_hue_is_coldest_to_warmest =
+                Self::is_between(self.input.hue(), coldest_hue, warmest_hue);
 
-            let start_hue = if start_hue_is_coldest_to_warmest { warmest_hue } else { coldest_hue };
-            let end_hue = if start_hue_is_coldest_to_warmest { coldest_hue } else { warmest_hue };
+            let start_hue = if start_hue_is_coldest_to_warmest {
+                warmest_hue
+            } else {
+                coldest_hue
+            };
+            let end_hue = if start_hue_is_coldest_to_warmest {
+                coldest_hue
+            } else {
+                warmest_hue
+            };
 
             let direction_of_rotation = 1.0;
             let mut smallest_error = 1000.0;
@@ -77,14 +86,17 @@ impl TemperatureCache {
             // of the input color. This is the complement.
             let mut hue_addend = 0.0;
             while hue_addend <= 360.0 {
-                let hue = MathUtils::sanitize_degrees_double(start_hue + direction_of_rotation * hue_addend);
+                let hue = MathUtils::sanitize_degrees_double(
+                    start_hue + direction_of_rotation * hue_addend,
+                );
                 if !Self::is_between(hue, start_hue, end_hue) {
                     hue_addend += 1.0;
                     continue;
                 }
 
                 let possible_answer = hcts_by_hue[hue.round() as usize % 360];
-                let relative_temp = (*temps.get(&possible_answer.to_int()).unwrap() - coldest_temp) / range;
+                let relative_temp =
+                    (*temps.get(&possible_answer.to_int()).unwrap() - coldest_temp) / range;
                 let error = (complement_relative_temp - relative_temp).abs();
                 if error < smallest_error {
                     smallest_error = error;
@@ -156,7 +168,8 @@ impl TemperatureCache {
             // delta in temperature between them.
             while index_satisfied && all_colors.len() < divisions {
                 all_colors.push(hct);
-                desired_total_temp_delta_for_index = (all_colors.len() + index_addend) as f64 * temp_step;
+                desired_total_temp_delta_for_index =
+                    (all_colors.len() + index_addend) as f64 * temp_step;
                 index_satisfied = total_temp_delta >= desired_total_temp_delta_for_index;
                 index_addend += 1;
             }
@@ -217,7 +230,9 @@ impl TemperatureCache {
     }
 
     fn get_temp(&self, hct: &Hct) -> f64 {
-        *self.temps_by_hct().get(&hct.to_int())
+        *self
+            .temps_by_hct()
+            .get(&hct.to_int())
             .unwrap_or(&Self::raw_temperature(hct))
     }
 
@@ -259,7 +274,9 @@ impl TemperatureCache {
             hcts.sort_by(|a, b| {
                 let temp_a = temps.get(&a.to_int()).unwrap();
                 let temp_b = temps.get(&b.to_int()).unwrap();
-                temp_a.partial_cmp(temp_b).unwrap_or(std::cmp::Ordering::Equal)
+                temp_a
+                    .partial_cmp(temp_b)
+                    .unwrap_or(std::cmp::Ordering::Equal)
             });
             hcts
         })
@@ -288,7 +305,9 @@ impl TemperatureCache {
         let hue = MathUtils::sanitize_degrees_double(lab.b.atan2(lab.a).to_degrees());
         let chroma = lab.a.hypot(lab.b);
 
-        -0.5 + 0.02 * chroma.powf(1.07) * (MathUtils::sanitize_degrees_double(hue - 50.0).to_radians()).cos()
+        -0.5 + 0.02
+            * chroma.powf(1.07)
+            * (MathUtils::sanitize_degrees_double(hue - 50.0).to_radians()).cos()
     }
 
     /// Determines if an angle is between two other angles, rotating clockwise.
@@ -318,7 +337,7 @@ mod tests {
     #[test]
     fn test_complement() {
         // Nice blue
-        let blue = Hct::from_int(Argb::from_rgb(12,187,212));
+        let blue = Hct::from_int(Argb::from_rgb(12, 187, 212));
         let cache = TemperatureCache::new(blue);
         let complement = cache.complement();
 
@@ -326,7 +345,10 @@ mod tests {
         let comp_hue = complement.hue();
         assert!(comp_hue > 50.0);
         assert!(comp_hue < 70.0);
-        assert!(TemperatureCache::raw_temperature(&complement) > TemperatureCache::raw_temperature(&blue));
+        assert!(
+            TemperatureCache::raw_temperature(&complement)
+                > TemperatureCache::raw_temperature(&blue)
+        );
     }
 
     #[test]

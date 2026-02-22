@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
-use crate::utils::color_utils::Argb;
 use crate::quantize::quantizer::{Quantizer, QuantizerResult};
+use crate::utils::color_utils::Argb;
+use std::collections::HashMap;
 
 /// Creates a dictionary with keys of colors, and values of count of the color.
 #[derive(Debug, Default)]
@@ -52,13 +52,9 @@ mod tests {
     #[test]
     fn test_quantize_map() {
         let mut quantizer = QuantizerMap::new();
-        let pixels = vec![
-            Argb(0xFF0000FF),
-            Argb(0xFF0000FF),
-            Argb(0xFFFF0000),
-        ];
+        let pixels = vec![Argb(0xFF0000FF), Argb(0xFF0000FF), Argb(0xFFFF0000)];
         let result = quantizer.quantize(&pixels, 10);
-        
+
         assert_eq!(result.color_to_count.get(&Argb(0xFF0000FF)), Some(&2));
         assert_eq!(result.color_to_count.get(&Argb(0xFFFF0000)), Some(&1));
         assert_eq!(result.color_to_count.len(), 2);

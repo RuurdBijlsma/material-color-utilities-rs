@@ -12,7 +12,7 @@ pub trait PointProvider {
 
     /// Returns the squared Euclidean distance between two points.
     ///
-    /// Squared distance is used as an optimization, as it preserves the 
+    /// Squared distance is used as an optimization, as it preserves the
     /// relative ordering required for K-Means without the cost of `sqrt`.
     fn distance(&self, a: [f64; 3], b: [f64; 3]) -> f64;
 }

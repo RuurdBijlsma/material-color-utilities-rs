@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
-use crate::utils::color_utils::Argb;
 use crate::quantize::point_provider::PointProvider;
 use crate::quantize::point_provider_lab::PointProviderLab;
+use crate::utils::color_utils::Argb;
+use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 struct Distance {
@@ -69,7 +69,7 @@ impl QuantizerWsmeans {
         let mut points = Vec::with_capacity(input_pixels.len());
         let mut pixels = Vec::with_capacity(input_pixels.len());
         let point_provider = PointProviderLab;
-        
+
         let mut point_count = 0;
         for &input_pixel in input_pixels {
             let pixel_count = pixel_to_count.entry(input_pixel).or_insert(0);
@@ -104,7 +104,7 @@ impl QuantizerWsmeans {
         if clusters_created < cluster_count {
             for i in clusters_created..cluster_count {
                 // This is a sensible fallback if empty loop in Kotlin was a bug.
-                // However, we'll follow the logical structure. 
+                // However, we'll follow the logical structure.
                 // If it's still [0,0,0], the first iteration will update it if points are assigned.
                 clusters[i] = [0.0, 0.0, 0.0];
             }
@@ -116,7 +116,8 @@ impl QuantizerWsmeans {
         }
 
         let mut index_matrix = vec![vec![0; cluster_count]; cluster_count];
-        let mut distance_to_index_matrix = vec![vec![Distance::default(); cluster_count]; cluster_count];
+        let mut distance_to_index_matrix =
+            vec![vec![Distance::default(); cluster_count]; cluster_count];
         let mut pixel_count_sums = vec![0; cluster_count];
 
         for iteration in 0..Self::MAX_ITERATIONS {
@@ -128,10 +129,14 @@ impl QuantizerWsmeans {
                     distance_to_index_matrix[i][j].distance = distance;
                     distance_to_index_matrix[i][j].index = j;
                 }
-                
+
                 // Sort by distance
-                distance_to_index_matrix[i].sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(std::cmp::Ordering::Equal));
-                
+                distance_to_index_matrix[i].sort_by(|a, b| {
+                    a.distance
+                        .partial_cmp(&b.distance)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
+
                 for j in 0..cluster_count {
                     index_matrix[i][j] = distance_to_index_matrix[i][j].index;
                 }
@@ -143,12 +148,14 @@ impl QuantizerWsmeans {
                 let previous_cluster_index = cluster_indices[i];
                 let previous_cluster = clusters[previous_cluster_index];
                 let previous_distance = point_provider.distance(point, previous_cluster);
-                
+
                 let mut minimum_distance = previous_distance;
                 let mut new_cluster_index = None;
-                
+
                 for j in 0..cluster_count {
-                    if distance_to_index_matrix[previous_cluster_index][j].distance >= 4.0 * previous_distance {
+                    if distance_to_index_matrix[previous_cluster_index][j].distance
+                        >= 4.0 * previous_distance
+                    {
                         continue;
                     }
                     let distance = point_provider.distance(point, clusters[j]);
@@ -157,9 +164,10 @@ impl QuantizerWsmeans {
                         new_cluster_index = Some(j);
                     }
                 }
-                
+
                 if let Some(idx) = new_cluster_index {
-                    let distance_change = (minimum_distance.sqrt() - previous_distance.sqrt()).abs();
+                    let distance_change =
+                        (minimum_distance.sqrt() - previous_distance.sqrt()).abs();
                     if distance_change > Self::MIN_MOVEMENT_DISTANCE {
                         points_moved += 1;
                         cluster_indices[i] = idx;
@@ -207,9 +215,9 @@ impl QuantizerWsmeans {
                 continue;
             }
             let possible_new_cluster = point_provider.to_argb(clusters[i]);
-            if !argb_to_population.contains_key(&possible_new_cluster) {
-                argb_to_population.insert(possible_new_cluster, count);
-            }
+            argb_to_population
+                .entry(possible_new_cluster)
+                .or_insert(count);
         }
         argb_to_population
     }
