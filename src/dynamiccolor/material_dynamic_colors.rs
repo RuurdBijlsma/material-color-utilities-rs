@@ -372,8 +372,15 @@ impl MaterialDynamicColors {
     // All Colors //
     // ////////////////////////////////////////////////////////////////
     /// All dynamic colors in Material Design system.
-    pub fn all_dynamic_colors(&self) -> impl Iterator<Item = Option<Arc<DynamicColor>>> + '_ {
-        COLOR_GETTERS.iter().map(move |getter| getter(self))
+    pub fn all_dynamic_colors(&self) -> Vec<Box<dyn Fn() -> Option<Arc<DynamicColor>> + '_>> {
+        COLOR_GETTERS
+            .iter()
+            .map(|&getter| {
+                let closure: Box<dyn Fn() -> Option<Arc<DynamicColor>> + '_> =
+                    Box::new(move || getter(self));
+                closure
+            })
+            .collect()
     }
 }
 
@@ -455,11 +462,11 @@ mod tests {
         };
 
         // Ensure all colors resolve to correct count, including options that might be None.
-        let colors: Vec<_> = mdc.all_dynamic_colors().collect();
+        let colors = mdc.all_dynamic_colors();
         assert_eq!(colors.len(), 59);
 
         // Basic spot-check
-        assert!(colors[0].is_some());
-        assert!(colors[10].is_some());
+        assert!(colors[0]().is_some());
+        assert!(colors[10]().is_some());
     }
 }
