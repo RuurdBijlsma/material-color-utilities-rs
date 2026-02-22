@@ -393,15 +393,6 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
-    // PRIMARIES, SECONDARIES, TERTIARIES, ERRORS, FIXED, highest_surface,
-    // get_hct, get_tone & palette builders follow in subsequent sections.
-    // They will be filled in via replace_file_content below.
-
-    fn primary_dim(&self) -> Option<Arc<DynamicColor>> { None }
-    fn secondary_dim(&self) -> Option<Arc<DynamicColor>> { None }
-    fn tertiary_dim(&self) -> Option<Arc<DynamicColor>> { None }
-    fn error_dim(&self) -> Option<Arc<DynamicColor>> { None }
-
     fn primary(&self) -> Arc<DynamicColor> {
         let hs = Arc::new(|s: &DynamicScheme| Some(ColorSpec2021.highest_surface(s)));
         let primary_container = self.primary_container();
@@ -432,6 +423,8 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
+    fn primary_dim(&self) -> Option<Arc<DynamicColor>> { None }
+
     fn on_primary(&self) -> Arc<DynamicColor> {
         let primary = self.primary();
         Arc::new(DynamicColor::new(
@@ -446,7 +439,6 @@ impl ColorSpec for ColorSpec2021 {
             None, None,
         ))
     }
-
     fn primary_container(&self) -> Arc<DynamicColor> {
         let hs = Arc::new(|s: &DynamicScheme| Some(ColorSpec2021.highest_surface(s)));
         let primary_stub = Arc::new(DynamicColor::new(
@@ -537,6 +529,8 @@ impl ColorSpec for ColorSpec2021 {
             Some(tdp), None,
         ))
     }
+
+    fn secondary_dim(&self) -> Option<Arc<DynamicColor>> { None }
 
     fn on_secondary(&self) -> Arc<DynamicColor> {
         let sec = self.secondary();
@@ -630,6 +624,8 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
+    fn tertiary_dim(&self) -> Option<Arc<DynamicColor>> { None }
+
     fn on_tertiary(&self) -> Arc<DynamicColor> {
         let t = self.tertiary();
         Arc::new(DynamicColor::new(
@@ -722,6 +718,8 @@ impl ColorSpec for ColorSpec2021 {
             Some(tdp), None,
         ))
     }
+
+    fn error_dim(&self) -> Option<Arc<DynamicColor>> { None }
 
     fn on_error(&self) -> Arc<DynamicColor> {
         let e = self.error();

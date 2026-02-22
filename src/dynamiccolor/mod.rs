@@ -21,3 +21,5 @@ pub mod dynamic_color;
 pub mod color_spec;
 pub mod color_spec_2021;
 pub mod dynamic_scheme;
+pub mod color_spec_2025;
+pub mod color_spec_2026;

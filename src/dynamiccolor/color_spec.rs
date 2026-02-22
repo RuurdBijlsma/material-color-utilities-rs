@@ -17,6 +17,8 @@
 use std::sync::Arc;
 
 use crate::dynamiccolor::color_spec_2021::ColorSpec2021;
+use crate::dynamiccolor::color_spec_2025::ColorSpec2025;
+use crate::dynamiccolor::color_spec_2026::ColorSpec2026;
 use crate::dynamiccolor::dynamic_color::DynamicColor;
 use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
 use crate::dynamiccolor::variant::Variant;
@@ -240,8 +242,8 @@ impl ColorSpecs {
     pub fn get(spec_version: SpecVersion) -> Box<dyn ColorSpec> {
         match spec_version {
             SpecVersion::Spec2021 => Box::new(ColorSpec2021::new()),
-            SpecVersion::Spec2025 => todo!(),
-            SpecVersion::Spec2026 => todo!(),
+            SpecVersion::Spec2025 => Box::new(ColorSpec2025::new()),
+            SpecVersion::Spec2026 => Box::new(ColorSpec2026::new()),
         }
     }
 }
