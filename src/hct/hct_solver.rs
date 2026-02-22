@@ -492,7 +492,7 @@ impl HctSolver {
     }
 
     /// Finds a color with the given hue, chroma, and Y.
-    pub fn find_result_by_j(hue_radians: f64, chroma: f64, y: f64) -> u32 {
+    pub fn find_result_by_j(hue_radians: f64, chroma: f64, y: f64) -> Option<Argb> {
         // Initial estimate of j.
         let mut j = y.sqrt() * 11.0;
         let viewing_conditions = ViewingConditions::default();
@@ -527,27 +527,27 @@ impl HctSolver {
             );
 
             if lin_rgb[0] < 0.0 || lin_rgb[1] < 0.0 || lin_rgb[2] < 0.0 {
-                return 0;
+                return None;
             }
             let k_r = Self::Y_FROM_LINRGB[0];
             let k_g = Self::Y_FROM_LINRGB[1];
             let k_b = Self::Y_FROM_LINRGB[2];
             let fn_j = k_r * lin_rgb[0] + k_g * lin_rgb[1] + k_b * lin_rgb[2];
             if fn_j <= 0.0 {
-                return 0;
+                return None;
             }
             if iteration_round == 4 || (fn_j - y).abs() < 0.002 {
                 return if lin_rgb[0] > 100.01 || lin_rgb[1] > 100.01 || lin_rgb[2] > 100.01 {
-                    0
+                    None
                 } else {
-                    Argb::from_linrgb(lin_rgb).0
+                    Some(Argb::from_linrgb(lin_rgb))
                 };
             }
             // Iterates with Newton method,
             // Using 2 * fn(j) / j as the approximation of fn'(j)
             j -= (fn_j - y) * j / (2.0 * fn_j);
         }
-        0
+        None
     }
 
     /// Finds an sRGB color with the given hue, chroma, and L*, if possible.
@@ -558,8 +558,8 @@ impl HctSolver {
         let hue_radians = MathUtils::sanitize_degrees_double(hue_degrees).to_radians();
         let y = ColorUtils::y_from_lstar(lstar);
         let exact_answer = Self::find_result_by_j(hue_radians, chroma, y);
-        if exact_answer != 0 {
-            return Argb(exact_answer);
+        if let Some(ea) = exact_answer {
+            return ea;
         }
         let lin_rgb = Self::bisect_to_limit(y, hue_radians);
         Argb::from_linrgb(lin_rgb)

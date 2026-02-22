@@ -91,13 +91,13 @@ impl DynamicColor {
         }
     }
 
-    pub fn get_argb(&self, scheme: &DynamicScheme) -> u32 {
-        let argb = self.get_hct(scheme).to_int().0;
+    pub fn get_argb(&self, scheme: &DynamicScheme) -> Argb {
+        let argb = self.get_hct(scheme).to_int();
         if let Some(ref opacity_func) = self.opacity {
             if let Some(opacity_percentage) = opacity_func(scheme) {
                 let alpha = (opacity_percentage * 255.0).round() as u32;
                 let alpha = alpha.clamp(0, 255);
-                return (argb & 0x00ffffff) | (alpha << 24);
+                return Argb((argb.0 & 0x00ffffff) | (alpha << 24));
             }
         }
         argb
@@ -114,9 +114,9 @@ impl DynamicColor {
     }
 
     /// Create a DynamicColor from an ARGB hex code.
-    pub fn from_argb(name: &str, argb_int: u32) -> Self {
-        let hct = Hct::from_int(Argb(argb_int));
-        let palette = TonalPalette::from_int(Argb(argb_int));
+    pub fn from_argb(name: &str, argb: Argb) -> Self {
+        let hct = Hct::from_int(argb);
+        let palette = TonalPalette::from_int(argb);
         Self::new(
             name.to_string(),
             Arc::new(move |_| palette.clone()),
@@ -309,7 +309,7 @@ mod tests {
 
     #[test]
     fn test_from_argb() {
-        let color = DynamicColor::from_argb("test", 0xff00ff00);
+        let color = DynamicColor::from_argb("test", Argb(0xff00ff00));
         assert_eq!(color.name, "test");
         // HCT for 0xff00ff00 (pure green) is roughly hue 142, chroma 107, tone 88
         let _hct = Hct::from_int(Argb(0xff00ff00));
