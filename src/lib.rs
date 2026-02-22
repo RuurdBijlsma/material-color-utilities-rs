@@ -1,3 +1,14 @@
+#![allow(
+    clippy::similar_names,
+    clippy::unreadable_literal,
+    clippy::many_single_char_names,
+    clippy::while_float,
+    clippy::too_many_lines,
+    clippy::too_many_arguments,
+    clippy::match_wildcard_for_single_variants,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_truncation,
+)]
 pub mod blend;
 pub mod contrast;
 pub mod dislike;

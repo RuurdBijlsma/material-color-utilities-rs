@@ -35,6 +35,7 @@ impl Blend {
     ///
     /// The design color with a hue shifted towards the system's color, a slightly
     /// warmer/cooler variant of the design color's hue.
+    #[must_use] 
     pub fn harmonize(design_color: Argb, source_color: Argb) -> Argb {
         let from_hct = Hct::from_int(design_color);
         let to_hct = Hct::from_int(source_color);
@@ -59,6 +60,7 @@ impl Blend {
     /// # Returns
     ///
     /// from, with a hue blended towards to. Chroma and tone are constant.
+    #[must_use] 
     pub fn hct_hue(from: Argb, to: Argb, amount: f64) -> Argb {
         let ucs = Self::cam16_ucs(from, to, amount);
         let ucs_cam = Cam16::from_int(ucs);
@@ -78,6 +80,7 @@ impl Blend {
     /// # Returns
     ///
     /// from, blended towards to. Hue, chroma, and tone will change.
+    #[must_use] 
     pub fn cam16_ucs(from: Argb, to: Argb, amount: f64) -> Argb {
         let from_cam = Cam16::from_int(from);
         let to_cam = Cam16::from_int(to);

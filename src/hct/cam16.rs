@@ -78,7 +78,8 @@ impl Cam16 {
         [-0.0158415, -0.03412294, 1.0499644],
     ];
 
-    pub fn new(
+    #[must_use]
+    pub const fn new(
         hue: f64,
         chroma: f64,
         j: f64,
@@ -105,26 +106,30 @@ impl Cam16 {
     /// CAM16 instances also have coordinates in the CAM16-UCS space, called J*, a*, b*, or jstar,
     /// astar, bstar in code. CAM16-UCS is included in the CAM16 specification, and is used to measure
     /// distances between colors.
-    pub fn distance(&self, other: &Cam16) -> f64 {
+    #[must_use]
+    pub fn distance(&self, other: &Self) -> f64 {
         let d_j = self.jstar - other.jstar;
         let d_a = self.astar - other.astar;
         let d_b = self.bstar - other.bstar;
-        let d_e_prime = (d_j * d_j + d_a * d_a + d_b * d_b).sqrt();
+        let d_e_prime = d_b.mul_add(d_b, d_j.mul_add(d_j, d_a * d_a)).sqrt();
         1.41 * d_e_prime.powf(0.63)
     }
 
     /// ARGB representation of the color. Assumes the color was viewed in default viewing conditions,
     /// which are near-identical to the default viewing conditions for sRGB.
+    #[must_use]
     pub fn to_int(&self) -> Argb {
         self.viewed(&ViewingConditions::default())
     }
 
     /// ARGB representation of the color, in defined viewing conditions.
+    #[must_use]
     pub fn viewed(&self, viewing_conditions: &ViewingConditions) -> Argb {
         let xyz = self.xyz_in_viewing_conditions(viewing_conditions);
         Argb::from_xyz(xyz)
     }
 
+    #[must_use]
     pub fn xyz_in_viewing_conditions(&self, viewing_conditions: &ViewingConditions) -> Xyz {
         let alpha = if self.chroma == 0.0 || self.j == 0.0 {
             0.0
@@ -140,12 +145,12 @@ impl Cam16 {
         let p2 = ac / viewing_conditions.nbb;
         let h_sin = h_rad.sin();
         let h_cos = h_rad.cos();
-        let gamma = 23.0 * (p2 + 0.305) * t / (23.0 * p1 + 11.0 * t * h_cos + 108.0 * t * h_sin);
+        let gamma = 23.0 * (p2 + 0.305) * t / (108.0 * t).mul_add(h_sin, 23.0f64.mul_add(p1, 11.0 * t * h_cos));
         let a = gamma * h_cos;
         let b = gamma * h_sin;
-        let r_a = (460.0 * p2 + 451.0 * a + 288.0 * b) / 1403.0;
-        let g_a = (460.0 * p2 - 891.0 * a - 261.0 * b) / 1403.0;
-        let b_a = (460.0 * p2 - 220.0 * a - 6300.0 * b) / 1403.0;
+        let r_a = 288.0f64.mul_add(b, 460.0 * p2 + 451.0 * a) / 1403.0;
+        let g_a = 261.0f64.mul_add(-b, 460.0 * p2 - 891.0 * a) / 1403.0;
+        let b_a = 6300.0f64.mul_add(-b, 460.0 * p2 - 220.0 * a) / 1403.0;
         let r_c_base = (27.13 * r_a.abs() / (400.0 - r_a.abs())).max(0.0);
         let r_c = r_a.signum() * (100.0 / viewing_conditions.fl) * r_c_base.powf(1.0 / 0.42);
         let g_c_base = (27.13 * g_a.abs() / (400.0 - g_a.abs())).max(0.0);
@@ -164,11 +169,13 @@ impl Cam16 {
 
     /// Create a CAM16 color from a color, assuming the color was viewed in default viewing
     /// conditions.
+    #[must_use]
     pub fn from_int(argb: Argb) -> Self {
         Self::from_int_in_viewing_conditions(argb, &ViewingConditions::default())
     }
 
     /// Create a CAM16 color from a color in defined viewing conditions.
+    #[must_use]
     pub fn from_int_in_viewing_conditions(
         argb: Argb,
         viewing_conditions: &ViewingConditions,
@@ -179,8 +186,8 @@ impl Cam16 {
         let red_l = ColorUtils::linearized(red);
         let green_l = ColorUtils::linearized(green);
         let blue_l = ColorUtils::linearized(blue);
-        let x = 0.41233895 * red_l + 0.35762064 * green_l + 0.18051042 * blue_l;
-        let y = 0.2126 * red_l + 0.7152 * green_l + 0.0722 * blue_l;
+        let x = 0.18051042f64.mul_add(blue_l, 0.41233895 * red_l + 0.35762064 * green_l);
+        let y = 0.0722f64.mul_add(blue_l, 0.2126 * red_l + 0.7152 * green_l);
         let z = 0.01932141 * red_l + 0.11916382 * green_l + 0.95034478 * blue_l;
         Self::from_xyz_in_viewing_conditions(x, y, z, viewing_conditions)
     }

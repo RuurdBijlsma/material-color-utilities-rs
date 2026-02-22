@@ -29,6 +29,7 @@ impl DislikeAnalyzer {
     /// Returns true if color is disliked.
     ///
     /// Disliked is defined as a dark yellow-green that is not neutral.
+    #[must_use]
     pub fn is_disliked(hct: &Hct) -> bool {
         let hue_passes = hct.hue().round() >= 90.0 && hct.hue().round() <= 111.0;
         let chroma_passes = hct.chroma().round() > 16.0;
@@ -37,6 +38,7 @@ impl DislikeAnalyzer {
     }
 
     /// If color is disliked, lighten it to make it likable.
+    #[must_use]
     pub fn fix_if_disliked(hct: Hct) -> Hct {
         if Self::is_disliked(&hct) {
             Hct::from(hct.hue(), hct.chroma(), 70.0)

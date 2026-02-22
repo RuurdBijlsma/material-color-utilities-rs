@@ -309,39 +309,44 @@ impl HctSolver {
     ];
 
     /// Sanitizes a small enough angle in radians.
+    #[must_use]
     pub fn sanitize_radians(angle: f64) -> f64 {
-        (angle + std::f64::consts::PI * 8.0) % (std::f64::consts::PI * 2.0)
+        std::f64::consts::PI.mul_add(8.0, angle) % (std::f64::consts::PI * 2.0)
     }
 
     /// Delinearizes an RGB component, returning a floating-point number.
+    #[must_use]
     pub fn true_delinearized(rgb_component: f64) -> f64 {
         let normalized = rgb_component / 100.0;
         let delinearized: f64 = if normalized <= 0.0031308 {
             normalized * 12.92
         } else {
-            1.055 * normalized.powf(1.0 / 2.4) - 0.055
+            1.055f64.mul_add(normalized.powf(1.0 / 2.4), -0.055)
         };
         delinearized * 255.0
     }
 
+    #[must_use]
     pub fn chromatic_adaptation(component: f64) -> f64 {
         let af = component.abs().powf(0.42);
         component.signum() * 400.0 * af / (af + 27.13)
     }
 
     /// Returns the hue of a linear RGB color in CAM16.
+    #[must_use]
     pub fn hue_of(linrgb: [f64; 3]) -> f64 {
         let scaled_discount = MathUtils::matrix_multiply(linrgb, Self::SCALED_DISCOUNT_FROM_LINRGB);
         let r_a = Self::chromatic_adaptation(scaled_discount[0]);
         let g_a = Self::chromatic_adaptation(scaled_discount[1]);
         let b_a = Self::chromatic_adaptation(scaled_discount[2]);
         // redness-greenness
-        let a = (11.0 * r_a + -12.0 * g_a + b_a) / 11.0;
+        let a = (11.0f64.mul_add(r_a, -12.0 * g_a) + b_a) / 11.0;
         // yellowness-blueness
-        let b = (r_a + g_a - 2.0 * b_a) / 9.0;
+        let b = 2.0f64.mul_add(-b_a, r_a + g_a) / 9.0;
         b.atan2(a)
     }
 
+    #[must_use]
     pub fn are_in_cyclic_order(a: f64, b: f64, c: f64) -> bool {
         let delta_ab = Self::sanitize_radians(b - a);
         let delta_ac = Self::sanitize_radians(c - a);
@@ -349,10 +354,12 @@ impl HctSolver {
     }
 
     /// Solves the lerp equation.
+    #[must_use]
     pub fn intercept(source: f64, mid: f64, target: f64) -> f64 {
         (mid - source) / (target - source)
     }
 
+    #[must_use]
     pub fn lerp_point(source: [f64; 3], t: f64, target: [f64; 3]) -> [f64; 3] {
         [
             source[0] + (target[0] - source[0]) * t,
@@ -362,6 +369,7 @@ impl HctSolver {
     }
 
     /// Intersects a segment with a plane.
+    #[must_use]
     pub fn set_coordinate(
         source: [f64; 3],
         coordinate: f64,
@@ -372,11 +380,13 @@ impl HctSolver {
         Self::lerp_point(source, t, target)
     }
 
+    #[must_use]
     pub fn is_bounded(x: f64) -> bool {
         (0.0..=100.0).contains(&x)
     }
 
     /// Returns the nth possible vertex of the polygonal intersection.
+    #[must_use]
     pub fn nth_vertex(y: f64, n: i32) -> Option<[f64; 3]> {
         let k_r = Self::Y_FROM_LINRGB[0];
         let k_g = Self::Y_FROM_LINRGB[1];
@@ -415,6 +425,7 @@ impl HctSolver {
     }
 
     /// Finds the segment containing the desired color.
+    #[must_use]
     pub fn bisect_to_segment(y: f64, target_hue: f64) -> [[f64; 3]; 2] {
         let mut left = [0.0; 3];
         let mut right = [0.0; 3];
@@ -447,6 +458,7 @@ impl HctSolver {
         [left, right]
     }
 
+    #[must_use]
     pub fn midpoint(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
         [
             (a[0] + b[0]) / 2.0,
@@ -486,19 +498,18 @@ impl HctSolver {
                 for _ in 0..8 {
                     if (r_plane - l_plane).abs() <= 1 {
                         break;
+                    }
+                    let m_plane = ((l_plane + r_plane) as f64 / 2.0).floor() as i32;
+                    let mid_plane_coordinate = Self::CRITICAL_PLANES[m_plane as usize];
+                    let mid = Self::set_coordinate(left, mid_plane_coordinate, right, axis);
+                    let mid_hue = Self::hue_of(mid);
+                    if Self::are_in_cyclic_order(left_hue, target_hue, mid_hue) {
+                        right = mid;
+                        r_plane = m_plane;
                     } else {
-                        let m_plane = ((l_plane + r_plane) as f64 / 2.0).floor() as i32;
-                        let mid_plane_coordinate = Self::CRITICAL_PLANES[m_plane as usize];
-                        let mid = Self::set_coordinate(left, mid_plane_coordinate, right, axis);
-                        let mid_hue = Self::hue_of(mid);
-                        if Self::are_in_cyclic_order(left_hue, target_hue, mid_hue) {
-                            right = mid;
-                            r_plane = m_plane;
-                        } else {
-                            left = mid;
-                            left_hue = mid_hue;
-                            l_plane = m_plane;
-                        }
+                        left = mid;
+                        left_hue = mid_hue;
+                        l_plane = m_plane;
                     }
                 }
             }

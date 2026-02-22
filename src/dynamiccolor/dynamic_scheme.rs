@@ -100,12 +100,12 @@ impl DynamicScheme {
         }
     }
 
-    pub fn from_scheme(other: &DynamicScheme, is_dark: bool) -> Self {
+    pub fn from_scheme(other: &Self, is_dark: bool) -> Self {
         Self::from_scheme_with_contrast(other, is_dark, other.contrast_level)
     }
 
     pub fn from_scheme_with_contrast(
-        other: &DynamicScheme,
+        other: &Self,
         is_dark: bool,
         contrast_level: f64,
     ) -> Self {
@@ -142,6 +142,7 @@ impl DynamicScheme {
         dynamic_color.get_argb(self)
     }
 
+    #[must_use]
     pub fn get_piecewise_value(
         source_color_hct: &Hct,
         hue_breakpoints: &[f64],
@@ -161,6 +162,7 @@ impl DynamicScheme {
     }
 
     /// Given a hue and set of hue thresholds / rotations, returns the rotated hue.
+    #[must_use]
     pub fn get_rotated_hue(
         source_color_hct: &Hct,
         hue_breakpoints: &[f64],
@@ -185,9 +187,8 @@ impl DynamicScheme {
         {
             if spec_version == SpecVersion::Spec2026 {
                 return SpecVersion::Spec2025;
-            } else {
-                return spec_version;
             }
+            return spec_version;
         }
         SpecVersion::Spec2021
     }

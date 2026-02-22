@@ -27,15 +27,15 @@ use std::sync::Arc;
 
 pub type DynamicColorFunction<T> = Arc<dyn Fn(&DynamicScheme) -> T + Send + Sync>;
 
-/// A color that adjusts itself based on UI state, represented by DynamicScheme.
+/// A color that adjusts itself based on UI state, represented by `DynamicScheme`.
 pub struct DynamicColor {
     pub name: String,
     pub palette: DynamicColorFunction<TonalPalette>,
     pub is_background: bool,
     pub chroma_multiplier: Option<DynamicColorFunction<f64>>,
-    pub background: Option<DynamicColorFunction<Option<Arc<DynamicColor>>>>,
+    pub background: Option<DynamicColorFunction<Option<Arc<Self>>>>,
     pub tone: DynamicColorFunction<f64>,
-    pub second_background: Option<DynamicColorFunction<Option<Arc<DynamicColor>>>>,
+    pub second_background: Option<DynamicColorFunction<Option<Arc<Self>>>>,
     pub contrast_curve: Option<DynamicColorFunction<Option<ContrastCurve>>>,
     pub tone_delta_pair: Option<DynamicColorFunction<Option<ToneDeltaPair>>>,
     pub opacity: Option<DynamicColorFunction<Option<f64>>>,
@@ -47,32 +47,26 @@ impl DynamicColor {
         palette: DynamicColorFunction<TonalPalette>,
         is_background: bool,
         chroma_multiplier: Option<DynamicColorFunction<f64>>,
-        background: Option<DynamicColorFunction<Option<Arc<DynamicColor>>>>,
+        background: Option<DynamicColorFunction<Option<Arc<Self>>>>,
         tone: Option<DynamicColorFunction<f64>>,
-        second_background: Option<DynamicColorFunction<Option<Arc<DynamicColor>>>>,
+        second_background: Option<DynamicColorFunction<Option<Arc<Self>>>>,
         contrast_curve: Option<DynamicColorFunction<Option<ContrastCurve>>>,
         tone_delta_pair: Option<DynamicColorFunction<Option<ToneDeltaPair>>>,
         opacity: Option<DynamicColorFunction<Option<f64>>>,
     ) -> Self {
         // Validation logic from Kotlin init block
-        if background.is_none() && second_background.is_some() {
-            panic!(
-                "Color {} has second_background defined, but background is not defined.",
-                name
-            );
-        }
-        if background.is_none() && contrast_curve.is_some() {
-            panic!(
-                "Color {} has contrast_curve defined, but background is not defined.",
-                name
-            );
-        }
-        if background.is_some() && contrast_curve.is_none() {
-            panic!(
-                "Color {} has background defined, but contrast_curve is not defined.",
-                name
-            );
-        }
+        assert!(
+            !(background.is_none() && second_background.is_some()),
+            "Color {name} has second_background defined, but background is not defined."
+        );
+        assert!(
+            !(background.is_none() && contrast_curve.is_some()),
+            "Color {name} has contrast_curve defined, but background is not defined."
+        );
+        assert!(
+            !(background.is_some() && contrast_curve.is_none()),
+            "Color {name} has background defined, but contrast_curve is not defined."
+        );
 
         let tone = tone.unwrap_or_else(|| {
             let bg_func = background.clone();
@@ -122,7 +116,8 @@ impl DynamicColor {
         ColorSpecs::get(scheme.spec_version).get_tone(scheme, self)
     }
 
-    /// Create a DynamicColor from an ARGB hex code.
+    /// Create a `DynamicColor` from an ARGB hex code.
+    #[must_use]
     pub fn from_argb(name: &str, argb: Argb) -> Self {
         let hct = Hct::from_int(argb);
         let palette = TonalPalette::from_int(argb);
@@ -142,6 +137,7 @@ impl DynamicColor {
 
     /// Given a background tone, find a foreground tone, while ensuring they reach a contrast ratio
     /// that is as close to ratio as possible.
+    #[must_use]
     pub fn foreground_tone(bg_tone: f64, ratio: f64) -> f64 {
         let lighter_tone = Contrast::lighter_unsafe(bg_tone, ratio);
         let darker_tone = Contrast::darker_unsafe(bg_tone, ratio);
@@ -167,6 +163,7 @@ impl DynamicColor {
 
     /// Adjust a tone down such that white has 4.5 contrast, if the tone is reasonably close to
     /// supporting it.
+    #[must_use]
     pub fn enable_light_foreground(tone: f64) -> f64 {
         if Self::tone_prefers_light_foreground(tone) && !Self::tone_allows_light_foreground(tone) {
             49.0
@@ -175,14 +172,15 @@ impl DynamicColor {
         }
     }
 
+    #[must_use]
     pub fn extend_spec_version(
-        this: Arc<Self>,
+        &self,
         spec_version: SpecVersion,
-        extended_color: Arc<DynamicColor>,
+        extended_color: &Self,
     ) -> Arc<Self> {
-        Self::validate_extended_color(&this, spec_version, &extended_color);
+        Self::validate_extended_color(self, spec_version, extended_color);
 
-        let this_palette = this.palette.clone();
+        let this_palette = self.palette.clone();
         let ext_palette = extended_color.palette.clone();
         let palette = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
@@ -192,7 +190,7 @@ impl DynamicColor {
             }
         });
 
-        let this_tone = this.tone.clone();
+        let this_tone = self.tone.clone();
         let ext_tone = extended_color.tone.clone();
         let tone = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
@@ -202,17 +200,17 @@ impl DynamicColor {
             }
         });
 
-        let this_chroma = this.chroma_multiplier.clone();
+        let this_chroma = self.chroma_multiplier.clone();
         let ext_chroma = extended_color.chroma_multiplier.clone();
         let chroma_multiplier = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
-                ext_chroma.as_ref().map(|f| f(scheme)).unwrap_or(1.0)
+                ext_chroma.as_ref().map_or(1.0, |f| f(scheme))
             } else {
-                this_chroma.as_ref().map(|f| f(scheme)).unwrap_or(1.0)
+                this_chroma.as_ref().map_or(1.0, |f| f(scheme))
             }
         });
 
-        let this_bg = this.background.clone();
+        let this_bg = self.background.clone();
         let ext_bg = extended_color.background.clone();
         let background = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
@@ -222,7 +220,7 @@ impl DynamicColor {
             }
         });
 
-        let this_bg2 = this.second_background.clone();
+        let this_bg2 = self.second_background.clone();
         let ext_bg2 = extended_color.second_background.clone();
         let second_background = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
@@ -232,7 +230,7 @@ impl DynamicColor {
             }
         });
 
-        let this_curve = this.contrast_curve.clone();
+        let this_curve = self.contrast_curve.clone();
         let ext_curve = extended_color.contrast_curve.clone();
         let contrast_curve = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
@@ -242,7 +240,7 @@ impl DynamicColor {
             }
         });
 
-        let this_delta = this.tone_delta_pair.clone();
+        let this_delta = self.tone_delta_pair.clone();
         let ext_delta = extended_color.tone_delta_pair.clone();
         let tone_delta_pair = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
@@ -252,7 +250,7 @@ impl DynamicColor {
             }
         });
 
-        let this_opacity = this.opacity.clone();
+        let this_opacity = self.opacity.clone();
         let ext_opacity = extended_color.opacity.clone();
         let opacity = Arc::new(move |scheme: &DynamicScheme| {
             if scheme.spec_version >= spec_version {
@@ -263,9 +261,9 @@ impl DynamicColor {
         });
 
         Arc::new(Self::new(
-            this.name.clone(),
+            self.name.clone(),
             palette,
-            this.is_background,
+            self.is_background,
             Some(chroma_multiplier),
             Some(background),
             Some(tone),
@@ -277,42 +275,40 @@ impl DynamicColor {
     }
 
     fn validate_extended_color(
-        this: &DynamicColor,
+        &self,
         spec_version: SpecVersion,
-        extended_color: &DynamicColor,
+        extended_color: &Self,
     ) {
-        if this.name != extended_color.name {
-            panic!(
-                "Attempting to extend color {} with color {} of different name for spec version {:?}.",
-                this.name, extended_color.name, spec_version
-            );
-        }
-        if this.is_background != extended_color.is_background {
-            panic!(
-                "Attempting to extend color {} as a {} with color {} as a {} for spec version {:?}.",
-                this.name,
-                if this.is_background {
-                    "background"
-                } else {
-                    "foreground"
-                },
-                extended_color.name,
-                if extended_color.is_background {
-                    "background"
-                } else {
-                    "foreground"
-                },
-                spec_version
-            );
-        }
+        assert!(self.name == extended_color.name,
+            "Attempting to extend color {} with color {} of different name for spec version {:?}.",
+            self.name, extended_color.name, spec_version
+        );
+        assert!(self.is_background == extended_color.is_background,
+            "Attempting to extend color {} as a {} with color {} as a {} for spec version {:?}.",
+            self.name,
+            if self.is_background {
+                "background"
+            } else {
+                "foreground"
+            },
+            extended_color.name,
+            if extended_color.is_background {
+                "background"
+            } else {
+                "foreground"
+            },
+            spec_version
+        );
     }
 
     /// People prefer white foregrounds on ~T60-70.
+    #[must_use]
     pub fn tone_prefers_light_foreground(tone: f64) -> bool {
         tone.round() < 60.0
     }
 
     /// Tones less than ~T50 always permit white at 4.5 contrast.
+    #[must_use]
     pub fn tone_allows_light_foreground(tone: f64) -> bool {
         tone.round() <= 49.0
     }

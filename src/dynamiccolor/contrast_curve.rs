@@ -33,6 +33,7 @@ pub struct ContrastCurve {
 }
 
 impl ContrastCurve {
+    #[must_use]
     pub const fn new(low: f64, normal: f64, medium: f64, high: f64) -> Self {
         Self {
             low,
@@ -50,6 +51,7 @@ impl ContrastCurve {
     ///
     /// # Returns
     /// The value. For contrast ratios, a number between 1.0 and 21.0.
+    #[must_use]
     pub fn get(&self, contrast_level: f64) -> f64 {
         if contrast_level <= -1.0 {
             self.low

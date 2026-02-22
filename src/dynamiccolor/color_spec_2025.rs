@@ -9,11 +9,12 @@ use crate::palettes::tonal_palette::TonalPalette;
 
 // ─── ColorSpec2025 ──────────────────────────────────────────────────────────
 
-/// [ColorSpec] implementation for the 2025 Material Design color specification.
+/// [`ColorSpec`] implementation for the 2025 Material Design color specification.
 pub struct ColorSpec2025;
 
 impl ColorSpec2025 {
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self
     }
 }
