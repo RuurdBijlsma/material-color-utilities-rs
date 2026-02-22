@@ -1207,3 +1207,97 @@ impl ColorSpec for ColorSpec2021 {
         TonalPalette::from_hue_and_chroma(25.0, 84.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hct::hct::Hct;
+
+    fn setup_scheme(color: u32, is_dark: bool, contrast_level: f64) -> DynamicScheme {
+        let hct = Hct::from_int(crate::utils::color_utils::Argb(color));
+        let spec = ColorSpec2021;
+        DynamicScheme::new(
+            hct.clone(),
+            Variant::TonalSpot,
+            is_dark,
+            contrast_level,
+            spec.get_primary_palette(Variant::TonalSpot, &hct, is_dark, Platform::Phone, contrast_level),
+            spec.get_secondary_palette(Variant::TonalSpot, &hct, is_dark, Platform::Phone, contrast_level),
+            spec.get_tertiary_palette(Variant::TonalSpot, &hct, is_dark, Platform::Phone, contrast_level),
+            spec.get_neutral_palette(Variant::TonalSpot, &hct, is_dark, Platform::Phone, contrast_level),
+            spec.get_neutral_variant_palette(Variant::TonalSpot, &hct, is_dark, Platform::Phone, contrast_level),
+            spec.get_error_palette(Variant::TonalSpot, &hct, is_dark, Platform::Phone, contrast_level),
+        )
+    }
+
+    #[test]
+    fn test_background_tone() {
+        let spec = ColorSpec2021;
+        let bg = spec.background();
+        let surface = spec.surface_variant();
+        let scheme_light = setup_scheme(0xFF4285F4, false, 0.0);
+        let scheme_dark = setup_scheme(0xFF4285F4, true, 0.0);
+
+        assert_eq!((bg.tone)(&scheme_light), 98.0);
+        assert_eq!((bg.tone)(&scheme_dark), 6.0);
+    }
+
+    #[test]
+    fn test_primary_tone() {
+        let spec = ColorSpec2021;
+        let primary = spec.primary();
+        let scheme_light = setup_scheme(0xFF4285F4, false, 0.0);
+        let scheme_dark = setup_scheme(0xFF4285F4, true, 0.0);
+        
+        assert_eq!(primary.get_tone(&scheme_light), 40.0);
+        assert_eq!(primary.get_tone(&scheme_dark), 80.0);
+    }
+
+    #[test]
+    fn test_on_primary_tone() {
+        let spec = ColorSpec2021;
+        let on_primary = spec.on_primary();
+        let scheme_light = setup_scheme(0xFF4285F4, false, 0.0);
+        let scheme_dark = setup_scheme(0xFF4285F4, true, 0.0);
+        
+        assert_eq!(on_primary.get_tone(&scheme_light), 100.0);
+        assert_eq!(on_primary.get_tone(&scheme_dark), 20.0);
+    }
+
+    #[test]
+    fn test_primary_container_tone() {
+        let spec = ColorSpec2021;
+        let primary_container = spec.primary_container();
+        let scheme_light = setup_scheme(0xFF4285F4, false, 0.0);
+        let scheme_dark = setup_scheme(0xFF4285F4, true, 0.0);
+        
+        assert_eq!(primary_container.get_tone(&scheme_light), 90.0);
+        assert_eq!(primary_container.get_tone(&scheme_dark), 30.0);
+    }
+
+    #[test]
+    fn test_surface_tones() {
+        let spec = ColorSpec2021;
+        let surface = spec.surface();
+        let surface_variant = spec.surface_variant();
+        let scheme_light = setup_scheme(0xFF4285F4, false, 0.0);
+        let scheme_dark = setup_scheme(0xFF4285F4, true, 0.0);
+        
+        assert_eq!((surface.tone)(&scheme_light), 98.0);
+        assert_eq!((surface.tone)(&scheme_dark), 6.0);
+        
+        assert_eq!((surface_variant.tone)(&scheme_light), 90.0);
+        assert_eq!((surface_variant.tone)(&scheme_dark), 30.0);
+    }
+
+    #[test]
+    fn test_error_tones() {
+        let spec = ColorSpec2021;
+        let error = spec.error();
+        let scheme_light = setup_scheme(0xFF4285F4, false, 0.0);
+        let scheme_dark = setup_scheme(0xFF4285F4, true, 0.0);
+        
+        assert_eq!(error.get_tone(&scheme_light), 40.0);
+        assert_eq!(error.get_tone(&scheme_dark), 80.0);
+    }
+}

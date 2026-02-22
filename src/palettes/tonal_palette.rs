@@ -19,6 +19,7 @@ use crate::utils::color_utils::Argb;
 use std::sync::atomic::{AtomicU32, Ordering};
 
 /// A convenience class for retrieving colors that are constant in hue and chroma, but vary in tone.
+#[derive(Debug)]
 pub struct TonalPalette {
     /// The hue of the Tonal Palette, in HCT. Ranges from 0 to 360.
     pub hue: f64,

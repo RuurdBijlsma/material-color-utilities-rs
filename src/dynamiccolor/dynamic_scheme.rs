@@ -22,6 +22,7 @@ use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::math_utils::MathUtils;
 
 /// Provides important settings for creating colors dynamically, and 6 color palettes.
+#[derive(Debug)]
 pub struct DynamicScheme {
     pub source_color_hct_list: Vec<Hct>,
     pub variant: Variant,
