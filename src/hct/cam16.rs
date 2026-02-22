@@ -148,9 +148,9 @@ impl Cam16 {
         let gamma = 23.0 * (p2 + 0.305) * t / (108.0 * t).mul_add(h_sin, 23.0f64.mul_add(p1, 11.0 * t * h_cos));
         let a = gamma * h_cos;
         let b = gamma * h_sin;
-        let r_a = 288.0f64.mul_add(b, 460.0 * p2 + 451.0 * a) / 1403.0;
-        let g_a = 261.0f64.mul_add(-b, 460.0 * p2 - 891.0 * a) / 1403.0;
-        let b_a = 6300.0f64.mul_add(-b, 460.0 * p2 - 220.0 * a) / 1403.0;
+        let r_a = 288.0f64.mul_add(b, 460.0f64.mul_add(p2, 451.0 * a)) / 1403.0;
+        let g_a = 261.0f64.mul_add(-b, 460.0f64.mul_add(p2, -(891.0 * a))) / 1403.0;
+        let b_a = 6300.0f64.mul_add(-b, 460.0f64.mul_add(p2, -(220.0 * a))) / 1403.0;
         let r_c_base = (27.13 * r_a.abs() / (400.0 - r_a.abs())).max(0.0);
         let r_c = r_a.signum() * (100.0 / viewing_conditions.fl) * r_c_base.powf(1.0 / 0.42);
         let g_c_base = (27.13 * g_a.abs() / (400.0 - g_a.abs())).max(0.0);
@@ -186,12 +186,13 @@ impl Cam16 {
         let red_l = ColorUtils::linearized(red);
         let green_l = ColorUtils::linearized(green);
         let blue_l = ColorUtils::linearized(blue);
-        let x = 0.18051042f64.mul_add(blue_l, 0.41233895 * red_l + 0.35762064 * green_l);
-        let y = 0.0722f64.mul_add(blue_l, 0.2126 * red_l + 0.7152 * green_l);
-        let z = 0.01932141 * red_l + 0.11916382 * green_l + 0.95034478 * blue_l;
+        let x = 0.18051042f64.mul_add(blue_l, 0.41233895f64.mul_add(red_l, 0.35762064 * green_l));
+        let y = 0.0722f64.mul_add(blue_l, 0.2126f64.mul_add(red_l, 0.7152 * green_l));
+        let z = 0.95034478f64.mul_add(blue_l, 0.01932141f64.mul_add(red_l, 0.11916382 * green_l));
         Self::from_xyz_in_viewing_conditions(x, y, z, viewing_conditions)
     }
 
+    #[must_use]
     pub fn from_xyz_in_viewing_conditions(
         x: f64,
         y: f64,
@@ -199,9 +200,9 @@ impl Cam16 {
         viewing_conditions: &ViewingConditions,
     ) -> Self {
         let matrix = Self::XYZ_TO_CAM16RGB;
-        let r_t = x * matrix[0][0] + y * matrix[0][1] + z * matrix[0][2];
-        let g_t = x * matrix[1][0] + y * matrix[1][1] + z * matrix[1][2];
-        let b_t = x * matrix[2][0] + y * matrix[2][1] + z * matrix[2][2];
+        let r_t = z.mul_add(matrix[0][2], x.mul_add(matrix[0][0], y * matrix[0][1]));
+        let g_t = z.mul_add(matrix[1][2], x.mul_add(matrix[1][0], y * matrix[1][1]));
+        let b_t = z.mul_add(matrix[2][2], x.mul_add(matrix[2][0], y * matrix[2][1]));
 
         let r_d = viewing_conditions.rgb_d[0] * r_t;
         let g_d = viewing_conditions.rgb_d[1] * g_t;
@@ -214,11 +215,11 @@ impl Cam16 {
         let g_a = g_d.signum() * 400.0 * g_af / (g_af + 27.13);
         let b_a = b_d.signum() * 400.0 * b_af / (b_af + 27.13);
 
-        let a = (11.0 * r_a - 12.0 * g_a + b_a) / 11.0;
-        let b = (r_a + g_a - 2.0 * b_a) / 9.0;
+        let a = (11.0f64.mul_add(r_a, -(12.0 * g_a)) + b_a) / 11.0;
+        let b = 2.0f64.mul_add(-b_a, r_a + g_a) / 9.0;
 
-        let u = (20.0 * r_a + 20.0 * g_a + 21.0 * b_a) / 20.0;
-        let p2 = (40.0 * r_a + 20.0 * g_a + b_a) / 20.0;
+        let u = 21.0f64.mul_add(b_a, 20.0f64.mul_add(r_a, 20.0 * g_a)) / 20.0;
+        let p2 = (40.0f64.mul_add(r_a, 20.0 * g_a) + b_a) / 20.0;
 
         let atan2 = b.atan2(a);
         let atan_degrees = atan2.to_degrees();
@@ -243,7 +244,7 @@ impl Cam16 {
         let m = c * viewing_conditions.fl_root;
         let s = 50.0 * (alpha * viewing_conditions.c / (viewing_conditions.aw + 4.0)).sqrt();
 
-        let jstar = (1.0 + 100.0 * 0.007) * j / (1.0 + 0.007 * j);
+        let jstar = 100.0f64.mul_add(0.007, 1.0) * j / 0.007f64.mul_add(j, 1.0);
         let mstar = 1.0 / 0.0228 * (0.0228 * m).ln_1p();
         let astar = mstar * hue_radians.cos();
         let bstar = mstar * hue_radians.sin();
@@ -251,10 +252,12 @@ impl Cam16 {
         Self::new(hue, c, j, q, m, s, jstar, astar, bstar)
     }
 
+    #[must_use]
     pub fn from_jch(j: f64, c: f64, h: f64) -> Self {
         Self::from_jch_in_viewing_conditions(j, c, h, &ViewingConditions::default())
     }
 
+    #[must_use]
     pub fn from_jch_in_viewing_conditions(
         j: f64,
         c: f64,
@@ -269,17 +272,19 @@ impl Cam16 {
         let alpha = c / (j / 100.0).sqrt();
         let s = 50.0 * (alpha * viewing_conditions.c / (viewing_conditions.aw + 4.0)).sqrt();
         let hue_radians = h.to_radians();
-        let jstar = (1.0 + 100.0 * 0.007) * j / (1.0 + 0.007 * j);
+        let jstar = 100.0f64.mul_add(0.007, 1.0) * j / 0.007f64.mul_add(j, 1.0);
         let mstar = 1.0 / 0.0228 * (0.0228 * m).ln_1p();
         let astar = mstar * hue_radians.cos();
         let bstar = mstar * hue_radians.sin();
         Self::new(h, c, j, q, m, s, jstar, astar, bstar)
     }
 
+    #[must_use]
     pub fn from_ucs(jstar: f64, astar: f64, bstar: f64) -> Self {
         Self::from_ucs_in_viewing_conditions(jstar, astar, bstar, &ViewingConditions::default())
     }
 
+    #[must_use]
     pub fn from_ucs_in_viewing_conditions(
         jstar: f64,
         astar: f64,
@@ -293,7 +298,7 @@ impl Cam16 {
         if h < 0.0 {
             h += 360.0;
         }
-        let j = jstar / (1.0 - (jstar - 100.0) * 0.007);
+        let j = jstar / (jstar - 100.0).mul_add(-0.007, 1.0);
         Self::from_jch_in_viewing_conditions(j, c, h, viewing_conditions)
     }
 }
@@ -309,9 +314,9 @@ mod tests {
         let argb_back = cam.to_int();
 
         // Assert components are close
-        assert!((argb.red() as i16 - argb_back.red() as i16).abs() <= 1);
-        assert!((argb.green() as i16 - argb_back.green() as i16).abs() <= 1);
-        assert!((argb.blue() as i16 - argb_back.blue() as i16).abs() <= 1);
+        assert!((i16::from(argb.red()) - i16::from(argb_back.red())).abs() <= 1);
+        assert!((i16::from(argb.green()) - i16::from(argb_back.green())).abs() <= 1);
+        assert!((i16::from(argb.blue()) - i16::from(argb_back.blue())).abs() <= 1);
     }
 
     #[test]

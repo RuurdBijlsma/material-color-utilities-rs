@@ -25,12 +25,13 @@ use crate::utils::color_utils::Argb;
 /// those optimizations.
 ///
 /// This algorithm was designed by M. Emre Celebi, and was found in their 2011 paper, Improving the
-/// Performance of K-Means for Color Quantization. https://arxiv.org/abs/1101.0395
+/// Performance of K-Means for Color Quantization. <https://arxiv.org/abs/1101.0395>
 #[derive(Default)]
 pub struct QuantizerCelebi;
 
 impl QuantizerCelebi {
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self
     }
 }
@@ -51,7 +52,7 @@ impl Quantizer for QuantizerCelebi {
         let mut wu = QuantizerWu::new();
         let wu_result = wu.quantize(pixels, max_colors);
 
-        let starting_clusters: Vec<Argb> = wu_result.color_to_count.keys().cloned().collect();
+        let starting_clusters: Vec<Argb> = wu_result.color_to_count.keys().copied().collect();
 
         let clusters = QuantizerWsmeans::quantize(pixels, &starting_clusters, max_colors);
         QuantizerResult::new(clusters)

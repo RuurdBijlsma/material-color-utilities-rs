@@ -53,6 +53,7 @@ impl Default for QuantizerWu {
 }
 
 impl QuantizerWu {
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -74,15 +75,16 @@ impl QuantizerWu {
             let i_b = (blue >> bits_to_remove) + 1;
             let index = Self::get_index(i_r as usize, i_g as usize, i_b as usize);
 
-            let count_i = count as i32;
+            let count_i = count.cast_signed();
             self.weights[index] += count_i;
-            self.moments_r[index] += (red as i32) * count_i;
-            self.moments_g[index] += (green as i32) * count_i;
-            self.moments_b[index] += (blue as i32) * count_i;
-            self.moments[index] += (count as f64)
-                * ((red as f64) * (red as f64)
-                    + (green as f64) * (green as f64)
-                    + (blue as f64) * (blue as f64));
+            self.moments_r[index] += i32::from(red) * count_i;
+            self.moments_g[index] += i32::from(green) * count_i;
+            self.moments_b[index] += i32::from(blue) * count_i;
+            self.moments[index] += f64::from(count)
+                * f64::from(blue).mul_add(
+                    f64::from(blue),
+                    f64::from(red).mul_add(f64::from(red), f64::from(green) * f64::from(green)),
+                );
         }
     }
 
@@ -241,9 +243,9 @@ impl QuantizerWu {
             - moments[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)];
 
         let hypotenuse =
-            (dr as f64) * (dr as f64) + (dg as f64) * (dg as f64) + (db as f64) * (db as f64);
+            f64::from(db).mul_add(f64::from(db), f64::from(dr).mul_add(f64::from(dr), f64::from(dg) * f64::from(dg)));
         let volume = Self::volume(cube, weights);
-        xx - (hypotenuse / volume as f64)
+        xx - (hypotenuse / f64::from(volume))
     }
 
     fn cut(
@@ -380,10 +382,8 @@ impl QuantizerWu {
                 continue;
             }
 
-            let mut temp_numerator = (half_r as f64) * (half_r as f64)
-                + (half_g as f64) * (half_g as f64)
-                + (half_b as f64) * (half_b as f64);
-            let mut temp_denominator = half_w as f64;
+            let mut temp_numerator = f64::from(half_b).mul_add(f64::from(half_b), f64::from(half_r).mul_add(f64::from(half_r), f64::from(half_g) * f64::from(half_g)));
+            let mut temp_denominator = f64::from(half_w);
             let mut temp = temp_numerator / temp_denominator;
 
             half_r = whole_r - half_r;
@@ -395,10 +395,8 @@ impl QuantizerWu {
                 continue;
             }
 
-            temp_numerator = (half_r as f64) * (half_r as f64)
-                + (half_g as f64) * (half_g as f64)
-                + (half_b as f64) * (half_b as f64);
-            temp_denominator = half_w as f64;
+            temp_numerator = f64::from(half_b).mul_add(f64::from(half_b), f64::from(half_r).mul_add(f64::from(half_r), f64::from(half_g) * f64::from(half_g)));
+            temp_denominator = f64::from(half_w);
             temp += temp_numerator / temp_denominator;
 
             if temp > max {
@@ -413,7 +411,7 @@ impl QuantizerWu {
         }
     }
 
-    fn get_index(r: usize, g: usize, b: usize) -> usize {
+    const fn get_index(r: usize, g: usize, b: usize) -> usize {
         (r << (INDEX_BITS * 2)) + (r << (INDEX_BITS + 1)) + r + (g << INDEX_BITS) + g + b
     }
 

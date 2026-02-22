@@ -39,15 +39,18 @@ impl Score {
     const CUTOFF_CHROMA: f64 = 5.0;
     const CUTOFF_EXCITED_PROPORTION: f64 = 0.01;
 
+    #[must_use] 
     pub fn score(colors_to_population: &HashMap<Argb, u32>) -> Vec<Argb> {
         // Fallback color is Google Blue.
         Self::score_with_options(colors_to_population, 4, Argb(0xff4285f4), true)
     }
 
+    #[must_use] 
     pub fn score_desired(colors_to_population: &HashMap<Argb, u32>, desired: usize) -> Vec<Argb> {
         Self::score_with_options(colors_to_population, desired, Argb(0xff4285f4), true)
     }
 
+    #[must_use] 
     pub fn score_fallback(
         colors_to_population: &HashMap<Argb, u32>,
         desired: usize,
@@ -72,6 +75,7 @@ impl Score {
     /// Colors sorted by suitability for a UI theme. The most suitable color is the first item,
     /// the least suitable is the last. There will always be at least one color returned. If all the
     /// input colors were not suitable for a theme, a default fallback color will be provided.
+    #[must_use] 
     pub fn score_with_options(
         colors_to_population: &HashMap<Argb, u32>,
         desired: usize,
@@ -90,13 +94,13 @@ impl Score {
             let hue = hct.hue().floor() as i32;
             let sanitized_hue = MathUtils::sanitize_degrees_int(hue) as usize;
             hue_population[sanitized_hue] += population;
-            population_sum += population as f64;
+            population_sum += f64::from(population);
         }
 
         // Hues with more usage in neighboring 30 degree slice get a larger number.
         let mut hue_excited_proportions = [0.0; 360];
         for hue in 0..360 {
-            let proportion = hue_population[hue] as f64 / population_sum;
+            let proportion = f64::from(hue_population[hue]) / population_sum;
             for i in (hue as i32 - 14)..(hue as i32 + 16) {
                 let neighbor_hue = MathUtils::sanitize_degrees_int(i) as usize;
                 hue_excited_proportions[neighbor_hue] += proportion;
@@ -147,7 +151,7 @@ impl Score {
                 let mut has_duplicate_hue = false;
                 for chosen_hct in &chosen_colors {
                     if MathUtils::difference_degrees(hct.hue(), chosen_hct.hue())
-                        < difference_degrees as f64
+                        < f64::from(difference_degrees)
                     {
                         has_duplicate_hue = true;
                         break;

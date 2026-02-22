@@ -43,7 +43,7 @@ pub struct ViewingConditions {
 }
 
 impl ViewingConditions {
-    /// Create ViewingConditions from a simple, physically relevant, set of parameters.
+    /// Create `ViewingConditions` from a simple, physically relevant, set of parameters.
     ///
     /// * `white_point`: White point, measured in the XYZ color space. default = D65, or sunny day afternoon
     /// * `adapting_luminance`: The luminance of the adapting field. Informally, how bright it is in
@@ -58,6 +58,7 @@ impl ViewingConditions {
     /// * `discounting_illuminant`: Whether the eye accounts for the tint of the ambient lighting,
     ///   such as knowing an apple is still red in green light. default = false, the eye does not
     ///   perform this process on self-luminous objects like displays.
+    #[must_use]
     pub fn make(
         white_point: [f64; 3],
         adapting_luminance: f64,
@@ -70,15 +71,9 @@ impl ViewingConditions {
         let background_lstar = background_lstar.max(0.1);
         // Transform white point XYZ to 'cone'/'rgb' responses
         let matrix = Cam16::XYZ_TO_CAM16RGB;
-        let r_w = white_point[0] * matrix[0][0]
-            + white_point[1] * matrix[0][1]
-            + white_point[2] * matrix[0][2];
-        let g_w = white_point[0] * matrix[1][0]
-            + white_point[1] * matrix[1][1]
-            + white_point[2] * matrix[1][2];
-        let b_w = white_point[0] * matrix[2][0]
-            + white_point[1] * matrix[2][1]
-            + white_point[2] * matrix[2][2];
+        let r_w = white_point[2].mul_add(matrix[0][2], white_point[0].mul_add(matrix[0][0], white_point[1] * matrix[0][1]));
+        let g_w = white_point[2].mul_add(matrix[1][2], white_point[0].mul_add(matrix[1][0], white_point[1] * matrix[1][1]));
+        let b_w = white_point[2].mul_add(matrix[2][2], white_point[0].mul_add(matrix[2][0], white_point[1] * matrix[2][1]));
 
         let f = 0.8 + surround / 10.0;
         let c = if f >= 0.9 {
@@ -89,7 +84,7 @@ impl ViewingConditions {
         let mut d = if discounting_illuminant {
             1.0
         } else {
-            f * (1.0 - (1.0 / 3.6) * ((-adapting_luminance - 42.0) / 92.0).exp())
+            f * (1.0f64 / 3.6).mul_add(-((-adapting_luminance - 42.0) / 92.0).exp(), 1.0)
         };
         d = d.clamp(0.0, 1.0);
         let nc = f;
@@ -98,7 +93,7 @@ impl ViewingConditions {
             d * (100.0 / g_w) + 1.0 - d,
             d * (100.0 / b_w) + 1.0 - d,
         ];
-        let k = 1.0 / (5.0 * adapting_luminance + 1.0);
+        let k = 1.0 / 5.0f64.mul_add(adapting_luminance, 1.0);
         let k4 = k * k * k * k;
         let k4_f = 1.0 - k4;
         let fl = k4 * adapting_luminance + 0.1 * k4_f * k4_f * (5.0 * adapting_luminance).cbrt();
@@ -116,8 +111,8 @@ impl ViewingConditions {
             400.0 * rgb_a_factors[1] / (rgb_a_factors[1] + 27.13),
             400.0 * rgb_a_factors[2] / (rgb_a_factors[2] + 27.13),
         ];
-        let aw = (2.0 * rgb_a[0] + rgb_a[1] + 0.05 * rgb_a[2]) * nbb;
-        ViewingConditions {
+        let aw = 0.05f64.mul_add(rgb_a[2], 2.0f64.mul_add(rgb_a[0], rgb_a[1])) * nbb;
+        Self {
             n,
             aw,
             nbb,
@@ -134,6 +129,7 @@ impl ViewingConditions {
     /// Create sRGB-like viewing conditions with a custom background lstar.
     ///
     /// Default viewing conditions have a lstar of 50, midgray.
+    #[must_use] 
     pub fn default_with_background_lstar(lstar: f64) -> Self {
         Self::make(
             ColorUtils::white_point_d65(),

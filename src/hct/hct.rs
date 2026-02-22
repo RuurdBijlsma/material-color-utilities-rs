@@ -66,6 +66,7 @@ impl Hct {
     /// # Returns
     ///
     /// HCT representation of a color in default viewing conditions.
+    #[must_use] 
     pub fn from(hue: f64, chroma: f64, tone: f64) -> Self {
         let argb = HctSolver::solve_to_int(hue, chroma, tone);
         Self::new_internal(argb)
@@ -80,23 +81,28 @@ impl Hct {
     /// # Returns
     ///
     /// HCT representation of a color in default viewing conditions.
+    #[must_use] 
     pub fn from_int(argb: Argb) -> Self {
         Self::new_internal(argb)
     }
 
-    pub fn hue(&self) -> f64 {
+    #[must_use] 
+    pub const fn hue(&self) -> f64 {
         self.hue
     }
 
-    pub fn chroma(&self) -> f64 {
+    #[must_use] 
+    pub const fn chroma(&self) -> f64 {
         self.chroma
     }
 
-    pub fn tone(&self) -> f64 {
+    #[must_use] 
+    pub const fn tone(&self) -> f64 {
         self.tone
     }
 
-    pub fn to_int(&self) -> Argb {
+    #[must_use] 
+    pub const fn to_int(&self) -> Argb {
         self.argb
     }
 
@@ -105,7 +111,7 @@ impl Hct {
     ///
     /// # Arguments
     ///
-    /// * `new_hue`: 0 <= new_hue < 360; invalid values are corrected.
+    /// * `new_hue`: 0 <= `new_hue` < 360; invalid values are corrected.
     pub fn set_hue(&mut self, new_hue: f64) {
         self.set_internal_state(HctSolver::solve_to_int(new_hue, self.chroma, self.tone));
     }
@@ -115,7 +121,7 @@ impl Hct {
     ///
     /// # Arguments
     ///
-    /// * `new_chroma`: 0 <= new_chroma < ?
+    /// * `new_chroma`: 0 <= `new_chroma` < ?
     pub fn set_chroma(&mut self, new_chroma: f64) {
         self.set_internal_state(HctSolver::solve_to_int(self.hue, new_chroma, self.tone));
     }
@@ -125,7 +131,7 @@ impl Hct {
     ///
     /// # Arguments
     ///
-    /// * `new_tone`: 0 <= new_tone <= 100; invalid values are corrected.
+    /// * `new_tone`: 0 <= `new_tone` <= 100; invalid values are corrected.
     pub fn set_tone(&mut self, new_tone: f64) {
         self.set_internal_state(HctSolver::solve_to_int(self.hue, self.chroma, new_tone));
     }
@@ -138,7 +144,7 @@ impl Hct {
         self.tone = argb.lstar();
     }
 
-    /// Translate a color into different ViewingConditions.
+    /// Translate a color into different `ViewingConditions`.
     ///
     /// Colors change appearance. They look different with lights on versus off, the same color, as in
     /// hex code, on white looks different when on black. This is called color relativity, most
@@ -148,8 +154,9 @@ impl Hct {
     /// a color in different settings. HCT is based on CAM16, a color appearance model, and uses it to
     /// make these calculations.
     ///
-    /// See ViewingConditions::make for parameters affecting color appearance.
-    pub fn in_viewing_conditions(&self, vc: &ViewingConditions) -> Hct {
+    /// See `ViewingConditions::make` for parameters affecting color appearance.
+    #[must_use] 
+    pub fn in_viewing_conditions(&self, vc: &ViewingConditions) -> Self {
         // 1. Use CAM16 to find XYZ coordinates of color in specified VC.
         let cam16 = Cam16::from_int(self.argb);
         let viewed_in_vc = cam16.xyz_in_viewing_conditions(vc);
@@ -172,14 +179,17 @@ impl Hct {
         )
     }
 
+    #[must_use] 
     pub fn is_blue(hue: f64) -> bool {
         (250.0..270.0).contains(&hue)
     }
 
+    #[must_use] 
     pub fn is_yellow(hue: f64) -> bool {
         (105.0..125.0).contains(&hue)
     }
 
+    #[must_use] 
     pub fn is_cyan(hue: f64) -> bool {
         (170.0..207.0).contains(&hue)
     }

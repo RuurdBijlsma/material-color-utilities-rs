@@ -23,11 +23,12 @@ impl StringUtils {
     /// # Arguments
     ///
     /// * `argb` - ARGB representation of a color.
+    #[must_use]
     pub fn hex_from_argb(argb: u32) -> String {
         let red = (argb >> 16) & 255;
         let green = (argb >> 8) & 255;
         let blue = argb & 255;
-        format!("#{:02x}{:02x}{:02x}", red, green, blue)
+        format!("#{red:02x}{green:02x}{blue:02x}")
     }
 }
 

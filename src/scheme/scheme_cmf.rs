@@ -8,6 +8,7 @@ use crate::palettes::tonal_palette::TonalPalette;
 pub struct SchemeCmf;
 
 impl SchemeCmf {
+    #[must_use]
     pub fn new(source_color_hct: Hct, is_dark: bool, contrast_level: f64) -> DynamicScheme {
         Self::new_with_platform_and_spec(
             source_color_hct,
@@ -18,6 +19,7 @@ impl SchemeCmf {
         )
     }
 
+    #[must_use]
     pub fn new_with_platform_and_spec(
         source_color_hct: Hct,
         is_dark: bool,
@@ -34,6 +36,7 @@ impl SchemeCmf {
         )
     }
 
+    #[must_use]
     pub fn new_with_list_and_platform_and_spec(
         source_color_hct_list: Vec<Hct>,
         is_dark: bool,
@@ -41,9 +44,7 @@ impl SchemeCmf {
         spec_version: SpecVersion,
         platform: Platform,
     ) -> DynamicScheme {
-        if spec_version != SpecVersion::Spec2026 {
-            panic!("SchemeCmf can only be used with spec version 2026.");
-        }
+        assert_eq!(spec_version, SpecVersion::Spec2026, "SchemeCmf can only be used with spec version 2026.");
 
         let source_color_hct = source_color_hct_list[0];
 

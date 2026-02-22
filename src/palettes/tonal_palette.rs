@@ -34,9 +34,8 @@ pub struct TonalPalette {
 impl Clone for TonalPalette {
     fn clone(&self) -> Self {
         let new_cache: [AtomicU32; 101] = std::array::from_fn(|_| AtomicU32::new(0));
-        for i in 0..101 {
-            let val = self.cache[i].load(Ordering::Relaxed);
-            new_cache[i].store(val, Ordering::Relaxed);
+        for (i, item) in new_cache.iter().enumerate() {
+            new_cache[i].store(item.load(Ordering::Relaxed), Ordering::Relaxed);
         }
         Self {
             hue: self.hue,
@@ -65,7 +64,8 @@ impl TonalPalette {
     ///
     /// # Returns
     ///
-    /// TonalPalette matching that color's hue and chroma.
+    /// `TonalPalette` matching that color's hue and chroma.
+    #[must_use]
     pub fn from_int(argb: Argb) -> Self {
         Self::from_hct(Hct::from_int(argb))
     }
@@ -78,7 +78,8 @@ impl TonalPalette {
     ///
     /// # Returns
     ///
-    /// TonalPalette matching that color's hue and chroma.
+    /// `TonalPalette` matching that color's hue and chroma.
+    #[must_use]
     pub fn from_hct(hct: Hct) -> Self {
         Self::new(hct.hue(), hct.chroma(), hct)
     }
@@ -92,7 +93,8 @@ impl TonalPalette {
     ///
     /// # Returns
     ///
-    /// TonalPalette matching hue and chroma.
+    /// `TonalPalette` matching hue and chroma.
+    #[must_use]
     pub fn from_hue_and_chroma(hue: f64, chroma: f64) -> Self {
         let key_color = KeyColor::new(hue, chroma).create();
         Self::new(hue, chroma, key_color)
@@ -109,7 +111,7 @@ impl TonalPalette {
     /// ARGB representation of a color with that tone.
     pub fn tone(&self, tone: i32) -> Argb {
         if !(0..=100).contains(&tone) {
-            return Hct::from(self.hue, self.chroma, tone as f64).to_int();
+            return Hct::from(self.hue, self.chroma, f64::from(tone)).to_int();
         }
 
         let index = tone as usize;
@@ -119,9 +121,9 @@ impl TonalPalette {
         }
 
         let color = if tone == 99 && Hct::is_yellow(self.hue) {
-            self.average_argb(self.tone(98), self.tone(100))
+            Self::average_argb(self.tone(98), self.tone(100))
         } else {
-            Hct::from(self.hue, self.chroma, tone as f64).to_int()
+            Hct::from(self.hue, self.chroma, f64::from(tone)).to_int()
         };
 
         self.cache[index].store(color.0, Ordering::Relaxed);
@@ -133,17 +135,17 @@ impl TonalPalette {
         Hct::from(self.hue, self.chroma, tone)
     }
 
-    fn average_argb(&self, argb1: Argb, argb2: Argb) -> Argb {
-        let red1 = argb1.red() as f32;
-        let green1 = argb1.green() as f32;
-        let blue1 = argb1.blue() as f32;
-        let red2 = argb2.red() as f32;
-        let green2 = argb2.green() as f32;
-        let blue2 = argb2.blue() as f32;
+    fn average_argb(argb1: Argb, argb2: Argb) -> Argb {
+        let red1 = f32::from(argb1.red());
+        let green1 = f32::from(argb1.green());
+        let blue1 = f32::from(argb1.blue());
+        let red2 = f32::from(argb2.red());
+        let green2 = f32::from(argb2.green());
+        let blue2 = f32::from(argb2.blue());
 
-        let red = ((red1 + red2) / 2.0).round() as u8;
-        let green = ((green1 + green2) / 2.0).round() as u8;
-        let blue = ((blue1 + blue2) / 2.0).round() as u8;
+        let red = f32::midpoint(red1, red2).round() as u8;
+        let green = f32::midpoint(green1, green2).round() as u8;
+        let blue = f32::midpoint(blue1, blue2).round() as u8;
 
         Argb::from_rgb(red, green, blue)
     }
@@ -158,7 +160,7 @@ struct KeyColor {
 impl KeyColor {
     const MAX_CHROMA_VALUE: f64 = 200.0;
 
-    fn new(hue: f64, requested_chroma: f64) -> Self {
+    const fn new(hue: f64, requested_chroma: f64) -> Self {
         Self {
             hue,
             requested_chroma,
@@ -182,7 +184,7 @@ impl KeyColor {
         let mut lower_tone = 0;
         let mut upper_tone = 100;
         while lower_tone < upper_tone {
-            let mid_tone = (lower_tone + upper_tone) / 2;
+            let mid_tone = i32::midpoint(lower_tone, upper_tone);
             let is_ascending =
                 self.max_chroma(mid_tone) < self.max_chroma(mid_tone + tone_step_size);
             let sufficient_chroma = self.max_chroma(mid_tone) >= self.requested_chroma - epsilon;
@@ -193,7 +195,7 @@ impl KeyColor {
                     upper_tone = mid_tone;
                 } else {
                     if lower_tone == mid_tone {
-                        return Hct::from(self.hue, self.requested_chroma, lower_tone as f64);
+                        return Hct::from(self.hue, self.requested_chroma, f64::from(lower_tone));
                     }
                     lower_tone = mid_tone;
                 }
@@ -208,12 +210,12 @@ impl KeyColor {
                 }
             }
         }
-        Hct::from(self.hue, self.requested_chroma, lower_tone as f64)
+        Hct::from(self.hue, self.requested_chroma, f64::from(lower_tone))
     }
 
     // Find the maximum chroma for a given tone
     fn max_chroma(&self, tone: i32) -> f64 {
-        Hct::from(self.hue, Self::MAX_CHROMA_VALUE, tone as f64).chroma()
+        Hct::from(self.hue, Self::MAX_CHROMA_VALUE, f64::from(tone)).chroma()
     }
 }
 
@@ -249,9 +251,10 @@ mod tests {
         let tone100 = palette.tone(100);
 
         // tone 99 should be average of 98 and 100
-        let red = ((tone98.red() as f32 + tone100.red() as f32) / 2.0).round() as u8;
-        let green = ((tone98.green() as f32 + tone100.green() as f32) / 2.0).round() as u8;
-        let blue = ((tone98.blue() as f32 + tone100.blue() as f32) / 2.0).round() as u8;
+        let red = f32::midpoint(f32::from(tone98.red()), f32::from(tone100.red())).round() as u8;
+        let green =
+            f32::midpoint(f32::from(tone98.green()), f32::from(tone100.green())).round() as u8;
+        let blue = f32::midpoint(f32::from(tone98.blue()), f32::from(tone100.blue())).round() as u8;
         let expected = Argb::from_rgb(red, green, blue);
 
         assert_eq!(tone99, expected);
@@ -273,9 +276,9 @@ mod tests {
         let palette = TonalPalette::from_hue_and_chroma(120.0, 40.0);
         // Should not panic and should return a color
         let color = palette.tone(150);
-        assert!(color.0 != 0);
+        assert_ne!(color.0, 0);
 
         let color_neg = palette.tone(-10);
-        assert!(color_neg.0 != 0);
+        assert_ne!(color_neg.0, 0);
     }
 }

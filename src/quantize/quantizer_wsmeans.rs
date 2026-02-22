@@ -59,6 +59,7 @@ impl QuantizerWsmeans {
     ///
     /// # Returns
     /// Map with keys of colors in ARGB format, values of how many of the input pixels belong to the color.
+    #[must_use]
     pub fn quantize(
         input_pixels: &[Argb],
         starting_clusters: &[Argb],
@@ -82,8 +83,8 @@ impl QuantizerWsmeans {
         }
 
         let mut counts = Vec::with_capacity(point_count);
-        for i in 0..point_count {
-            counts.push(*pixel_to_count.get(&pixels[i]).unwrap());
+        for pixel in pixels.iter().take(point_count) {
+            counts.push(*pixel_to_count.get(pixel).unwrap());
         }
 
         let mut cluster_count = max_colors.min(point_count);
@@ -189,9 +190,9 @@ impl QuantizerWsmeans {
                 let point = points[i];
                 let count = counts[i];
                 pixel_count_sums[cluster_index] += count;
-                component_a_sums[cluster_index] += point[0] * count as f64;
-                component_b_sums[cluster_index] += point[1] * count as f64;
-                component_c_sums[cluster_index] += point[2] * count as f64;
+                component_a_sums[cluster_index] += point[0] * f64::from(count);
+                component_b_sums[cluster_index] += point[1] * f64::from(count);
+                component_c_sums[cluster_index] += point[2] * f64::from(count);
             }
 
             for i in 0..cluster_count {
@@ -201,9 +202,9 @@ impl QuantizerWsmeans {
                     continue;
                 }
                 clusters[i] = [
-                    component_a_sums[i] / count as f64,
-                    component_b_sums[i] / count as f64,
-                    component_c_sums[i] / count as f64,
+                    component_a_sums[i] / f64::from(count),
+                    component_b_sums[i] / f64::from(count),
+                    component_c_sums[i] / f64::from(count),
                 ];
             }
         }
@@ -226,10 +227,10 @@ impl QuantizerWsmeans {
 // Simple LCG to match java.util.Random behavior for reproducibility
 struct Random(u64);
 impl Random {
-    fn new(seed: u64) -> Self {
+    const fn new(seed: u64) -> Self {
         Self((seed ^ 0x5DEECE66D) & ((1 << 48) - 1))
     }
-    fn next_int(&mut self, n: i32) -> i32 {
+    const fn next_int(&mut self, n: i32) -> i32 {
         if (n & -n) == n {
             return ((n as u64 * self.next(31) as u64) >> 31) as i32;
         }
@@ -244,7 +245,7 @@ impl Random {
         }
         val
     }
-    fn next(&mut self, bits: u32) -> i32 {
+    const fn next(&mut self, bits: u32) -> i32 {
         self.0 = (self.0.wrapping_mul(0x5DEECE66D).wrapping_add(0xB)) & ((1 << 48) - 1);
         (self.0 >> (48 - bits)) as i32
     }

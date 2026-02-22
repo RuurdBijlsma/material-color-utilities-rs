@@ -22,6 +22,7 @@ impl MathUtils {
     ///
     /// # Returns
     /// `start` if `amount` = 0 and `stop` if `amount` = 1
+    #[must_use] 
     pub fn lerp(start: f64, stop: f64, amount: f64) -> f64 {
         (1.0 - amount) * start + amount * stop
     }
@@ -30,7 +31,8 @@ impl MathUtils {
     ///
     /// # Returns
     /// A degree measure between 0 (inclusive) and 360 (exclusive).
-    pub fn sanitize_degrees_int(degrees: i32) -> i32 {
+    #[must_use] 
+    pub const fn sanitize_degrees_int(degrees: i32) -> i32 {
         let mut degrees = degrees % 360;
         if degrees < 0 {
             degrees += 360;
@@ -42,6 +44,7 @@ impl MathUtils {
     ///
     /// # Returns
     /// A degree measure between 0.0 (inclusive) and 360.0 (exclusive).
+    #[must_use] 
     pub fn sanitize_degrees_double(degrees: f64) -> f64 {
         let mut degrees = degrees % 360.0;
         if degrees < 0.0 {
@@ -62,6 +65,7 @@ impl MathUtils {
     /// # Returns
     /// -1.0 if decreasing `from` leads to the shortest travel distance, 1.0 if increasing `from` leads
     /// to the shortest travel distance.
+    #[must_use] 
     pub fn rotation_direction(from: f64, to: f64) -> f64 {
         let increasing_difference = Self::sanitize_degrees_double(to - from);
         if increasing_difference <= 180.0 {
@@ -72,11 +76,13 @@ impl MathUtils {
     }
 
     /// Distance of two points on a circle, represented using degrees.
+    #[must_use] 
     pub fn difference_degrees(a: f64, b: f64) -> f64 {
         180.0 - ((a - b).abs() - 180.0).abs()
     }
 
     /// Multiplies a 1x3 row vector with a 3x3 matrix.
+    #[must_use] 
     pub fn matrix_multiply(row: [f64; 3], matrix: [[f64; 3]; 3]) -> [f64; 3] {
         let a = row[0] * matrix[0][0] + row[1] * matrix[0][1] + row[2] * matrix[0][2];
         let b = row[0] * matrix[1][0] + row[1] * matrix[1][1] + row[2] * matrix[1][2];

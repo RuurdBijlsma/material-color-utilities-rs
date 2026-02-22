@@ -60,11 +60,13 @@ impl Argb {
     const WHITE_POINT_D65: [f64; 3] = [95.047, 100.0, 108.883];
 
     /// Converts a color from RGB components to ARGB format.
-    pub fn from_rgb(red: u8, green: u8, blue: u8) -> Self {
+    #[must_use]
+    pub const fn from_rgb(red: u8, green: u8, blue: u8) -> Self {
         Self(0xFF000000 | ((red as u32) << 16) | ((green as u32) << 8) | (blue as u32))
     }
 
     /// Converts a color from linear RGB components to ARGB format.
+    #[must_use]
     pub fn from_linrgb(linrgb: [f64; 3]) -> Self {
         let r = ColorUtils::delinearized(linrgb[0]);
         let g = ColorUtils::delinearized(linrgb[1]);
@@ -73,31 +75,37 @@ impl Argb {
     }
 
     /// Returns the alpha component of a color.
-    pub fn alpha(&self) -> u8 {
+    #[must_use]
+    pub const fn alpha(&self) -> u8 {
         ((self.0 >> 24) & 0xFF) as u8
     }
 
     /// Returns the red component of a color.
-    pub fn red(&self) -> u8 {
+    #[must_use]
+    pub const fn red(&self) -> u8 {
         ((self.0 >> 16) & 0xFF) as u8
     }
 
     /// Returns the green component of a color.
-    pub fn green(&self) -> u8 {
+    #[must_use]
+    pub const fn green(&self) -> u8 {
         ((self.0 >> 8) & 0xFF) as u8
     }
 
     /// Returns the blue component of a color.
-    pub fn blue(&self) -> u8 {
+    #[must_use]
+    pub const fn blue(&self) -> u8 {
         (self.0 & 0xFF) as u8
     }
 
     /// Returns whether a color is opaque.
-    pub fn is_opaque(&self) -> bool {
+    #[must_use]
+    pub const fn is_opaque(&self) -> bool {
         self.alpha() >= 255
     }
 
     /// Converts a color from XYZ to ARGB.
+    #[must_use] 
     pub fn from_xyz(xyz: Xyz) -> Self {
         let matrix = Self::XYZ_TO_SRGB;
         let linear_r = matrix[0][0] * xyz.x + matrix[0][1] * xyz.y + matrix[0][2] * xyz.z;
@@ -110,6 +118,7 @@ impl Argb {
     }
 
     /// Converts a color from ARGB to XYZ.
+    #[must_use] 
     pub fn to_xyz(&self) -> Xyz {
         let r = ColorUtils::linearized(self.red());
         let g = ColorUtils::linearized(self.green());
@@ -123,6 +132,7 @@ impl Argb {
     }
 
     /// Converts a color from Lab to ARGB.
+    #[must_use] 
     pub fn from_lab(lab: Lab) -> Self {
         let white_point = Self::WHITE_POINT_D65;
         let fy = (lab.l + 16.0) / 116.0;
@@ -138,6 +148,7 @@ impl Argb {
     }
 
     /// Converts a color from ARGB to Lab.
+    #[must_use] 
     pub fn to_lab(&self) -> Lab {
         let r = ColorUtils::linearized(self.red());
         let g = ColorUtils::linearized(self.green());
@@ -160,6 +171,7 @@ impl Argb {
     }
 
     /// Converts an L* value to an ARGB representation.
+    #[must_use] 
     pub fn from_lstar(lstar: f64) -> Self {
         let y = ColorUtils::y_from_lstar(lstar);
         let component = ColorUtils::delinearized(y);
@@ -167,6 +179,7 @@ impl Argb {
     }
 
     /// Computes the L* value of a color.
+    #[must_use] 
     pub fn lstar(&self) -> f64 {
         let y = self.to_xyz().y;
         116.0 * ColorUtils::lab_f(y / 100.0) - 16.0
@@ -178,8 +191,9 @@ pub struct ColorUtils;
 
 impl ColorUtils {
     /// Linearizes an RGB component.
+    #[must_use] 
     pub fn linearized(rgb_component: u8) -> f64 {
-        let normalized = rgb_component as f64 / 255.0;
+        let normalized = f64::from(rgb_component) / 255.0;
         if normalized <= 0.040449936 {
             normalized / 12.92 * 100.0
         } else {
@@ -188,6 +202,7 @@ impl ColorUtils {
     }
 
     /// Delinearizes an RGB component.
+    #[must_use] 
     pub fn delinearized(rgb_component: f64) -> u8 {
         let normalized = rgb_component / 100.0;
         let delinearized: f64 = if normalized <= 0.0031308 {
@@ -199,20 +214,24 @@ impl ColorUtils {
     }
 
     /// Converts an L* value to a Y value.
+    #[must_use] 
     pub fn y_from_lstar(lstar: f64) -> f64 {
         100.0 * Self::lab_invf((lstar + 16.0) / 116.0)
     }
 
     /// Converts a Y value to an L* value.
+    #[must_use] 
     pub fn lstar_from_y(y: f64) -> f64 {
         Self::lab_f(y / 100.0) * 116.0 - 16.0
     }
 
     /// Returns the standard white point; white on a sunny day.
-    pub fn white_point_d65() -> [f64; 3] {
+    #[must_use] 
+    pub const fn white_point_d65() -> [f64; 3] {
         [95.047, 100.0, 108.883]
     }
 
+    #[must_use] 
     pub fn lab_f(t: f64) -> f64 {
         let e = 216.0 / 24389.0;
         let kappa = 24389.0 / 27.0;
@@ -223,6 +242,7 @@ impl ColorUtils {
         }
     }
 
+    #[must_use] 
     pub fn lab_invf(ft: f64) -> f64 {
         let e = 216.0 / 24389.0;
         let kappa = 24389.0 / 27.0;

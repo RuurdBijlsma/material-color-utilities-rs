@@ -362,9 +362,9 @@ impl HctSolver {
     #[must_use]
     pub fn lerp_point(source: [f64; 3], t: f64, target: [f64; 3]) -> [f64; 3] {
         [
-            source[0] + (target[0] - source[0]) * t,
-            source[1] + (target[1] - source[1]) * t,
-            source[2] + (target[2] - source[2]) * t,
+            (target[0] - source[0]).mul_add(t, source[0]),
+            (target[1] - source[1]).mul_add(t, source[1]),
+            (target[2] - source[2]).mul_add(t, source[2]),
         ]
     }
 
@@ -459,11 +459,11 @@ impl HctSolver {
     }
 
     #[must_use]
-    pub fn midpoint(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
+    pub const fn midpoint(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
         [
-            (a[0] + b[0]) / 2.0,
-            (a[1] + b[1]) / 2.0,
-            (a[2] + b[2]) / 2.0,
+            f64::midpoint(a[0], b[0]),
+            f64::midpoint(a[1], b[1]),
+            f64::midpoint(a[2], b[2]),
         ]
     }
 
@@ -476,6 +476,7 @@ impl HctSolver {
     }
 
     /// Finds a color with the given Y and hue on the boundary of the cube.
+    #[must_use]
     pub fn bisect_to_limit(y: f64, target_hue: f64) -> [f64; 3] {
         let segment = Self::bisect_to_segment(y, target_hue);
         let mut left = segment[0];
@@ -499,7 +500,7 @@ impl HctSolver {
                     if (r_plane - l_plane).abs() <= 1 {
                         break;
                     }
-                    let m_plane = ((l_plane + r_plane) as f64 / 2.0).floor() as i32;
+                    let m_plane = (f64::from(l_plane + r_plane) / 2.0).floor() as i32;
                     let mid_plane_coordinate = Self::CRITICAL_PLANES[m_plane as usize];
                     let mid = Self::set_coordinate(left, mid_plane_coordinate, right, axis);
                     let mid_hue = Self::hue_of(mid);
@@ -517,6 +518,7 @@ impl HctSolver {
         Self::midpoint(left, right)
     }
 
+    #[must_use]
     pub fn inverse_chromatic_adaptation(adapted: f64) -> f64 {
         let adapted_abs = adapted.abs();
         let base = (27.13 * adapted_abs / (400.0 - adapted_abs)).max(0.0);
@@ -524,6 +526,7 @@ impl HctSolver {
     }
 
     /// Finds a color with the given hue, chroma, and Y.
+    #[must_use]
     pub fn find_result_by_j(hue_radians: f64, chroma: f64, y: f64) -> Option<Argb> {
         // Initial estimate of j.
         let mut j = y.sqrt() * 11.0;
@@ -546,12 +549,12 @@ impl HctSolver {
                 * j_normalized.powf(1.0 / viewing_conditions.c / viewing_conditions.z);
             let p2 = ac / viewing_conditions.nbb;
             let gamma =
-                23.0 * (p2 + 0.305) * t / (23.0 * p1 + 11.0 * t * h_cos + 108.0 * t * h_sin);
+                23.0 * (p2 + 0.305) * t / (108.0 * t).mul_add(h_sin, 23.0f64.mul_add(p1, 11.0 * t * h_cos));
             let a = gamma * h_cos;
             let b = gamma * h_sin;
-            let r_a = (460.0 * p2 + 451.0 * a + 288.0 * b) / 1403.0;
-            let g_a = (460.0 * p2 - 891.0 * a - 261.0 * b) / 1403.0;
-            let b_a = (460.0 * p2 - 220.0 * a - 6300.0 * b) / 1403.0;
+            let r_a = 288.0f64.mul_add(b, 460.0f64.mul_add(p2, 451.0 * a)) / 1403.0;
+            let g_a = 261.0f64.mul_add(-b, 460.0f64.mul_add(p2, -(891.0 * a))) / 1403.0;
+            let b_a = 6300.0f64.mul_add(-b, 460.0f64.mul_add(p2, -(220.0 * a))) / 1403.0;
             let r_c_scaled = Self::inverse_chromatic_adaptation(r_a);
             let g_c_scaled = Self::inverse_chromatic_adaptation(g_a);
             let b_c_scaled = Self::inverse_chromatic_adaptation(b_a);
@@ -566,7 +569,7 @@ impl HctSolver {
             let k_r = Self::Y_FROM_LINRGB[0];
             let k_g = Self::Y_FROM_LINRGB[1];
             let k_b = Self::Y_FROM_LINRGB[2];
-            let fn_j = k_r * lin_rgb[0] + k_g * lin_rgb[1] + k_b * lin_rgb[2];
+            let fn_j = k_b.mul_add(lin_rgb[2], k_r.mul_add(lin_rgb[0], k_g * lin_rgb[1]));
             if fn_j <= 0.0 {
                 return None;
             }
@@ -585,6 +588,7 @@ impl HctSolver {
     }
 
     /// Finds an sRGB color with the given hue, chroma, and L*, if possible.
+    #[must_use]
     pub fn solve_to_int(hue_degrees: f64, chroma: f64, lstar: f64) -> Argb {
         if chroma < 0.0001 || !(0.0001..=99.9999).contains(&lstar) {
             return Argb::from_lstar(lstar);
@@ -600,6 +604,7 @@ impl HctSolver {
     }
 
     /// Finds an sRGB color with the given hue, chroma, and L*, if possible.
+    #[must_use]
     pub fn solve_to_cam(hue_degrees: f64, chroma: f64, lstar: f64) -> Cam16 {
         Cam16::from_int(Self::solve_to_int(hue_degrees, chroma, lstar))
     }
@@ -633,6 +638,6 @@ mod tests {
         let gray = HctSolver::solve_to_int(123.0, 0.0, 50.0);
         assert_eq!(gray.red(), gray.green());
         assert_eq!(gray.green(), gray.blue());
-        assert!((gray.red() as i32 - 119).abs() <= 1);
+        assert!((i32::from(gray.red()) - 119).abs() <= 1);
     }
 }

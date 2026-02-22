@@ -25,11 +25,13 @@ pub struct QuantizerMap {
 }
 
 impl QuantizerMap {
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn color_to_count(&self) -> Option<&HashMap<Argb, u32>> {
+    #[must_use]
+    pub const fn color_to_count(&self) -> Option<&HashMap<Argb, u32>> {
         self.color_to_count.as_ref()
     }
 }

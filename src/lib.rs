@@ -1,3 +1,4 @@
+#![deny(clippy::unwrap_used)]
 #![allow(
     clippy::similar_names,
     clippy::unreadable_literal,
@@ -8,6 +9,9 @@
     clippy::match_wildcard_for_single_variants,
     clippy::cast_sign_loss,
     clippy::cast_possible_truncation,
+    clippy::too_long_first_doc_paragraph,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
 )]
 pub mod blend;
 pub mod contrast;

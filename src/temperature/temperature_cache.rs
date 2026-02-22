@@ -33,7 +33,8 @@ pub struct TemperatureCache {
 }
 
 impl TemperatureCache {
-    pub fn new(input: Hct) -> Self {
+    #[must_use]
+    pub const fn new(input: Hct) -> Self {
         Self {
             input,
             precomputed_complement: OnceLock::new(),
@@ -230,10 +231,10 @@ impl TemperatureCache {
     }
 
     fn get_temp(&self, hct: &Hct) -> f64 {
-        *self
-            .temps_by_hct()
+        self.temps_by_hct()
             .get(&hct.to_int())
-            .unwrap_or(&Self::raw_temperature(hct))
+            .copied()
+            .unwrap_or_else(|| Self::raw_temperature(hct))
     }
 
     /// Coldest color with same chroma and tone as input.
@@ -300,14 +301,13 @@ impl TemperatureCache {
     /// warm.
     ///
     /// Implementation of Ou, Woodcock and Wright's algorithm, which uses Lab/LCH color space.
+    #[must_use] 
     pub fn raw_temperature(color: &Hct) -> f64 {
         let lab = color.to_int().to_lab();
         let hue = MathUtils::sanitize_degrees_double(lab.b.atan2(lab.a).to_degrees());
         let chroma = lab.a.hypot(lab.b);
 
-        -0.5 + 0.02
-            * chroma.powf(1.07)
-            * (MathUtils::sanitize_degrees_double(hue - 50.0).to_radians()).cos()
+        (0.02 * chroma.powf(1.07)).mul_add(MathUtils::sanitize_degrees_double(hue - 50.0).to_radians().cos(), -0.5)
     }
 
     /// Determines if an angle is between two other angles, rotating clockwise.
