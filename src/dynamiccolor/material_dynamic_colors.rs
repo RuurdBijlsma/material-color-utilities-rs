@@ -41,6 +41,14 @@ impl MaterialDynamicColors {
         }
     }
 
+    /// Constructs a new `MaterialDynamicColors` using the specified color spec version.
+    #[must_use]
+    pub fn new_with_spec(spec_version: SpecVersion) -> Self {
+        Self {
+            color_spec: ColorSpecs::get(spec_version),
+        }
+    }
+
     #[must_use]
     pub fn highest_surface(&self, scheme: &DynamicScheme) -> Arc<DynamicColor> {
         self.color_spec.highest_surface(scheme)
