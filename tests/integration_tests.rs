@@ -146,7 +146,8 @@ fn test_material_schemes_against_reference() ->Result<()> {
 
         for (color_name, &expected_argb) in &expected_colors {
             let actual_argb = get_color_argb(&mdc, &scheme, color_name);
-            
+
+            println!("\nTest: {}\nColor: {}\nExpected: {:#010X}\nActual:   {:#010X}",test_name, color_name, actual_argb, expected_argb);
             assert_eq!(
                 actual_argb, 
                 expected_argb,
