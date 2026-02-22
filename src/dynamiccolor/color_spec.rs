@@ -16,9 +16,6 @@
 
 use std::sync::Arc;
 
-use crate::dynamiccolor::color_spec_2021::ColorSpec2021;
-use crate::dynamiccolor::color_spec_2025::ColorSpec2025;
-use crate::dynamiccolor::color_spec_2026::ColorSpec2026;
 use crate::dynamiccolor::dynamic_color::DynamicColor;
 use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
 use crate::dynamiccolor::variant::Variant;
@@ -223,27 +220,4 @@ pub trait ColorSpec: Send + Sync {
         platform: Platform,
         contrast_level: f64,
     ) -> TonalPalette;
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// ColorSpecs dispatch utility
-// ────────────────────────────────────────────────────────────────────────────
-
-/// Factory that returns the correct `ColorSpec` implementation for a given
-/// `SpecVersion`.  This mirrors the Kotlin companion-object / factory pattern.
-pub struct ColorSpecs;
-
-impl ColorSpecs {
-    /// Return a boxed `ColorSpec` for the requested `spec_version`.
-    ///
-    /// Unrecognised / future variants fall through to the latest available
-    /// implementation.
-    #[must_use]
-    pub fn get(spec_version: SpecVersion) -> Box<dyn ColorSpec> {
-        match spec_version {
-            SpecVersion::Spec2021 => Box::new(ColorSpec2021::new()),
-            SpecVersion::Spec2025 => Box::new(ColorSpec2025::new()),
-            SpecVersion::Spec2026 => Box::new(ColorSpec2026::new()),
-        }
-    }
 }

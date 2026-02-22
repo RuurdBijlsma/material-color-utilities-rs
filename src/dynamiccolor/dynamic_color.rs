@@ -20,7 +20,8 @@ use crate::palettes::tonal_palette::TonalPalette;
 use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
 use crate::dynamiccolor::contrast_curve::ContrastCurve;
 use crate::dynamiccolor::tone_delta_pair::ToneDeltaPair;
-use crate::dynamiccolor::color_spec::{ColorSpecs, SpecVersion};
+use crate::dynamiccolor::color_spec::SpecVersion;
+use crate::dynamiccolor::color_specs::ColorSpecs;
 use crate::contrast::contrast::Contrast;
 use crate::utils::color_utils::Argb;
 

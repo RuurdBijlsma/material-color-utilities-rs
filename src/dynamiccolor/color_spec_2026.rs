@@ -1,17 +1,11 @@
 use std::sync::Arc;
 
-use crate::contrast::contrast::Contrast;
-use crate::dislike::dislike_analyzer::DislikeAnalyzer;
 use crate::dynamiccolor::color_spec::{ColorSpec, Platform};
-use crate::dynamiccolor::contrast_curve::ContrastCurve;
 use crate::dynamiccolor::dynamic_color::DynamicColor;
 use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
-use crate::dynamiccolor::tone_delta_pair::{DeltaConstraint, ToneDeltaPair, TonePolarity};
 use crate::dynamiccolor::variant::Variant;
 use crate::hct::hct::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
-use crate::temperature::temperature_cache::TemperatureCache;
-use crate::utils::math_utils::MathUtils;
 
 // ─── ColorSpec2026 ──────────────────────────────────────────────────────────
 
