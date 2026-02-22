@@ -372,71 +372,74 @@ impl MaterialDynamicColors {
     // All Colors //
     // ////////////////////////////////////////////////////////////////
     /// All dynamic colors in Material Design system.
-    #[must_use]
-    pub fn all_dynamic_colors(&self) -> Vec<Option<Arc<DynamicColor>>> {
-        vec![
-            Some(self.primary_palette_key_color()),
-            Some(self.secondary_palette_key_color()),
-            Some(self.tertiary_palette_key_color()),
-            Some(self.neutral_palette_key_color()),
-            Some(self.neutral_variant_palette_key_color()),
-            Some(self.error_palette_key_color()),
-            Some(self.background()),
-            Some(self.on_background()),
-            Some(self.surface()),
-            Some(self.surface_dim()),
-            Some(self.surface_bright()),
-            Some(self.surface_container_lowest()),
-            Some(self.surface_container_low()),
-            Some(self.surface_container()),
-            Some(self.surface_container_high()),
-            Some(self.surface_container_highest()),
-            Some(self.on_surface()),
-            Some(self.surface_variant()),
-            Some(self.on_surface_variant()),
-            Some(self.outline()),
-            Some(self.outline_variant()),
-            Some(self.inverse_surface()),
-            Some(self.inverse_on_surface()),
-            Some(self.shadow()),
-            Some(self.scrim()),
-            Some(self.surface_tint()),
-            Some(self.primary()),
-            self.primary_dim(),
-            Some(self.on_primary()),
-            Some(self.primary_container()),
-            Some(self.on_primary_container()),
-            Some(self.primary_fixed()),
-            Some(self.primary_fixed_dim()),
-            Some(self.on_primary_fixed()),
-            Some(self.on_primary_fixed_variant()),
-            Some(self.inverse_primary()),
-            Some(self.secondary()),
-            self.secondary_dim(),
-            Some(self.on_secondary()),
-            Some(self.secondary_container()),
-            Some(self.on_secondary_container()),
-            Some(self.secondary_fixed()),
-            Some(self.secondary_fixed_dim()),
-            Some(self.on_secondary_fixed()),
-            Some(self.on_secondary_fixed_variant()),
-            Some(self.tertiary()),
-            self.tertiary_dim(),
-            Some(self.on_tertiary()),
-            Some(self.tertiary_container()),
-            Some(self.on_tertiary_container()),
-            Some(self.tertiary_fixed()),
-            Some(self.tertiary_fixed_dim()),
-            Some(self.on_tertiary_fixed()),
-            Some(self.on_tertiary_fixed_variant()),
-            Some(self.error()),
-            self.error_dim(),
-            Some(self.on_error()),
-            Some(self.error_container()),
-            Some(self.on_error_container()),
-        ]
+    pub fn all_dynamic_colors(&self) -> impl Iterator<Item = Option<Arc<DynamicColor>>> + '_ {
+        COLOR_GETTERS.iter().map(move |getter| getter(self))
     }
 }
+
+pub type ColorGetter = fn(&MaterialDynamicColors) -> Option<Arc<DynamicColor>>;
+
+pub const COLOR_GETTERS: &[ColorGetter] = &[
+    |m| Some(m.primary_palette_key_color()),
+    |m| Some(m.secondary_palette_key_color()),
+    |m| Some(m.tertiary_palette_key_color()),
+    |m| Some(m.neutral_palette_key_color()),
+    |m| Some(m.neutral_variant_palette_key_color()),
+    |m| Some(m.error_palette_key_color()),
+    |m| Some(m.background()),
+    |m| Some(m.on_background()),
+    |m| Some(m.surface()),
+    |m| Some(m.surface_dim()),
+    |m| Some(m.surface_bright()),
+    |m| Some(m.surface_container_lowest()),
+    |m| Some(m.surface_container_low()),
+    |m| Some(m.surface_container()),
+    |m| Some(m.surface_container_high()),
+    |m| Some(m.surface_container_highest()),
+    |m| Some(m.on_surface()),
+    |m| Some(m.surface_variant()),
+    |m| Some(m.on_surface_variant()),
+    |m| Some(m.outline()),
+    |m| Some(m.outline_variant()),
+    |m| Some(m.inverse_surface()),
+    |m| Some(m.inverse_on_surface()),
+    |m| Some(m.shadow()),
+    |m| Some(m.scrim()),
+    |m| Some(m.surface_tint()),
+    |m| Some(m.primary()),
+    |m| m.primary_dim(),
+    |m| Some(m.on_primary()),
+    |m| Some(m.primary_container()),
+    |m| Some(m.on_primary_container()),
+    |m| Some(m.primary_fixed()),
+    |m| Some(m.primary_fixed_dim()),
+    |m| Some(m.on_primary_fixed()),
+    |m| Some(m.on_primary_fixed_variant()),
+    |m| Some(m.inverse_primary()),
+    |m| Some(m.secondary()),
+    |m| m.secondary_dim(),
+    |m| Some(m.on_secondary()),
+    |m| Some(m.secondary_container()),
+    |m| Some(m.on_secondary_container()),
+    |m| Some(m.secondary_fixed()),
+    |m| Some(m.secondary_fixed_dim()),
+    |m| Some(m.on_secondary_fixed()),
+    |m| Some(m.on_secondary_fixed_variant()),
+    |m| Some(m.tertiary()),
+    |m| m.tertiary_dim(),
+    |m| Some(m.on_tertiary()),
+    |m| Some(m.tertiary_container()),
+    |m| Some(m.on_tertiary_container()),
+    |m| Some(m.tertiary_fixed()),
+    |m| Some(m.tertiary_fixed_dim()),
+    |m| Some(m.on_tertiary_fixed()),
+    |m| Some(m.on_tertiary_fixed_variant()),
+    |m| Some(m.error()),
+    |m| m.error_dim(),
+    |m| Some(m.on_error()),
+    |m| Some(m.error_container()),
+    |m| Some(m.on_error_container()),
+];
 
 #[cfg(test)]
 mod tests {
@@ -450,11 +453,11 @@ mod tests {
         let mdc = MaterialDynamicColors {
             color_spec: ColorSpecs::get(SpecVersion::Spec2021),
         };
-        
+
         // Ensure all colors resolve to correct count, including options that might be None.
-        let colors = mdc.all_dynamic_colors();
-        assert_eq!(colors.len(), 59); // from Kotlin list
-        
+        let colors: Vec<_> = mdc.all_dynamic_colors().collect();
+        assert_eq!(colors.len(), 59);
+
         // Basic spot-check
         assert!(colors[0].is_some());
         assert!(colors[10].is_some());

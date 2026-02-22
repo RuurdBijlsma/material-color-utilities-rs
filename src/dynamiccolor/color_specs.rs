@@ -42,9 +42,9 @@ impl ColorSpecs {
         _is_extended_fidelity: bool,
     ) -> Box<dyn ColorSpec> {
         match spec_version {
+            SpecVersion::Spec2021 => Box::new(ColorSpec2021::new()),
             SpecVersion::Spec2025 => Box::new(ColorSpec2025::new()),
             SpecVersion::Spec2026 => Box::new(ColorSpec2026::new()),
-            _ => Box::new(ColorSpec2021::new()),
         }
     }
 }
