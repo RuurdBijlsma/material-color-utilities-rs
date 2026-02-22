@@ -16,10 +16,10 @@
 
 use std::sync::Arc;
 
-use crate::dynamiccolor::color_spec::{ColorSpec, SpecVersion};
-use crate::dynamiccolor::color_specs::ColorSpecs;
-use crate::dynamiccolor::dynamic_color::DynamicColor;
-use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
+use crate::dynamic::color_spec::{ColorSpec, SpecVersion};
+use crate::dynamic::color_specs::ColorSpecs;
+use crate::dynamic::dynamic_color::DynamicColor;
+use crate::dynamic::dynamic_scheme::DynamicScheme;
 
 /// Named colors, otherwise known as tokens, or roles, in the Material Design system.
 pub struct MaterialDynamicColors {
@@ -462,8 +462,8 @@ mod tests {
 
     #[test]
     fn test_material_dynamic_colors() {
-        use crate::dynamiccolor::color_spec::SpecVersion;
-        use crate::dynamiccolor::color_specs::ColorSpecs;
+        use crate::dynamic::color_spec::SpecVersion;
+        use crate::dynamic::color_specs::ColorSpecs;
 
         let mdc = MaterialDynamicColors {
             color_spec: ColorSpecs::get(SpecVersion::Spec2021),

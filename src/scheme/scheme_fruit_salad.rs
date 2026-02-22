@@ -1,8 +1,8 @@
-use crate::dynamiccolor::color_spec::{Platform, SpecVersion};
-use crate::dynamiccolor::color_specs::ColorSpecs;
-use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
-use crate::dynamiccolor::variant::Variant;
-use crate::hct::hct::Hct;
+use crate::dynamic::color_spec::{Platform, SpecVersion};
+use crate::dynamic::color_specs::ColorSpecs;
+use crate::dynamic::dynamic_scheme::DynamicScheme;
+use crate::dynamic::variant::Variant;
+use crate::hct::hct_color::Hct;
 
 /// A playful theme - the source color's hue does not appear in the theme.
 pub struct SchemeFruitSalad;

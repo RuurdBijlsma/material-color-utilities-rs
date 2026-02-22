@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-use crate::contrast::contrast::Contrast;
-use crate::dynamiccolor::color_spec::SpecVersion;
-use crate::dynamiccolor::color_specs::ColorSpecs;
-use crate::dynamiccolor::contrast_curve::ContrastCurve;
-use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
-use crate::dynamiccolor::tone_delta_pair::ToneDeltaPair;
-use crate::hct::hct::Hct;
+use crate::contrast::contrast_utils::Contrast;
+use crate::dynamic::color_spec::SpecVersion;
+use crate::dynamic::color_specs::ColorSpecs;
+use crate::dynamic::contrast_curve::ContrastCurve;
+use crate::dynamic::dynamic_scheme::DynamicScheme;
+use crate::dynamic::tone_delta_pair::ToneDeltaPair;
+use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
 use std::sync::Arc;

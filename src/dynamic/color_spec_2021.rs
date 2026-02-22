@@ -16,15 +16,15 @@
 
 use std::sync::Arc;
 
-use crate::contrast::contrast::Contrast;
+use crate::contrast::contrast_utils::Contrast;
 use crate::dislike::dislike_analyzer::DislikeAnalyzer;
-use crate::dynamiccolor::color_spec::{ColorSpec, Platform};
-use crate::dynamiccolor::contrast_curve::ContrastCurve;
-use crate::dynamiccolor::dynamic_color::{DynamicColor, DynamicColorFunction};
-use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
-use crate::dynamiccolor::tone_delta_pair::{DeltaConstraint, ToneDeltaPair, TonePolarity};
-use crate::dynamiccolor::variant::Variant;
-use crate::hct::hct::Hct;
+use crate::dynamic::color_spec::{ColorSpec, Platform};
+use crate::dynamic::contrast_curve::ContrastCurve;
+use crate::dynamic::dynamic_color::{DynamicColor, DynamicColorFunction};
+use crate::dynamic::dynamic_scheme::DynamicScheme;
+use crate::dynamic::tone_delta_pair::{DeltaConstraint, ToneDeltaPair, TonePolarity};
+use crate::dynamic::variant::Variant;
+use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::temperature::temperature_cache::TemperatureCache;
 use crate::utils::math_utils::MathUtils;
@@ -1955,7 +1955,7 @@ impl ColorSpec for ColorSpec2021 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::hct::hct::Hct;
+    use crate::hct::hct_color::Hct;
     use crate::utils::color_utils::Argb;
 
     fn setup_scheme(color: Argb, is_dark: bool, contrast_level: f64) -> DynamicScheme {

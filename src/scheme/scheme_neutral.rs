@@ -1,8 +1,8 @@
-use crate::dynamiccolor::color_spec::{Platform, SpecVersion};
-use crate::dynamiccolor::color_specs::ColorSpecs;
-use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
-use crate::dynamiccolor::variant::Variant;
-use crate::hct::hct::Hct;
+use crate::dynamic::color_spec::{Platform, SpecVersion};
+use crate::dynamic::color_specs::ColorSpecs;
+use crate::dynamic::dynamic_scheme::DynamicScheme;
+use crate::dynamic::variant::Variant;
+use crate::hct::hct_color::Hct;
 
 /// A theme that's slightly more chromatic than monochrome, which is purely black / white / gray.
 pub struct SchemeNeutral;

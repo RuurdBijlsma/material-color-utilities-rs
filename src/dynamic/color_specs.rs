@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-use crate::dynamiccolor::color_spec::{ColorSpec, SpecVersion};
-use crate::dynamiccolor::color_spec_2021::ColorSpec2021;
-use crate::dynamiccolor::color_spec_2025::ColorSpec2025;
-use crate::dynamiccolor::color_spec_2026::ColorSpec2026;
+use crate::dynamic::color_spec::{ColorSpec, SpecVersion};
+use crate::dynamic::color_spec_2021::ColorSpec2021;
+use crate::dynamic::color_spec_2025::ColorSpec2025;
+use crate::dynamic::color_spec_2026::ColorSpec2026;
 
 /// A utility struct to get the correct color spec for a given spec version.
 pub struct ColorSpecs;

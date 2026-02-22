@@ -11,12 +11,12 @@
     clippy::cast_possible_truncation,
     clippy::too_long_first_doc_paragraph,
     clippy::cast_possible_wrap,
-    clippy::cast_precision_loss,
+    clippy::cast_precision_loss
 )]
 pub mod blend;
 pub mod contrast;
 pub mod dislike;
-pub mod dynamiccolor;
+pub mod dynamic;
 pub mod hct;
 pub mod palettes;
 pub mod quantize;

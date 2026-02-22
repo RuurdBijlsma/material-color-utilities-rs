@@ -1,1 +1,1 @@
-pub mod blend;
+pub mod blend_functions;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use crate::hct::hct::Hct;
+use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
 use std::collections::HashMap;

@@ -2,19 +2,19 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use rust::dynamiccolor::color_spec::SpecVersion;
-use rust::dynamiccolor::dynamic_scheme::DynamicScheme;
-use rust::dynamiccolor::material_dynamic_colors::MaterialDynamicColors;
-use rust::hct::hct::Hct;
-use rust::utils::color_utils::Argb;
+use material_color_utilities::dynamic::color_spec::SpecVersion;
+use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
+use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
+use material_color_utilities::hct::hct_color::Hct;
+use material_color_utilities::utils::color_utils::Argb;
 
 // Import all schemes
 use color_eyre::Result;
-use rust::scheme::scheme_content::SchemeContent;
-use rust::scheme::scheme_expressive::SchemeExpressive;
-use rust::scheme::scheme_monochrome::SchemeMonochrome;
-use rust::scheme::scheme_tonal_spot::SchemeTonalSpot;
-use rust::scheme::scheme_vibrant::SchemeVibrant;
+use material_color_utilities::scheme::scheme_content::SchemeContent;
+use material_color_utilities::scheme::scheme_expressive::SchemeExpressive;
+use material_color_utilities::scheme::scheme_monochrome::SchemeMonochrome;
+use material_color_utilities::scheme::scheme_tonal_spot::SchemeTonalSpot;
+use material_color_utilities::scheme::scheme_vibrant::SchemeVibrant;
 
 /// Helper to parse the reference file into a Map: { TestName -> { ColorName -> ArgbValue } }
 fn parse_reference_file() -> Result<HashMap<String, HashMap<String, u32>>> {

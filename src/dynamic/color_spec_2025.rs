@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use crate::dynamiccolor::color_spec::{ColorSpec, Platform};
-use crate::dynamiccolor::dynamic_color::DynamicColor;
-use crate::dynamiccolor::dynamic_scheme::DynamicScheme;
-use crate::dynamiccolor::variant::Variant;
-use crate::hct::hct::Hct;
+use crate::dynamic::color_spec::{ColorSpec, Platform};
+use crate::dynamic::dynamic_color::DynamicColor;
+use crate::dynamic::dynamic_scheme::DynamicScheme;
+use crate::dynamic::variant::Variant;
+use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 
 // ─── ColorSpec2025 ──────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ use crate::palettes::tonal_palette::TonalPalette;
 pub struct ColorSpec2025;
 
 impl ColorSpec2025 {
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self
     }

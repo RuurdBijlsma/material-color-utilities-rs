@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use crate::hct::hct::Hct;
+use crate::hct::hct_color::Hct;
 
 /// Check and/or fix universally disliked colors.
 ///

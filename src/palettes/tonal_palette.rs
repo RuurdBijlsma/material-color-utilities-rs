@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use crate::hct::hct::Hct;
+use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
 use std::sync::atomic::{AtomicU32, Ordering};
 

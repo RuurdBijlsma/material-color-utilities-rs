@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-use crate::dynamiccolor::color_spec::{Platform, SpecVersion};
-use crate::dynamiccolor::dynamic_color::DynamicColor;
-use crate::dynamiccolor::material_dynamic_colors::MaterialDynamicColors;
-use crate::dynamiccolor::variant::Variant;
-use crate::hct::hct::Hct;
+use crate::dynamic::color_spec::{Platform, SpecVersion};
+use crate::dynamic::dynamic_color::DynamicColor;
+use crate::dynamic::material_dynamic_colors::MaterialDynamicColors;
+use crate::dynamic::variant::Variant;
+use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
