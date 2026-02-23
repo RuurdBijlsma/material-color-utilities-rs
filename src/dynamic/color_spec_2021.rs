@@ -29,40 +29,6 @@ use crate::palettes::tonal_palette::TonalPalette;
 use crate::temperature::temperature_cache::TemperatureCache;
 use crate::utils::math_utils::MathUtils;
 
-fn is_fidelity(scheme: &DynamicScheme) -> bool {
-    scheme.variant == Variant::Fidelity || scheme.variant == Variant::Content
-}
-
-fn is_monochrome(scheme: &DynamicScheme) -> bool {
-    scheme.variant == Variant::Monochrome
-}
-
-/// Find a tone that best achieves `chroma` for the given `hue`.
-fn find_desired_chroma_by_tone(hue: f64, chroma: f64, tone: f64, by_decreasing_tone: bool) -> f64 {
-    let mut answer = tone;
-    let mut closest_to_chroma = Hct::from(hue, chroma, tone);
-    if closest_to_chroma.chroma() < chroma {
-        let mut chroma_peak = closest_to_chroma.chroma();
-        while closest_to_chroma.chroma() < chroma {
-            answer += if by_decreasing_tone { -1.0 } else { 1.0 };
-            let potential_solution = Hct::from(hue, chroma, answer);
-            if chroma_peak > potential_solution.chroma() {
-                break;
-            }
-            if (potential_solution.chroma() - chroma).abs() < 0.4 {
-                break;
-            }
-            let potential_delta = (potential_solution.chroma() - chroma).abs();
-            let current_delta = (closest_to_chroma.chroma() - chroma).abs();
-            if potential_delta < current_delta {
-                closest_to_chroma = potential_solution;
-            }
-            chroma_peak = chroma_peak.max(potential_solution.chroma());
-        }
-    }
-    answer
-}
-
 // ─── ColorSpec2021 ──────────────────────────────────────────────────────────
 
 /// [`ColorSpec`] implementation for the 2021 Material Design color specification.
@@ -72,6 +38,40 @@ impl ColorSpec2021 {
     #[must_use]
     pub const fn new() -> Self {
         Self
+    }
+
+    fn is_fidelity(scheme: &DynamicScheme) -> bool {
+        scheme.variant == Variant::Fidelity || scheme.variant == Variant::Content
+    }
+
+    fn is_monochrome(scheme: &DynamicScheme) -> bool {
+        scheme.variant == Variant::Monochrome
+    }
+
+    /// Find a tone that best achieves `chroma` for the given `hue`.
+    fn find_desired_chroma_by_tone(hue: f64, chroma: f64, tone: f64, by_decreasing_tone: bool) -> f64 {
+        let mut answer = tone;
+        let mut closest_to_chroma = Hct::from(hue, chroma, tone);
+        if closest_to_chroma.chroma() < chroma {
+            let mut chroma_peak = closest_to_chroma.chroma();
+            while closest_to_chroma.chroma() < chroma {
+                answer += if by_decreasing_tone { -1.0 } else { 1.0 };
+                let potential_solution = Hct::from(hue, chroma, answer);
+                if chroma_peak > potential_solution.chroma() {
+                    break;
+                }
+                if (potential_solution.chroma() - chroma).abs() < 0.4 {
+                    break;
+                }
+                let potential_delta = (potential_solution.chroma() - chroma).abs();
+                let current_delta = (closest_to_chroma.chroma() - chroma).abs();
+                if potential_delta < current_delta {
+                    closest_to_chroma = potential_solution;
+                }
+                chroma_peak = chroma_peak.max(potential_solution.chroma());
+            }
+        }
+        answer
     }
 }
 
@@ -534,7 +534,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs.clone()),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 100.0 } else { 0.0 }
                 } else if s.is_dark {
                     80.0
@@ -566,7 +566,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 100.0 } else { 0.0 }
                 } else if s.is_dark {
                     80.0
@@ -594,7 +594,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(Arc::new(move |_| Some(primary.clone()))),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 10.0 } else { 90.0 }
                 } else if s.is_dark {
                     20.0
@@ -617,7 +617,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs.clone()),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 100.0 } else { 0.0 }
                 } else if s.is_dark {
                     80.0
@@ -637,9 +637,9 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs.clone()),
             Some(Arc::new(|s| {
-                if is_fidelity(s) {
+                if Self::is_fidelity(s) {
                     s.source_color_hct().tone()
-                } else if is_monochrome(s) {
+                } else if Self::is_monochrome(s) {
                     if s.is_dark { 85.0 } else { 25.0 }
                 } else if s.is_dark {
                     30.0
@@ -670,9 +670,9 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs),
             Some(Arc::new(|s| {
-                if is_fidelity(s) {
+                if Self::is_fidelity(s) {
                     s.source_color_hct().tone()
-                } else if is_monochrome(s) {
+                } else if Self::is_monochrome(s) {
                     if s.is_dark { 85.0 } else { 25.0 }
                 } else if s.is_dark {
                     30.0
@@ -697,9 +697,9 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(Arc::new(move |_| Some(pc.clone()))),
             Some(Arc::new(move |s| {
-                if is_fidelity(s) {
+                if Self::is_fidelity(s) {
                     DynamicColor::foreground_tone((pc2.tone)(s), 4.5)
-                } else if is_monochrome(s) {
+                } else if Self::is_monochrome(s) {
                     if s.is_dark { 0.0 } else { 100.0 }
                 } else if s.is_dark {
                     90.0
@@ -783,7 +783,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(Arc::new(move |_| Some(sec.clone()))),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 10.0 } else { 100.0 }
                 } else if s.is_dark {
                     20.0
@@ -820,12 +820,12 @@ impl ColorSpec for ColorSpec2021 {
             Some(hs.clone()),
             Some(Arc::new(|s| {
                 let initial = if s.is_dark { 30.0 } else { 90.0 };
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 30.0 } else { 85.0 }
-                } else if !is_fidelity(s) {
+                } else if !Self::is_fidelity(s) {
                     initial
                 } else {
-                    find_desired_chroma_by_tone(
+                    Self::find_desired_chroma_by_tone(
                         s.secondary_palette.hue,
                         s.secondary_palette.chroma,
                         initial,
@@ -857,12 +857,12 @@ impl ColorSpec for ColorSpec2021 {
             Some(hs),
             Some(Arc::new(|s| {
                 let initial = if s.is_dark { 30.0 } else { 90.0 };
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 30.0 } else { 85.0 }
-                } else if !is_fidelity(s) {
+                } else if !Self::is_fidelity(s) {
                     initial
                 } else {
-                    find_desired_chroma_by_tone(
+                    Self::find_desired_chroma_by_tone(
                         s.secondary_palette.hue,
                         s.secondary_palette.chroma,
                         initial,
@@ -887,9 +887,9 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(Arc::new(move |_| Some(sc.clone()))),
             Some(Arc::new(move |s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 10.0 }
-                } else if !is_fidelity(s) {
+                } else if !Self::is_fidelity(s) {
                     if s.is_dark { 90.0 } else { 30.0 }
                 } else {
                     DynamicColor::foreground_tone((sc2.tone)(s), 4.5)
@@ -912,7 +912,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs.clone()),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 25.0 }
                 } else if s.is_dark {
                     80.0
@@ -943,7 +943,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 25.0 }
                 } else if s.is_dark {
                     80.0
@@ -971,7 +971,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(Arc::new(move |_| Some(t.clone()))),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 10.0 } else { 90.0 }
                 } else if s.is_dark {
                     20.0
@@ -995,7 +995,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs.clone()),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 25.0 }
                 } else if s.is_dark {
                     80.0
@@ -1015,9 +1015,9 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs.clone()),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 60.0 } else { 49.0 }
-                } else if !is_fidelity(s) {
+                } else if !Self::is_fidelity(s) {
                     if s.is_dark { 30.0 } else { 90.0 }
                 } else {
                     let proposed = s.tertiary_palette.get_hct(s.source_color_hct().tone());
@@ -1047,9 +1047,9 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(hs),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 60.0 } else { 49.0 }
-                } else if !is_fidelity(s) {
+                } else if !Self::is_fidelity(s) {
                     if s.is_dark { 30.0 } else { 90.0 }
                 } else {
                     let proposed = s.tertiary_palette.get_hct(s.source_color_hct().tone());
@@ -1073,9 +1073,9 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(Arc::new(move |_| Some(tc.clone()))),
             Some(Arc::new(move |s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 0.0 } else { 100.0 }
-                } else if !is_fidelity(s) {
+                } else if !Self::is_fidelity(s) {
                     if s.is_dark { 90.0 } else { 30.0 }
                 } else {
                     DynamicColor::foreground_tone((tc2.tone)(s), 4.5)
@@ -1208,7 +1208,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             Some(Arc::new(move |_| Some(ec.clone()))),
             Some(Arc::new(|s| {
-                if is_monochrome(s) {
+                if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 10.0 }
                 } else if s.is_dark {
                     90.0
@@ -1233,7 +1233,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1245,7 +1245,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1268,7 +1268,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs),
-            Some(Arc::new(|s| if is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             Some(tdp),
@@ -1284,7 +1284,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1296,7 +1296,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1319,7 +1319,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs),
-            Some(Arc::new(|s| if is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             Some(tdp),
@@ -1336,7 +1336,7 @@ impl ColorSpec for ColorSpec2021 {
             false,
             None,
             Some(Arc::new(move |_| Some(pfd.clone()))),
-            Some(Arc::new(|s| if is_monochrome(s) { 100.0 } else { 10.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 100.0 } else { 10.0 })),
             Some(Arc::new(move |_| Some(pf.clone()))),
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
             None,
@@ -1353,7 +1353,7 @@ impl ColorSpec for ColorSpec2021 {
             false,
             None,
             Some(Arc::new(move |_| Some(pfd.clone()))),
-            Some(Arc::new(|s| if is_monochrome(s) { 90.0 } else { 30.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 90.0 } else { 30.0 })),
             Some(Arc::new(move |_| Some(pf.clone()))),
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
             None,
@@ -1369,7 +1369,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 70.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 70.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1381,7 +1381,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 80.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 80.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1404,7 +1404,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs),
-            Some(Arc::new(|s| if is_monochrome(s) { 80.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 80.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             Some(tdp),
@@ -1420,7 +1420,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 80.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 80.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1432,7 +1432,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 70.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 70.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1455,7 +1455,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs),
-            Some(Arc::new(|s| if is_monochrome(s) { 70.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 70.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             Some(tdp),
@@ -1489,7 +1489,7 @@ impl ColorSpec for ColorSpec2021 {
             false,
             None,
             Some(Arc::new(move |_| Some(sfd.clone()))),
-            Some(Arc::new(|s| if is_monochrome(s) { 25.0 } else { 30.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 25.0 } else { 30.0 })),
             Some(Arc::new(move |_| Some(sf.clone()))),
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
             None,
@@ -1505,7 +1505,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1517,7 +1517,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1540,7 +1540,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs),
-            Some(Arc::new(|s| if is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             Some(tdp),
@@ -1556,7 +1556,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1568,7 +1568,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs.clone()),
-            Some(Arc::new(|s| if is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             None,
@@ -1591,7 +1591,7 @@ impl ColorSpec for ColorSpec2021 {
             true,
             None,
             Some(hs),
-            Some(Arc::new(|s| if is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
             Some(tdp),
@@ -1608,7 +1608,7 @@ impl ColorSpec for ColorSpec2021 {
             false,
             None,
             Some(Arc::new(move |_| Some(tfd.clone()))),
-            Some(Arc::new(|s| if is_monochrome(s) { 100.0 } else { 10.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 100.0 } else { 10.0 })),
             Some(Arc::new(move |_| Some(tf.clone()))),
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
             None,
@@ -1625,7 +1625,7 @@ impl ColorSpec for ColorSpec2021 {
             false,
             None,
             Some(Arc::new(move |_| Some(tfd.clone()))),
-            Some(Arc::new(|s| if is_monochrome(s) { 90.0 } else { 30.0 })),
+            Some(Arc::new(|s| if Self::is_monochrome(s) { 90.0 } else { 30.0 })),
             Some(Arc::new(move |_| Some(tf.clone()))),
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
             None,
@@ -1960,7 +1960,7 @@ mod tests {
 
     fn setup_scheme(color: Argb, is_dark: bool, contrast_level: f64) -> DynamicScheme {
         let hct = Hct::from_int(color);
-        let spec = ColorSpec2021;
+        let spec = ColorSpec2021::new();
         DynamicScheme::new(
             hct.clone(),
             Variant::TonalSpot,
@@ -2013,7 +2013,7 @@ mod tests {
 
     #[test]
     fn test_background_tone() {
-        let spec = ColorSpec2021;
+        let spec = ColorSpec2021::new();
         let bg = spec.background();
         let surface = spec.surface_variant();
         let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
@@ -2025,7 +2025,7 @@ mod tests {
 
     #[test]
     fn test_primary_tone() {
-        let spec = ColorSpec2021;
+        let spec = ColorSpec2021::new();
         let primary = spec.primary();
         let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
         let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
@@ -2036,7 +2036,7 @@ mod tests {
 
     #[test]
     fn test_on_primary_tone() {
-        let spec = ColorSpec2021;
+        let spec = ColorSpec2021::new();
         let on_primary = spec.on_primary();
         let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
         let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
@@ -2047,7 +2047,7 @@ mod tests {
 
     #[test]
     fn test_primary_container_tone() {
-        let spec = ColorSpec2021;
+        let spec = ColorSpec2021::new();
         let primary_container = spec.primary_container();
         let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
         let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
@@ -2058,7 +2058,7 @@ mod tests {
 
     #[test]
     fn test_surface_tones() {
-        let spec = ColorSpec2021;
+        let spec = ColorSpec2021::new();
         let surface = spec.surface();
         let surface_variant = spec.surface_variant();
         let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
@@ -2073,7 +2073,7 @@ mod tests {
 
     #[test]
     fn test_error_tones() {
-        let spec = ColorSpec2021;
+        let spec = ColorSpec2021::new();
         let error = spec.error();
         let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
         let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
