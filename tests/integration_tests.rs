@@ -100,7 +100,7 @@ fn make_scheme_from_entry(entry: &ReferenceEntry) -> Option<DynamicScheme> {
 fn test_material_schemes_against_reference() -> Result<()> {
     let entries = parse_reference_schemes()?;
 
-    let mdc = MaterialDynamicColors::new_with_spec(SpecVersion::Spec2021);
+    let mdc = MaterialDynamicColors::new();
     let mut invalid_hex: Vec<String> = Vec::new();
     let mut mismatch_color: Vec<String> = Vec::new();
     let mut missing_role: Vec<String> = Vec::new();
@@ -162,9 +162,9 @@ fn test_material_schemes_against_reference() -> Result<()> {
             missing_scheme.len(),
             tested_scheme
         );
-        for m in &missing_scheme {
-            eprintln!("{m}");
-        }
+        // for m in &missing_scheme {
+        //     eprintln!("{m}");
+        // }
     }
 
     if invalid_hex.is_empty() {
@@ -175,9 +175,9 @@ fn test_material_schemes_against_reference() -> Result<()> {
             invalid_hex.len(),
             tested_hex
         );
-        for m in &invalid_hex {
-            eprintln!("{m}");
-        }
+        // for m in &invalid_hex {
+        //     eprintln!("{m}");
+        // }
     }
 
     if mismatch_color.is_empty() {
@@ -188,9 +188,9 @@ fn test_material_schemes_against_reference() -> Result<()> {
             mismatch_color.len(),
             tested_color
         );
-        for m in &mismatch_color {
-            eprintln!("{m}");
-        }
+        // for m in &mismatch_color {
+        //     eprintln!("{m}");
+        // }
     }
 
     if missing_role.is_empty() {
@@ -201,9 +201,9 @@ fn test_material_schemes_against_reference() -> Result<()> {
             missing_role.len(),
             tested_role
         );
-        for m in &missing_role {
-            eprintln!("{m}");
-        }
+        // for m in &missing_role {
+        //     eprintln!("{m}");
+        // }
     }
 
     if !missing_scheme.is_empty()
