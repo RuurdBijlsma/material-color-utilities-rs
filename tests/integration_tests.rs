@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+
+use color_eyre::Result;
+use color_eyre::eyre::eyre;
+use serde::Deserialize;
 
 use material_color_utilities::dynamic::color_spec::SpecVersion;
 use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
@@ -8,161 +11,207 @@ use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicC
 use material_color_utilities::hct::hct_color::Hct;
 use material_color_utilities::utils::color_utils::Argb;
 
-// Import all schemes
-use color_eyre::Result;
 use material_color_utilities::scheme::scheme_content::SchemeContent;
 use material_color_utilities::scheme::scheme_expressive::SchemeExpressive;
 use material_color_utilities::scheme::scheme_monochrome::SchemeMonochrome;
 use material_color_utilities::scheme::scheme_tonal_spot::SchemeTonalSpot;
 use material_color_utilities::scheme::scheme_vibrant::SchemeVibrant;
+use material_color_utilities::scheme::{
+    SchemeCmf, SchemeFidelity, SchemeFruitSalad, SchemeNeutral, SchemeRainbow,
+};
 
-/// Helper to parse the reference file into a Map: { TestName -> { ColorName -> ArgbValue } }
-fn parse_reference_file() -> Result<HashMap<String, HashMap<String, u32>>> {
-    let path = Path::new("tests/reference_output.txt");
-    println!("File: {}", path.canonicalize()?.exists());
-    let content = fs::read_to_string(path)?;
-
-    let mut results = HashMap::new();
-    let mut current_test_name = String::new();
-    let mut current_colors = HashMap::new();
-
-    for line in content.lines() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-
-        if line.starts_with("----------") {
-            // New section: save previous if exists
-            if !current_test_name.is_empty() {
-                results.insert(current_test_name.clone(), current_colors.clone());
-            }
-            // Extract name from "---------- name ----------"
-            current_test_name = line.replace('-', "").trim().to_string();
-            current_colors = HashMap::new();
-        } else if line.contains(':') {
-            // Color line: "primary: 0xFF445E91,"
-            let parts: Vec<&str> = line.split(':').collect();
-            let key = parts[0].trim().to_string();
-            let val_str = parts[1].trim().trim_matches(',');
-
-            // Parse hex string (e.g., 0xFF445E91)
-            let val = u32::from_str_radix(val_str.trim_start_matches("0x"), 16)
-                .expect(&format!("Failed to parse hex value: {}", val_str));
-
-            current_colors.insert(key, val);
-        }
-    }
-
-    // Insert last section
-    if !current_test_name.is_empty() {
-        results.insert(current_test_name, current_colors);
-    }
-
-    Ok(results)
+#[derive(Debug, Deserialize)]
+struct ReferenceEntry {
+    color: String,
+    scheme: String,
+    contrast: f64,
+    is_dark: bool,
+    roles: HashMap<String, String>,
 }
 
-/// Maps a test name to the corresponding Rust Scheme object.
-/// Source colors must match your Kotlin main() values.
-fn get_scheme_by_name(name: &str) -> DynamicScheme {
-    match name {
-        "test_tonal_spot_light" => {
-            SchemeTonalSpot::new(Hct::from_int(Argb(0xFF4285F4)), false, 0.0)
-        }
-        "test_tonal_spot_dark" => SchemeTonalSpot::new(Hct::from_int(Argb(0xFF4285F4)), true, 0.0),
-
-        "test_content_light" => SchemeContent::new(Hct::from_int(Argb(0xFFEA4335)), false, 0.0),
-        "test_content_dark" => SchemeContent::new(Hct::from_int(Argb(0xFFEA4335)), true, 0.0),
-
-        "test_vibrant_light" => SchemeVibrant::new(Hct::from_int(Argb(0xFFFBBC04)), false, 0.0),
-        "test_vibrant_dark" => SchemeVibrant::new(Hct::from_int(Argb(0xFFFBBC04)), true, 0.0),
-
-        "test_monochrome_light" => {
-            SchemeMonochrome::new(Hct::from_int(Argb(0xFF34A853)), false, 0.0)
-        }
-        "test_monochrome_dark" => SchemeMonochrome::new(Hct::from_int(Argb(0xFF34A853)), true, 0.0),
-
-        "test_expressive_light" => {
-            SchemeExpressive::new(Hct::from_int(Argb(0xFF6200EE)), false, 0.0)
-        }
-        "test_expressive_dark" => SchemeExpressive::new(Hct::from_int(Argb(0xFF6200EE)), true, 0.0),
-
-        _ => panic!("Unknown test scheme name in reference file: {}", name),
-    }
+fn parse_reference_schemes() -> Result<Vec<ReferenceEntry>> {
+    let content = fs::read_to_string("tests/reference_schemes.json")?;
+    let entries: Vec<ReferenceEntry> = serde_json::from_str(&content)?;
+    Ok(entries)
 }
 
-/// Helper to get a color from MaterialDynamicColors by string name.
-fn get_color_argb(mdc: &MaterialDynamicColors, scheme: &DynamicScheme, color_name: &str) -> u32 {
-    let dynamic_color = match color_name {
-        "primary" => mdc.primary(),
-        "on_primary" => mdc.on_primary(),
-        "primary_container" => mdc.primary_container(),
-        "on_primary_container" => mdc.on_primary_container(),
-        "inverse_primary" => mdc.inverse_primary(),
-        "secondary" => mdc.secondary(),
-        "on_secondary" => mdc.on_secondary(),
-        "secondary_container" => mdc.secondary_container(),
-        "on_secondary_container" => mdc.on_secondary_container(),
-        "tertiary" => mdc.tertiary(),
-        "on_tertiary" => mdc.on_tertiary(),
-        "tertiary_container" => mdc.tertiary_container(),
-        "on_tertiary_container" => mdc.on_tertiary_container(),
-        "error" => mdc.error(),
-        "on_error" => mdc.on_error(),
-        "error_container" => mdc.error_container(),
-        "on_error_container" => mdc.on_error_container(),
-        "background" => mdc.background(),
-        "on_background" => mdc.on_background(),
-        "surface" => mdc.surface(),
-        "on_surface" => mdc.on_surface(),
-        "surface_variant" => mdc.surface_variant(),
-        "on_surface_variant" => mdc.on_surface_variant(),
-        "inverse_surface" => mdc.inverse_surface(),
-        "inverse_on_surface" => mdc.inverse_on_surface(),
-        "surface_dim" => mdc.surface_dim(),
-        "surface_bright" => mdc.surface_bright(),
-        "surface_container_lowest" => mdc.surface_container_lowest(),
-        "surface_container_low" => mdc.surface_container_low(),
-        "surface_container" => mdc.surface_container(),
-        "surface_container_high" => mdc.surface_container_high(),
-        "surface_container_highest" => mdc.surface_container_highest(),
-        "outline" => mdc.outline(),
-        "outline_variant" => mdc.outline_variant(),
-        "shadow" => mdc.shadow(),
-        "scrim" => mdc.scrim(),
-        "surface_tint" => mdc.surface_tint(),
-        _ => panic!("Unknown color method name: {}", color_name),
+fn make_scheme_from_entry(entry: &ReferenceEntry) -> Option<DynamicScheme> {
+    // Parse color hex like "0xFFDCDCDC" -> 0xFFDCDCDC
+    let Ok(color_val) = u32::from_str_radix(entry.color.trim_start_matches("0x"), 16) else {
+        return None;
     };
 
-    dynamic_color.get_argb(scheme).0
+    match entry.scheme.as_str() {
+        "CMF" => Some(SchemeCmf::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "CONTENT" => Some(SchemeContent::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "EXPRESSIVE" => Some(SchemeExpressive::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "FIDELITY" => Some(SchemeFidelity::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "FRUIT_SALAD" => Some(SchemeFruitSalad::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "MONOCHROME" => Some(SchemeMonochrome::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "NEUTRAL" => Some(SchemeNeutral::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "RAINBOW" => Some(SchemeRainbow::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "TONAL_SPOT" => Some(SchemeTonalSpot::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        "VIBRANT" => Some(SchemeVibrant::new(
+            Hct::from_int(Argb(color_val)),
+            entry.is_dark,
+            entry.contrast,
+        )),
+        _ => None,
+    }
 }
 
 #[test]
 fn test_material_schemes_against_reference() -> Result<()> {
-    let references = parse_reference_file()?;
+    let entries = parse_reference_schemes()?;
 
-    // Kotlin's MaterialDynamicColors() defaults to Spec2021 logic in older versions
-    // or Spec2026 in newest. Based on your Kotlin snippet comments, we'll try 2021
-    // first to match your previous test logic, but you can change this to 2026.
     let mdc = MaterialDynamicColors::new_with_spec(SpecVersion::Spec2021);
+    let mut invalid_hex: Vec<String> = Vec::new();
+    let mut mismatch_color: Vec<String> = Vec::new();
+    let mut missing_role: Vec<String> = Vec::new();
+    let mut missing_scheme: Vec<String> = Vec::new();
+    let mut tested_hex = 0;
+    let mut tested_color = 0;
+    let mut tested_role = 0;
+    let mut tested_scheme = 0;
 
-    for (test_name, expected_colors) in references {
-        println!("Running reference check for: {}", test_name);
-        let scheme = get_scheme_by_name(&test_name);
+    for entry in entries {
+        tested_scheme += 1;
+        if let Some(scheme) = make_scheme_from_entry(&entry) {
+            // Build actual roles map from the Rust MaterialDynamicColors
+            let mut actual_roles: HashMap<String, u32> = HashMap::new();
+            for getter in mdc.all_dynamic_colors() {
+                if let Some(dc) = getter() {
+                    actual_roles.insert(dc.name.clone(), dc.get_argb(&scheme).0);
+                }
+            }
 
-        for (color_name, &expected_argb) in &expected_colors {
-            let actual_argb = get_color_argb(&mdc, &scheme, color_name);
+            for (role_name, hex_str) in entry.roles {
+                tested_hex += 1;
+                let Ok(expected) = u32::from_str_radix(hex_str.trim_start_matches("0x"), 16) else {
+                    invalid_hex.push(format!(
+                        "Invalid hex for role {role_name} in reference: {hex_str}"
+                    ));
+                    continue;
+                };
 
-            println!(
-                "\nTest: {}\nColor: {}\nExpected: {:#010X}\nActual:   {:#010X}",
-                test_name, color_name, actual_argb, expected_argb
-            );
-            assert_eq!(
-                actual_argb, expected_argb,
-                "\nTest: {}\nColor: {}\nExpected: {:#010X}\nActual:   {:#010X}",
-                test_name, color_name, expected_argb, actual_argb
-            );
+                tested_role += 1;
+                match actual_roles.get(&role_name).copied() {
+                    Some(actual) => {
+                        tested_color += 1;
+                        if actual != expected {
+                            mismatch_color.push(format!(
+                                "Mismatch for scheme {} role {}: expected {:#010X}, got {:#010X}",
+                                entry.scheme, role_name, expected, actual
+                            ));
+                        }
+                    }
+                    None => {
+                        missing_role.push(format!(
+                            "Role {} not found in MaterialDynamicColors for scheme {}",
+                            role_name, entry.scheme
+                        ));
+                    }
+                }
+            }
+        } else {
+            missing_scheme.push(format!("Scheme {} is unsupported", entry.scheme));
         }
+    }
+
+    if missing_scheme.is_empty() {
+        println!("\n\n\n✅ No missing_scheme, {tested_scheme} checks done");
+    } else {
+        eprintln!(
+            "\n\n\nFound {}/{} missing_scheme:",
+            missing_scheme.len(),
+            tested_scheme
+        );
+        for m in &missing_scheme {
+            eprintln!("{m}");
+        }
+    }
+
+    if invalid_hex.is_empty() {
+        println!("\n\n\n✅ No invalid_hex, {tested_hex} checks done");
+    } else {
+        eprintln!(
+            "\n\n\nFound {}/{} invalid_hex:",
+            invalid_hex.len(),
+            tested_hex
+        );
+        for m in &invalid_hex {
+            eprintln!("{m}");
+        }
+    }
+
+    if mismatch_color.is_empty() {
+        println!("\n\n\n✅ No mismatch_color, {tested_color} checks done");
+    } else {
+        eprintln!(
+            "\n\n\nFound {}/{} mismatch_color:",
+            mismatch_color.len(),
+            tested_color
+        );
+        for m in &mismatch_color {
+            eprintln!("{m}");
+        }
+    }
+
+    if missing_role.is_empty() {
+        println!("\n\n\n✅ No missing_role, {tested_role} checks done");
+    } else {
+        eprintln!(
+            "\n\n\nFound {}/{} missing_role:",
+            missing_role.len(),
+            tested_role
+        );
+        for m in &missing_role {
+            eprintln!("{m}");
+        }
+    }
+
+    if !missing_scheme.is_empty()
+        || !missing_role.is_empty()
+        || !invalid_hex.is_empty()
+        || !mismatch_color.is_empty()
+    {
+        return Err(eyre!("Test failed"));
     }
 
     Ok(())
