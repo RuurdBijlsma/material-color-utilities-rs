@@ -34,7 +34,7 @@ struct ReferenceEntry {
 }
 
 fn parse_reference_schemes() -> Result<Vec<ReferenceEntry>> {
-    let content = fs::read_to_string("tests/reference_schemes.json")?;
+    let content = fs::read_to_string("tests/reference_schemes_large.json")?;
     let entries: Vec<ReferenceEntry> = serde_json::from_str(&content)?;
     Ok(entries)
 }
