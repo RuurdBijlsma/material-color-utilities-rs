@@ -195,8 +195,8 @@ fn test_material_schemes_against_reference() -> Result<()> {
                                 "scheme: {}, role: {}, expected: {}, got: {}",
                                 &entry.scheme,
                                 role_name,
-                                StringUtils::hex_from_argb(Argb(expected)),
-                                StringUtils::hex_from_argb(Argb(actual))
+                                Hct::from_int(Argb(expected)),
+                                Hct::from_int(Argb(actual))
                             ));
 
                             // The entry API is the idiomatic way to handle map counts in Rust
