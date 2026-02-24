@@ -756,68 +756,11 @@ impl ColorSpec for ColorSpec2026 {
     fn get_error_palette(&self, variant: Variant, src: &Hct, dark: bool, plat: Platform, cl: f64) -> TonalPalette { self.base.get_error_palette(variant, src, dark, plat, cl) }
 
     fn tertiary_dim(&self) -> Option<Arc<DynamicColor>> {
-        let color2026 = DynamicColor::new(
-            "tertiary_dim".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).highest_surface(s)))),
-            Some(Arc::new(|s| {
-                if s.variant == Variant::TonalSpot {
-                    Self::t_max_c(&s.tertiary_palette, 0.0, 90.0, 1.0)
-                } else {
-                    Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
-                }
-            })),
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(|s| {
-                Some(ToneDeltaPair::new(
-                    ColorSpecs::get(s.spec_version).tertiary_dim().unwrap(),
-                    ColorSpecs::get(s.spec_version).tertiary(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Farther,
-                ))
-            })),
-            None,
-        );
-
-        // We wrap the base tertiary_dim (which might be None in 2021) with our 2026 override
-        Some(match self.base.tertiary_dim() {
-            Some(base_color) => base_color.extend_spec_version(SpecVersion::Spec2026, &color2026),
-            None => Arc::new(color2026),
-        })
+        self.base.tertiary_dim()
     }
 
     fn error_dim(&self) -> Option<Arc<DynamicColor>> {
-        let color2026 = DynamicColor::new(
-            "error_dim".to_string(),
-            Arc::new(|s| s.error_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).highest_surface(s)))),
-            Some(Arc::new(|s| Self::t_min_c(&s.error_palette, 0.0, 100.0))),
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(|s| {
-                Some(ToneDeltaPair::new(
-                    ColorSpecs::get(s.spec_version).error_dim().unwrap(),
-                    ColorSpecs::get(s.spec_version).error(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Farther,
-                ))
-            })),
-            None,
-        );
-
-        Some(match self.base.error_dim() {
-            Some(base_color) => base_color.extend_spec_version(SpecVersion::Spec2026, &color2026),
-            None => Arc::new(color2026),
-        })
+        self.base.error_dim()
     }
 
     fn highest_surface(&self, scheme: &DynamicScheme) -> Arc<DynamicColor> {

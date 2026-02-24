@@ -102,7 +102,7 @@ fn make_scheme_from_entry(entry: &ReferenceEntry) -> Option<DynamicScheme> {
 }
 
 pub fn plot_debug(data: &[f64], title: &str, y_label: &str) -> Result<()> {
-    let root = BitMapBackend::new("plot.png", (10000, 600)).into_drawing_area();
+    let root = BitMapBackend::new("plot.png", (1000, 600)).into_drawing_area();
     root.fill(&WHITE)?;
 
     let x_range = 0..data.len();
