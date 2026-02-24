@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 use std::fs;
 
-use color_eyre::Result;
 use color_eyre::eyre::eyre;
-use plotters::prelude::{BLUE, BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries, WHITE};
+use color_eyre::Result;
+use plotters::prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries, BLUE, WHITE};
 use serde::Deserialize;
 
 use material_color_utilities::dynamic::color_spec::SpecVersion;
 use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
 use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
-use material_color_utilities::hct::Cam16;
 use material_color_utilities::hct::hct_color::Hct;
+use material_color_utilities::hct::Cam16;
 use material_color_utilities::scheme::scheme_content::SchemeContent;
 use material_color_utilities::scheme::scheme_expressive::SchemeExpressive;
 use material_color_utilities::scheme::scheme_monochrome::SchemeMonochrome;
@@ -20,7 +20,6 @@ use material_color_utilities::scheme::{
     SchemeCmf, SchemeFidelity, SchemeFruitSalad, SchemeNeutral, SchemeRainbow,
 };
 use material_color_utilities::utils::color_utils::Argb;
-use material_color_utilities::utils::string_utils::StringUtils;
 use plotters::prelude::*;
 use rand::prelude::IndexedRandom;
 use statrs::statistics::Statistics;

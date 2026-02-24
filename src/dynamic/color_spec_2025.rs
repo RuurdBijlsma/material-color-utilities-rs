@@ -21,7 +21,7 @@ use crate::dynamic::color_spec::{ColorSpec, Platform, SpecVersion};
 use crate::dynamic::color_spec_2021::ColorSpec2021;
 use crate::dynamic::color_specs::ColorSpecs;
 use crate::dynamic::contrast_curve::ContrastCurve;
-use crate::dynamic::dynamic_color::{DynamicColor, DynamicColorFunction};
+use crate::dynamic::dynamic_color::DynamicColor;
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::tone_delta_pair::{DeltaConstraint, ToneDeltaPair, TonePolarity};
 use crate::dynamic::variant::Variant;
