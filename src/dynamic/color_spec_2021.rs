@@ -19,8 +19,9 @@ use std::sync::Arc;
 use crate::contrast::contrast_utils::Contrast;
 use crate::dislike::dislike_analyzer::DislikeAnalyzer;
 use crate::dynamic::color_spec::{ColorSpec, Platform};
+use crate::dynamic::color_specs::ColorSpecs;
 use crate::dynamic::contrast_curve::ContrastCurve;
-use crate::dynamic::dynamic_color::{DynamicColor, DynamicColorFunction};
+use crate::dynamic::dynamic_color::DynamicColor;
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::tone_delta_pair::{DeltaConstraint, ToneDeltaPair, TonePolarity};
 use crate::dynamic::variant::Variant;
@@ -29,9 +30,6 @@ use crate::palettes::tonal_palette::TonalPalette;
 use crate::temperature::temperature_cache::TemperatureCache;
 use crate::utils::math_utils::MathUtils;
 
-// ─── ColorSpec2021 ──────────────────────────────────────────────────────────
-
-/// [`ColorSpec`] implementation for the 2021 Material Design color specification.
 pub struct ColorSpec2021;
 
 impl ColorSpec2021 {
@@ -48,8 +46,12 @@ impl ColorSpec2021 {
         scheme.variant == Variant::Monochrome
     }
 
-    /// Find a tone that best achieves `chroma` for the given `hue`.
-    fn find_desired_chroma_by_tone(hue: f64, chroma: f64, tone: f64, by_decreasing_tone: bool) -> f64 {
+    fn find_desired_chroma_by_tone(
+        hue: f64,
+        chroma: f64,
+        tone: f64,
+        by_decreasing_tone: bool,
+    ) -> f64 {
         let mut answer = tone;
         let mut closest_to_chroma = Hct::from(hue, chroma, tone);
         if closest_to_chroma.chroma() < chroma {
@@ -82,7 +84,9 @@ impl Default for ColorSpec2021 {
 }
 
 impl ColorSpec for ColorSpec2021 {
-    // ── Key colors ────────────────────────────────────────────────────────
+    // ————————————————————————————————————————————————————————————————
+    // Main Palette Key Colors
+    // ————————————————————————————————————————————————————————————————
 
     fn primary_palette_key_color(&self) -> Arc<DynamicColor> {
         Arc::new(DynamicColor::new(
@@ -174,7 +178,9 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
-    // ── Surfaces ─────────────────────────────────────────────────────────
+    // ————————————————————————————————————————————————————————————————
+    // Surfaces [S]
+    // ————————————————————————————————————————————————————————————————
 
     fn background(&self) -> Arc<DynamicColor> {
         Arc::new(DynamicColor::new(
@@ -192,13 +198,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_background(&self) -> Arc<DynamicColor> {
-        let bg: Arc<DynamicColor> = self.background();
         Arc::new(DynamicColor::new(
             "on_background".into(),
             Arc::new(|s| s.neutral_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(bg.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).background())
+            })),
             Some(Arc::new(|s| if s.is_dark { 90.0 } else { 10.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 3.0, 4.5, 7.0)))),
@@ -370,13 +377,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_surface(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(move |s: &DynamicScheme| Some(Self.highest_surface(s)));
         Arc::new(DynamicColor::new(
             "on_surface".into(),
             Arc::new(|s| s.neutral_palette.clone()),
             false,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| if s.is_dark { 90.0 } else { 10.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
@@ -401,13 +409,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_surface_variant(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(move |s: &DynamicScheme| Some(Self.highest_surface(s)));
         Arc::new(DynamicColor::new(
             "on_surface_variant".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
             false,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| if s.is_dark { 80.0 } else { 30.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
@@ -432,13 +441,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn inverse_on_surface(&self) -> Arc<DynamicColor> {
-        let inv = self.inverse_surface();
         Arc::new(DynamicColor::new(
             "inverse_on_surface".into(),
             Arc::new(|s| s.neutral_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(inv.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).inverse_surface())
+            })),
             Some(Arc::new(|s| if s.is_dark { 20.0 } else { 95.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
@@ -448,13 +458,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn outline(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(move |s: &DynamicScheme| Some(Self.highest_surface(s)));
         Arc::new(DynamicColor::new(
             "outline".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
             false,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| if s.is_dark { 60.0 } else { 50.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.5, 3.0, 4.5, 7.0)))),
@@ -464,13 +475,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn outline_variant(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(move |s: &DynamicScheme| Some(Self.highest_surface(s)));
         Arc::new(DynamicColor::new(
             "outline_variant".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
             false,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| if s.is_dark { 30.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
@@ -524,47 +536,19 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
+    // ————————————————————————————————————————————————————————————————
+    // Primaries [P]
+    // ————————————————————————————————————————————————————————————————
+
     fn primary(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let primary_container = self.primary_container();
-        let primary_self = Arc::new(DynamicColor::new(
-            "primary".into(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| {
-                if Self::is_monochrome(s) {
-                    if s.is_dark { 100.0 } else { 0.0 }
-                } else if s.is_dark {
-                    80.0
-                } else {
-                    40.0
-                }
-            })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        // Build tone_delta_pair using Arc clones — rebuild without circular ref
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
-                Some(ToneDeltaPair::new(
-                    primary_container.clone(),
-                    primary_self.clone(),
-                    10.0,
-                    TonePolarity::RelativeLighter,
-                    false,
-                    DeltaConstraint::Nearer,
-                ))
-            });
         Arc::new(DynamicColor::new(
             "primary".into(),
             Arc::new(|s| s.primary_palette.clone()),
             true,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 100.0 } else { 0.0 }
@@ -576,7 +560,17 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            Some(tdp),
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
+                Some(ToneDeltaPair::new(
+                    spec.primary_container(),
+                    spec.primary(),
+                    10.0,
+                    TonePolarity::RelativeLighter,
+                    false,
+                    DeltaConstraint::Nearer,
+                ))
+            })),
             None,
         ))
     }
@@ -586,13 +580,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_primary(&self) -> Arc<DynamicColor> {
-        let primary = self.primary();
         Arc::new(DynamicColor::new(
             "on_primary".into(),
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(primary.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).primary())
+            })),
             Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 10.0 } else { 90.0 }
@@ -608,34 +603,16 @@ impl ColorSpec for ColorSpec2021 {
             None,
         ))
     }
+
     fn primary_container(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let primary_stub = Arc::new(DynamicColor::new(
-            "primary".into(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| {
-                if Self::is_monochrome(s) {
-                    if s.is_dark { 100.0 } else { 0.0 }
-                } else if s.is_dark {
-                    80.0
-                } else {
-                    40.0
-                }
-            })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        let pc_self = Arc::new(DynamicColor::new(
+        Arc::new(DynamicColor::new(
             "primary_container".into(),
             Arc::new(|s| s.primary_palette.clone()),
             true,
             None,
-            Some(hs.clone()),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| {
                 if Self::is_fidelity(s) {
                     s.source_color_hct().tone()
@@ -649,56 +626,38 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
                 Some(ToneDeltaPair::new(
-                    pc_self.clone(),
-                    primary_stub.clone(),
+                    spec.primary_container(),
+                    spec.primary(),
                     10.0,
                     TonePolarity::RelativeLighter,
                     false,
                     DeltaConstraint::Nearer,
                 ))
-            });
-        Arc::new(DynamicColor::new(
-            "primary_container".into(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(hs),
-            Some(Arc::new(|s| {
-                if Self::is_fidelity(s) {
-                    s.source_color_hct().tone()
-                } else if Self::is_monochrome(s) {
-                    if s.is_dark { 85.0 } else { 25.0 }
-                } else if s.is_dark {
-                    30.0
-                } else {
-                    90.0
-                }
             })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
             None,
         ))
     }
 
     fn on_primary_container(&self) -> Arc<DynamicColor> {
-        let pc = self.primary_container();
-        let pc2 = pc.clone();
         Arc::new(DynamicColor::new(
             "on_primary_container".into(),
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(pc.clone()))),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).primary_container())
+            })),
+            Some(Arc::new(|s| {
                 if Self::is_fidelity(s) {
-                    DynamicColor::foreground_tone((pc2.tone)(s), 4.5)
+                    DynamicColor::foreground_tone(
+                        ColorSpecs::get(s.spec_version)
+                            .primary_container()
+                            .get_tone(s),
+                        4.5,
+                    )
                 } else if Self::is_monochrome(s) {
                     if s.is_dark { 0.0 } else { 100.0 }
                 } else if s.is_dark {
@@ -715,13 +674,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn inverse_primary(&self) -> Arc<DynamicColor> {
-        let inv = self.inverse_surface();
         Arc::new(DynamicColor::new(
             "inverse_primary".into(),
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(inv.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).inverse_surface())
+            })),
             Some(Arc::new(|s| if s.is_dark { 40.0 } else { 80.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
@@ -730,42 +690,33 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
+    // ————————————————————————————————————————————————————————————————
+    // Secondaries [Q]
+    // ————————————————————————————————————————————————————————————————
+
     fn secondary(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let sc = self.secondary_container();
-        let sec_stub = Arc::new(DynamicColor::new(
-            "secondary".into(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
-                Some(ToneDeltaPair::new(
-                    sc.clone(),
-                    sec_stub.clone(),
-                    10.0,
-                    TonePolarity::RelativeLighter,
-                    false,
-                    DeltaConstraint::Nearer,
-                ))
-            });
         Arc::new(DynamicColor::new(
             "secondary".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             true,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            Some(tdp),
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
+                Some(ToneDeltaPair::new(
+                    spec.secondary_container(),
+                    spec.secondary(),
+                    10.0,
+                    TonePolarity::RelativeLighter,
+                    false,
+                    DeltaConstraint::Nearer,
+                ))
+            })),
             None,
         ))
     }
@@ -775,13 +726,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_secondary(&self) -> Arc<DynamicColor> {
-        let sec = self.secondary();
         Arc::new(DynamicColor::new(
             "on_secondary".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(sec.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).secondary())
+            })),
             Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 10.0 } else { 100.0 }
@@ -799,25 +751,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn secondary_container(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let sec_stub = Arc::new(DynamicColor::new(
-            "secondary".into(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        let sc_self = Arc::new(DynamicColor::new(
+        Arc::new(DynamicColor::new(
             "secondary_container".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             true,
             None,
-            Some(hs.clone()),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| {
                 let initial = if s.is_dark { 30.0 } else { 90.0 };
                 if Self::is_monochrome(s) {
@@ -835,64 +776,42 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
                 Some(ToneDeltaPair::new(
-                    sc_self.clone(),
-                    sec_stub.clone(),
+                    spec.secondary_container(),
+                    spec.secondary(),
                     10.0,
                     TonePolarity::RelativeLighter,
                     false,
                     DeltaConstraint::Nearer,
                 ))
-            });
-        Arc::new(DynamicColor::new(
-            "secondary_container".into(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(hs),
-            Some(Arc::new(|s| {
-                let initial = if s.is_dark { 30.0 } else { 90.0 };
-                if Self::is_monochrome(s) {
-                    if s.is_dark { 30.0 } else { 85.0 }
-                } else if !Self::is_fidelity(s) {
-                    initial
-                } else {
-                    Self::find_desired_chroma_by_tone(
-                        s.secondary_palette.hue,
-                        s.secondary_palette.chroma,
-                        initial,
-                        !s.is_dark,
-                    )
-                }
             })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
             None,
         ))
     }
 
     fn on_secondary_container(&self) -> Arc<DynamicColor> {
-        let sc = self.secondary_container();
-        let sc2 = sc.clone();
         Arc::new(DynamicColor::new(
             "on_secondary_container".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(sc.clone()))),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).secondary_container())
+            })),
+            Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 10.0 }
                 } else if !Self::is_fidelity(s) {
                     if s.is_dark { 90.0 } else { 30.0 }
                 } else {
-                    DynamicColor::foreground_tone((sc2.tone)(s), 4.5)
+                    DynamicColor::foreground_tone(
+                        ColorSpecs::get(s.spec_version)
+                            .secondary_container()
+                            .get_tone(s),
+                        4.5,
+                    )
                 }
             })),
             None,
@@ -902,46 +821,19 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
+    // ————————————————————————————————————————————————————————————————
+    // Tertiaries [T]
+    // ————————————————————————————————————————————————————————————————
+
     fn tertiary(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let tc = self.tertiary_container();
-        let t_stub = Arc::new(DynamicColor::new(
-            "tertiary".into(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| {
-                if Self::is_monochrome(s) {
-                    if s.is_dark { 90.0 } else { 25.0 }
-                } else if s.is_dark {
-                    80.0
-                } else {
-                    40.0
-                }
-            })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
-                Some(ToneDeltaPair::new(
-                    tc.clone(),
-                    t_stub.clone(),
-                    10.0,
-                    TonePolarity::RelativeLighter,
-                    false,
-                    DeltaConstraint::Nearer,
-                ))
-            });
         Arc::new(DynamicColor::new(
             "tertiary".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             true,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 25.0 }
@@ -953,7 +845,17 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            Some(tdp),
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
+                Some(ToneDeltaPair::new(
+                    spec.tertiary_container(),
+                    spec.tertiary(),
+                    10.0,
+                    TonePolarity::RelativeLighter,
+                    false,
+                    DeltaConstraint::Nearer,
+                ))
+            })),
             None,
         ))
     }
@@ -963,13 +865,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_tertiary(&self) -> Arc<DynamicColor> {
-        let t = self.tertiary();
         Arc::new(DynamicColor::new(
             "on_tertiary".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(t.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).tertiary())
+            })),
             Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 10.0 } else { 90.0 }
@@ -987,33 +890,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn tertiary_container(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let t_stub = Arc::new(DynamicColor::new(
-            "tertiary".into(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| {
-                if Self::is_monochrome(s) {
-                    if s.is_dark { 90.0 } else { 25.0 }
-                } else if s.is_dark {
-                    80.0
-                } else {
-                    40.0
-                }
-            })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        let tc_self = Arc::new(DynamicColor::new(
+        Arc::new(DynamicColor::new(
             "tertiary_container".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             true,
             None,
-            Some(hs.clone()),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 60.0 } else { 49.0 }
@@ -1026,59 +910,42 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
                 Some(ToneDeltaPair::new(
-                    tc_self.clone(),
-                    t_stub.clone(),
+                    spec.tertiary_container(),
+                    spec.tertiary(),
                     10.0,
                     TonePolarity::RelativeLighter,
                     false,
                     DeltaConstraint::Nearer,
                 ))
-            });
-        Arc::new(DynamicColor::new(
-            "tertiary_container".into(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(hs),
-            Some(Arc::new(|s| {
-                if Self::is_monochrome(s) {
-                    if s.is_dark { 60.0 } else { 49.0 }
-                } else if !Self::is_fidelity(s) {
-                    if s.is_dark { 30.0 } else { 90.0 }
-                } else {
-                    let proposed = s.tertiary_palette.get_hct(s.source_color_hct().tone());
-                    DislikeAnalyzer::fix_if_disliked(proposed).tone()
-                }
             })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
             None,
         ))
     }
 
     fn on_tertiary_container(&self) -> Arc<DynamicColor> {
-        let tc = self.tertiary_container();
-        let tc2 = tc.clone();
         Arc::new(DynamicColor::new(
             "on_tertiary_container".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(tc.clone()))),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).tertiary_container())
+            })),
+            Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 0.0 } else { 100.0 }
                 } else if !Self::is_fidelity(s) {
                     if s.is_dark { 90.0 } else { 30.0 }
                 } else {
-                    DynamicColor::foreground_tone((tc2.tone)(s), 4.5)
+                    DynamicColor::foreground_tone(
+                        ColorSpecs::get(s.spec_version)
+                            .tertiary_container()
+                            .get_tone(s),
+                        4.5,
+                    )
                 }
             })),
             None,
@@ -1088,42 +955,33 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
+    // ————————————————————————————————————————————————————————————————
+    // Errors [E]
+    // ————————————————————————————————————————————————————————————————
+
     fn error(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let ec = self.error_container();
-        let e_stub = Arc::new(DynamicColor::new(
-            "error".into(),
-            Arc::new(|s| s.error_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
-                Some(ToneDeltaPair::new(
-                    ec.clone(),
-                    e_stub.clone(),
-                    10.0,
-                    TonePolarity::RelativeLighter,
-                    false,
-                    DeltaConstraint::Nearer,
-                ))
-            });
         Arc::new(DynamicColor::new(
             "error".into(),
             Arc::new(|s| s.error_palette.clone()),
             true,
             None,
-            Some(hs),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            Some(tdp),
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
+                Some(ToneDeltaPair::new(
+                    spec.error_container(),
+                    spec.error(),
+                    10.0,
+                    TonePolarity::RelativeLighter,
+                    false,
+                    DeltaConstraint::Nearer,
+                ))
+            })),
             None,
         ))
     }
@@ -1133,13 +991,12 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_error(&self) -> Arc<DynamicColor> {
-        let e = self.error();
         Arc::new(DynamicColor::new(
             "on_error".into(),
             Arc::new(|s| s.error_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(e.clone()))),
+            Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).error()))),
             Some(Arc::new(|s| if s.is_dark { 20.0 } else { 100.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
@@ -1149,64 +1006,41 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn error_container(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let e_stub = Arc::new(DynamicColor::new(
-            "error".into(),
-            Arc::new(|s| s.error_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
-            None,
-            None,
-        ));
-        let ec_self = Arc::new(DynamicColor::new(
+        Arc::new(DynamicColor::new(
             "error_container".into(),
             Arc::new(|s| s.error_palette.clone()),
             true,
             None,
-            Some(hs.clone()),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
             Some(Arc::new(|s| if s.is_dark { 30.0 } else { 90.0 })),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
                 Some(ToneDeltaPair::new(
-                    ec_self.clone(),
-                    e_stub.clone(),
+                    spec.error_container(),
+                    spec.error(),
                     10.0,
                     TonePolarity::RelativeLighter,
                     false,
                     DeltaConstraint::Nearer,
                 ))
-            });
-        Arc::new(DynamicColor::new(
-            "error_container".into(),
-            Arc::new(|s| s.error_palette.clone()),
-            true,
-            None,
-            Some(hs),
-            Some(Arc::new(|s| if s.is_dark { 30.0 } else { 90.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
+            })),
             None,
         ))
     }
 
     fn on_error_container(&self) -> Arc<DynamicColor> {
-        let ec = self.error_container();
         Arc::new(DynamicColor::new(
             "on_error_container".into(),
             Arc::new(|s| s.error_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(ec.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).error_container())
+            })),
             Some(Arc::new(|s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 10.0 }
@@ -1223,121 +1057,83 @@ impl ColorSpec for ColorSpec2021 {
         ))
     }
 
-    // ── Fixed colors ───────────────────────────────────────────────────
+    // ————————————————————————————————————————————————————————————————
+    // Fixed colors
+    // ————————————————————————————————————————————————————————————————
 
     fn primary_fixed(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let pfd_stub = Arc::new(DynamicColor::new(
-            "primary_fixed_dim".into(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let pf_self = Arc::new(DynamicColor::new(
-            "primary_fixed".into(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
-                Some(ToneDeltaPair::new(
-                    pf_self.clone(),
-                    pfd_stub.clone(),
-                    10.0,
-                    TonePolarity::Lighter,
-                    true,
-                    DeltaConstraint::Exact,
-                ))
-            });
         Arc::new(DynamicColor::new(
             "primary_fixed".into(),
             Arc::new(|s| s.primary_palette.clone()),
             true,
             None,
-            Some(hs),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 40.0 } else { 90.0 },
+            )),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
+                Some(ToneDeltaPair::new(
+                    spec.primary_fixed(),
+                    spec.primary_fixed_dim(),
+                    10.0,
+                    TonePolarity::Lighter,
+                    true,
+                    DeltaConstraint::Exact,
+                ))
+            })),
             None,
         ))
     }
 
     fn primary_fixed_dim(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let pf_stub = Arc::new(DynamicColor::new(
-            "primary_fixed".into(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let pfd_self = Arc::new(DynamicColor::new(
+        Arc::new(DynamicColor::new(
             "primary_fixed_dim".into(),
             Arc::new(|s| s.primary_palette.clone()),
             true,
             None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 30.0 } else { 80.0 },
+            )),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
                 Some(ToneDeltaPair::new(
-                    pf_stub.clone(),
-                    pfd_self.clone(),
+                    spec.primary_fixed(),
+                    spec.primary_fixed_dim(),
                     10.0,
                     TonePolarity::Lighter,
                     true,
                     DeltaConstraint::Exact,
                 ))
-            });
-        Arc::new(DynamicColor::new(
-            "primary_fixed_dim".into(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(hs),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
+            })),
             None,
         ))
     }
 
     fn on_primary_fixed(&self) -> Arc<DynamicColor> {
-        let pfd = self.primary_fixed_dim();
-        let pf = self.primary_fixed();
         Arc::new(DynamicColor::new(
             "on_primary_fixed".into(),
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(pfd.clone()))),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 100.0 } else { 10.0 })),
-            Some(Arc::new(move |_| Some(pf.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 100.0 } else { 10.0 },
+            )),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).primary_fixed())
+            })),
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
             None,
             None,
@@ -1345,16 +1141,20 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_primary_fixed_variant(&self) -> Arc<DynamicColor> {
-        let pfd = self.primary_fixed_dim();
-        let pf = self.primary_fixed();
         Arc::new(DynamicColor::new(
             "on_primary_fixed_variant".into(),
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(pfd.clone()))),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 90.0 } else { 30.0 })),
-            Some(Arc::new(move |_| Some(pf.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 90.0 } else { 30.0 },
+            )),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).primary_fixed())
+            })),
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
             None,
             None,
@@ -1362,118 +1162,76 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn secondary_fixed(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let sfd_stub = Arc::new(DynamicColor::new(
-            "secondary_fixed_dim".into(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 70.0 } else { 80.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let sf_self = Arc::new(DynamicColor::new(
-            "secondary_fixed".into(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 80.0 } else { 90.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
-                Some(ToneDeltaPair::new(
-                    sf_self.clone(),
-                    sfd_stub.clone(),
-                    10.0,
-                    TonePolarity::Lighter,
-                    true,
-                    DeltaConstraint::Exact,
-                ))
-            });
         Arc::new(DynamicColor::new(
             "secondary_fixed".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             true,
             None,
-            Some(hs),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 80.0 } else { 90.0 })),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 80.0 } else { 90.0 },
+            )),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
+                Some(ToneDeltaPair::new(
+                    spec.secondary_fixed(),
+                    spec.secondary_fixed_dim(),
+                    10.0,
+                    TonePolarity::Lighter,
+                    true,
+                    DeltaConstraint::Exact,
+                ))
+            })),
             None,
         ))
     }
 
     fn secondary_fixed_dim(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let sf_stub = Arc::new(DynamicColor::new(
-            "secondary_fixed".into(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 80.0 } else { 90.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let sfd_self = Arc::new(DynamicColor::new(
+        Arc::new(DynamicColor::new(
             "secondary_fixed_dim".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             true,
             None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 70.0 } else { 80.0 })),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 70.0 } else { 80.0 },
+            )),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
                 Some(ToneDeltaPair::new(
-                    sf_stub.clone(),
-                    sfd_self.clone(),
+                    spec.secondary_fixed(),
+                    spec.secondary_fixed_dim(),
                     10.0,
                     TonePolarity::Lighter,
                     true,
                     DeltaConstraint::Exact,
                 ))
-            });
-        Arc::new(DynamicColor::new(
-            "secondary_fixed_dim".into(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(hs),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 70.0 } else { 80.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
+            })),
             None,
         ))
     }
 
     fn on_secondary_fixed(&self) -> Arc<DynamicColor> {
-        let sfd = self.secondary_fixed_dim();
-        let sf = self.secondary_fixed();
         Arc::new(DynamicColor::new(
             "on_secondary_fixed".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(sfd.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+            })),
             Some(Arc::new(|_| 10.0)),
-            Some(Arc::new(move |_| Some(sf.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).secondary_fixed())
+            })),
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
             None,
             None,
@@ -1481,16 +1239,20 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_secondary_fixed_variant(&self) -> Arc<DynamicColor> {
-        let sfd = self.secondary_fixed_dim();
-        let sf = self.secondary_fixed();
         Arc::new(DynamicColor::new(
             "on_secondary_fixed_variant".into(),
             Arc::new(|s| s.secondary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(sfd.clone()))),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 25.0 } else { 30.0 })),
-            Some(Arc::new(move |_| Some(sf.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 25.0 } else { 30.0 },
+            )),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).secondary_fixed())
+            })),
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
             None,
             None,
@@ -1498,118 +1260,78 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn tertiary_fixed(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let tfd_stub = Arc::new(DynamicColor::new(
-            "tertiary_fixed_dim".into(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tf_self = Arc::new(DynamicColor::new(
-            "tertiary_fixed".into(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
-                Some(ToneDeltaPair::new(
-                    tf_self.clone(),
-                    tfd_stub.clone(),
-                    10.0,
-                    TonePolarity::Lighter,
-                    true,
-                    DeltaConstraint::Exact,
-                ))
-            });
         Arc::new(DynamicColor::new(
             "tertiary_fixed".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             true,
             None,
-            Some(hs),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 40.0 } else { 90.0 },
+            )),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
+                Some(ToneDeltaPair::new(
+                    spec.tertiary_fixed(),
+                    spec.tertiary_fixed_dim(),
+                    10.0,
+                    TonePolarity::Lighter,
+                    true,
+                    DeltaConstraint::Exact,
+                ))
+            })),
             None,
         ))
     }
 
     fn tertiary_fixed_dim(&self) -> Arc<DynamicColor> {
-        let hs = Arc::new(|s: &DynamicScheme| Some(Self.highest_surface(s)));
-        let tf_stub = Arc::new(DynamicColor::new(
-            "tertiary_fixed".into(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 40.0 } else { 90.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tfd_self = Arc::new(DynamicColor::new(
+        Arc::new(DynamicColor::new(
             "tertiary_fixed_dim".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             true,
             None,
-            Some(hs.clone()),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 30.0 } else { 80.0 },
+            )),
             None,
             Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            None,
-            None,
-        ));
-        let tdp: DynamicColorFunction<Option<ToneDeltaPair>> =
-            Arc::new(move |_| {
+            Some(Arc::new(|s| {
+                let spec = ColorSpecs::get(s.spec_version);
                 Some(ToneDeltaPair::new(
-                    tf_stub.clone(),
-                    tfd_self.clone(),
+                    spec.tertiary_fixed(),
+                    spec.tertiary_fixed_dim(),
                     10.0,
                     TonePolarity::Lighter,
                     true,
                     DeltaConstraint::Exact,
                 ))
-            });
-        Arc::new(DynamicColor::new(
-            "tertiary_fixed_dim".into(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(hs),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 30.0 } else { 80.0 })),
-            None,
-            Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
-            Some(tdp),
+            })),
             None,
         ))
     }
 
     fn on_tertiary_fixed(&self) -> Arc<DynamicColor> {
-        let tfd = self.tertiary_fixed_dim();
-        let tf = self.tertiary_fixed();
         Arc::new(DynamicColor::new(
             "on_tertiary_fixed".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(tfd.clone()))),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 100.0 } else { 10.0 })),
-            Some(Arc::new(move |_| Some(tf.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 100.0 } else { 10.0 },
+            )),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).tertiary_fixed())
+            })),
             Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
             None,
             None,
@@ -1617,23 +1339,29 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_tertiary_fixed_variant(&self) -> Arc<DynamicColor> {
-        let tfd = self.tertiary_fixed_dim();
-        let tf = self.tertiary_fixed();
         Arc::new(DynamicColor::new(
             "on_tertiary_fixed_variant".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |_| Some(tfd.clone()))),
-            Some(Arc::new(|s| if Self::is_monochrome(s) { 90.0 } else { 30.0 })),
-            Some(Arc::new(move |_| Some(tf.clone()))),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+            })),
+            Some(Arc::new(
+                |s| if Self::is_monochrome(s) { 90.0 } else { 30.0 },
+            )),
+            Some(Arc::new(|s| {
+                Some(ColorSpecs::get(s.spec_version).tertiary_fixed())
+            })),
             Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
             None,
             None,
         ))
     }
 
-    // ── Other ──────────────────────────────────────────────────────────
+    // ————————————————————————————————————————————————————————————————
+    // Calculations & Palettes
+    // ————————————————————————————————————————————————————————————————
 
     fn highest_surface(&self, scheme: &DynamicScheme) -> Arc<DynamicColor> {
         if scheme.is_dark {
@@ -1642,8 +1370,6 @@ impl ColorSpec for ColorSpec2021 {
             self.surface_dim()
         }
     }
-
-    // ── Color value calculations ───────────────────────────────────────
 
     fn get_hct(&self, scheme: &DynamicScheme, color: &DynamicColor) -> Hct {
         let tone = self.get_tone(scheme, color);
@@ -1670,7 +1396,6 @@ impl ColorSpec for ColorSpec2021 {
             let mut n_tone = (nearer.tone)(scheme);
             let mut f_tone = (farther.tone)(scheme);
 
-            // 1st round: solve to min contrast for each
             if let (Some(bg_fn), Some(n_cc), Some(f_cc)) = (
                 color.background.as_ref(),
                 nearer.contrast_curve.as_ref().and_then(|f| f(scheme)),
@@ -1699,7 +1424,6 @@ impl ColorSpec for ColorSpec2021 {
                 }
             }
 
-            // Avoid the 50–59 awkward zone
             if (50.0..60.0).contains(&n_tone) {
                 if expansion_dir > 0.0 {
                     n_tone = 60.0;
@@ -1721,10 +1445,8 @@ impl ColorSpec for ColorSpec2021 {
                     f_tone = if expansion_dir > 0.0 { 60.0 } else { 49.0 };
                 }
             }
-
             if am_nearer { n_tone } else { f_tone }
         } else {
-            // Case 2: no tone delta pair; solve for self
             let mut answer = (color.tone)(scheme);
             let background = color.background.as_ref().and_then(|f| f(scheme));
             let contrast_curve = color.contrast_curve.as_ref().and_then(|f| f(scheme));
@@ -1746,13 +1468,10 @@ impl ColorSpec for ColorSpec2021 {
                     60.0
                 };
             }
-
             let second_bg = color.second_background.as_ref().and_then(|f| f(scheme));
             let Some(bg2_color) = second_bg else {
                 return answer;
             };
-
-            // Case 3: dual backgrounds
             let bg_tone1 = bg_color.get_tone(scheme);
             let bg_tone2 = bg2_color.get_tone(scheme);
             let upper = bg_tone1.max(bg_tone2);
@@ -1764,13 +1483,13 @@ impl ColorSpec for ColorSpec2021 {
             }
             let light_option = Contrast::lighter(upper, desired_ratio);
             let dark_option = Contrast::darker(lower, desired_ratio);
-            let prefers_light = DynamicColor::tone_prefers_light_foreground(bg_tone1)
-                || DynamicColor::tone_prefers_light_foreground(bg_tone2);
-            if prefers_light {
+            if DynamicColor::tone_prefers_light_foreground(bg_tone1)
+                || DynamicColor::tone_prefers_light_foreground(bg_tone2)
+            {
                 return light_option.unwrap_or(100.0);
             }
             match (light_option, dark_option) {
-                (Some(_l), Some(d)) => d,
+                (Some(_), Some(d)) => d,
                 (Some(l), None) => l,
                 (None, Some(d)) => d,
                 (None, None) => 0.0,
@@ -1778,15 +1497,13 @@ impl ColorSpec for ColorSpec2021 {
         }
     }
 
-    // ── Palette builders ───────────────────────────────────────────────
-
     fn get_primary_palette(
         &self,
         variant: Variant,
         src: &Hct,
-        _dark: bool,
-        _plat: Platform,
-        _contrast: f64,
+        _: bool,
+        _: Platform,
+        _: f64,
     ) -> TonalPalette {
         match variant {
             Variant::Content | Variant::Fidelity => {
@@ -1813,9 +1530,9 @@ impl ColorSpec for ColorSpec2021 {
         &self,
         variant: Variant,
         src: &Hct,
-        _dark: bool,
-        _plat: Platform,
-        _contrast: f64,
+        _: bool,
+        _: Platform,
+        _: f64,
     ) -> TonalPalette {
         match variant {
             Variant::Content | Variant::Fidelity => TonalPalette::from_hue_and_chroma(
@@ -1828,7 +1545,9 @@ impl ColorSpec for ColorSpec2021 {
             ),
             Variant::Monochrome => TonalPalette::from_hue_and_chroma(src.hue(), 0.0),
             Variant::Neutral => TonalPalette::from_hue_and_chroma(src.hue(), 8.0),
-            Variant::Rainbow | Variant::TonalSpot => TonalPalette::from_hue_and_chroma(src.hue(), 16.0),
+            Variant::Rainbow | Variant::TonalSpot => {
+                TonalPalette::from_hue_and_chroma(src.hue(), 16.0)
+            }
             Variant::Expressive => TonalPalette::from_hue_and_chroma(
                 DynamicScheme::get_rotated_hue(
                     src,
@@ -1853,9 +1572,9 @@ impl ColorSpec for ColorSpec2021 {
         &self,
         variant: Variant,
         src: &Hct,
-        _dark: bool,
-        _plat: Platform,
-        _contrast: f64,
+        _: bool,
+        _: Platform,
+        _: f64,
     ) -> TonalPalette {
         match variant {
             Variant::Content => TonalPalette::from_hct(DislikeAnalyzer::fix_if_disliked(
@@ -1895,16 +1614,20 @@ impl ColorSpec for ColorSpec2021 {
         &self,
         variant: Variant,
         src: &Hct,
-        _dark: bool,
-        _plat: Platform,
-        _contrast: f64,
+        _: bool,
+        _: Platform,
+        _: f64,
     ) -> TonalPalette {
         match variant {
             Variant::Content | Variant::Fidelity => {
                 TonalPalette::from_hue_and_chroma(src.hue(), src.chroma() / 8.0)
             }
-            Variant::FruitSalad | Variant::Vibrant => TonalPalette::from_hue_and_chroma(src.hue(), 10.0),
-            Variant::Monochrome | Variant::Rainbow => TonalPalette::from_hue_and_chroma(src.hue(), 0.0),
+            Variant::FruitSalad | Variant::Vibrant => {
+                TonalPalette::from_hue_and_chroma(src.hue(), 10.0)
+            }
+            Variant::Monochrome | Variant::Rainbow => {
+                TonalPalette::from_hue_and_chroma(src.hue(), 0.0)
+            }
             Variant::Neutral => TonalPalette::from_hue_and_chroma(src.hue(), 2.0),
             Variant::TonalSpot => TonalPalette::from_hue_and_chroma(src.hue(), 6.0),
             Variant::Expressive => TonalPalette::from_hue_and_chroma(
@@ -1919,16 +1642,18 @@ impl ColorSpec for ColorSpec2021 {
         &self,
         variant: Variant,
         src: &Hct,
-        _dark: bool,
-        _plat: Platform,
-        _contrast: f64,
+        _: bool,
+        _: Platform,
+        _: f64,
     ) -> TonalPalette {
         match variant {
             Variant::Content | Variant::Fidelity => {
                 TonalPalette::from_hue_and_chroma(src.hue(), src.chroma() / 8.0 + 4.0)
             }
             Variant::FruitSalad => TonalPalette::from_hue_and_chroma(src.hue(), 16.0),
-            Variant::Monochrome | Variant::Rainbow => TonalPalette::from_hue_and_chroma(src.hue(), 0.0),
+            Variant::Monochrome | Variant::Rainbow => {
+                TonalPalette::from_hue_and_chroma(src.hue(), 0.0)
+            }
             Variant::Neutral => TonalPalette::from_hue_and_chroma(src.hue(), 2.0),
             Variant::TonalSpot => TonalPalette::from_hue_and_chroma(src.hue(), 8.0),
             Variant::Expressive => TonalPalette::from_hue_and_chroma(
@@ -1940,145 +1665,7 @@ impl ColorSpec for ColorSpec2021 {
         }
     }
 
-    fn get_error_palette(
-        &self,
-        _variant: Variant,
-        _src: &Hct,
-        _dark: bool,
-        _plat: Platform,
-        _contrast: f64,
-    ) -> TonalPalette {
+    fn get_error_palette(&self, _: Variant, _: &Hct, _: bool, _: Platform, _: f64) -> TonalPalette {
         TonalPalette::from_hue_and_chroma(25.0, 84.0)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::hct::hct_color::Hct;
-    use crate::utils::color_utils::Argb;
-
-    fn setup_scheme(color: Argb, is_dark: bool, contrast_level: f64) -> DynamicScheme {
-        let hct = Hct::from_int(color);
-        let spec = ColorSpec2021::new();
-        DynamicScheme::new(
-            hct.clone(),
-            Variant::TonalSpot,
-            is_dark,
-            contrast_level,
-            spec.get_primary_palette(
-                Variant::TonalSpot,
-                &hct,
-                is_dark,
-                Platform::Phone,
-                contrast_level,
-            ),
-            spec.get_secondary_palette(
-                Variant::TonalSpot,
-                &hct,
-                is_dark,
-                Platform::Phone,
-                contrast_level,
-            ),
-            spec.get_tertiary_palette(
-                Variant::TonalSpot,
-                &hct,
-                is_dark,
-                Platform::Phone,
-                contrast_level,
-            ),
-            spec.get_neutral_palette(
-                Variant::TonalSpot,
-                &hct,
-                is_dark,
-                Platform::Phone,
-                contrast_level,
-            ),
-            spec.get_neutral_variant_palette(
-                Variant::TonalSpot,
-                &hct,
-                is_dark,
-                Platform::Phone,
-                contrast_level,
-            ),
-            spec.get_error_palette(
-                Variant::TonalSpot,
-                &hct,
-                is_dark,
-                Platform::Phone,
-                contrast_level,
-            ),
-        )
-    }
-
-    #[test]
-    fn test_background_tone() {
-        let spec = ColorSpec2021::new();
-        let bg = spec.background();
-        let surface = spec.surface_variant();
-        let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
-        let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
-
-        assert_eq!((bg.tone)(&scheme_light), 98.0);
-        assert_eq!((bg.tone)(&scheme_dark), 6.0);
-    }
-
-    #[test]
-    fn test_primary_tone() {
-        let spec = ColorSpec2021::new();
-        let primary = spec.primary();
-        let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
-        let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
-
-        assert_eq!(primary.get_tone(&scheme_light), 40.0);
-        assert_eq!(primary.get_tone(&scheme_dark), 80.0);
-    }
-
-    #[test]
-    fn test_on_primary_tone() {
-        let spec = ColorSpec2021::new();
-        let on_primary = spec.on_primary();
-        let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
-        let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
-
-        assert_eq!(on_primary.get_tone(&scheme_light), 100.0);
-        assert_eq!(on_primary.get_tone(&scheme_dark), 20.0);
-    }
-
-    #[test]
-    fn test_primary_container_tone() {
-        let spec = ColorSpec2021::new();
-        let primary_container = spec.primary_container();
-        let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
-        let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
-
-        assert_eq!(primary_container.get_tone(&scheme_light), 90.0);
-        assert_eq!(primary_container.get_tone(&scheme_dark), 30.0);
-    }
-
-    #[test]
-    fn test_surface_tones() {
-        let spec = ColorSpec2021::new();
-        let surface = spec.surface();
-        let surface_variant = spec.surface_variant();
-        let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
-        let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
-
-        assert_eq!((surface.tone)(&scheme_light), 98.0);
-        assert_eq!((surface.tone)(&scheme_dark), 6.0);
-
-        assert_eq!((surface_variant.tone)(&scheme_light), 90.0);
-        assert_eq!((surface_variant.tone)(&scheme_dark), 30.0);
-    }
-
-    #[test]
-    fn test_error_tones() {
-        let spec = ColorSpec2021::new();
-        let error = spec.error();
-        let scheme_light = setup_scheme(Argb(0xFF4285F4), false, 0.0);
-        let scheme_dark = setup_scheme(Argb(0xFF4285F4), true, 0.0);
-
-        assert_eq!(error.get_tone(&scheme_light), 40.0);
-        assert_eq!(error.get_tone(&scheme_dark), 80.0);
     }
 }

@@ -23,7 +23,7 @@ use crate::dynamic::dynamic_scheme::DynamicScheme;
 
 /// Named colors, otherwise known as tokens, or roles, in the Material Design system.
 pub struct MaterialDynamicColors {
-    color_spec: Box<dyn ColorSpec>,
+    color_spec: &'static dyn ColorSpec,
 }
 
 impl Default for MaterialDynamicColors {
