@@ -100,7 +100,7 @@ fn make_scheme_from_entry(entry: &ReferenceEntry) -> Option<DynamicScheme> {
 fn test_material_schemes_against_reference() -> Result<()> {
     let entries = parse_reference_schemes()?;
 
-    let mdc = MaterialDynamicColors::new();
+    let mdc = MaterialDynamicColors::new_with_spec(SpecVersion::Spec2026);
     let mut invalid_hex: Vec<String> = Vec::new();
     let mut mismatch_color: Vec<String> = Vec::new();
     let mut missing_role: Vec<String> = Vec::new();
