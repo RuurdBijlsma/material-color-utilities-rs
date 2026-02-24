@@ -3,14 +3,14 @@ use std::fs;
 
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
+use plotters::prelude::{BLUE, BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries, WHITE};
 use serde::Deserialize;
 
 use material_color_utilities::dynamic::color_spec::SpecVersion;
 use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
 use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
+use material_color_utilities::hct::Cam16;
 use material_color_utilities::hct::hct_color::Hct;
-use material_color_utilities::utils::color_utils::Argb;
-
 use material_color_utilities::scheme::scheme_content::SchemeContent;
 use material_color_utilities::scheme::scheme_expressive::SchemeExpressive;
 use material_color_utilities::scheme::scheme_monochrome::SchemeMonochrome;
@@ -19,6 +19,11 @@ use material_color_utilities::scheme::scheme_vibrant::SchemeVibrant;
 use material_color_utilities::scheme::{
     SchemeCmf, SchemeFidelity, SchemeFruitSalad, SchemeNeutral, SchemeRainbow,
 };
+use material_color_utilities::utils::color_utils::Argb;
+use material_color_utilities::utils::string_utils::StringUtils;
+use plotters::prelude::*;
+use rand::prelude::IndexedRandom;
+use statrs::statistics::Statistics;
 
 #[derive(Debug, Deserialize)]
 struct ReferenceEntry {
@@ -96,6 +101,52 @@ fn make_scheme_from_entry(entry: &ReferenceEntry) -> Option<DynamicScheme> {
     }
 }
 
+pub fn plot_debug(data: &[f64], title: &str, y_label: &str) -> Result<()> {
+    let root = BitMapBackend::new("plot.png", (10000, 600)).into_drawing_area();
+    root.fill(&WHITE)?;
+
+    let x_range = 0..data.len();
+    let (y_min, y_max) = data
+        .iter()
+        .fold((f64::INFINITY, f64::NEG_INFINITY), |(lo, hi), &v| {
+            (lo.min(v), hi.max(v))
+        });
+
+    let padding = (y_max - y_min).abs() * 0.1;
+    let y_range = (y_min - padding)..(y_max + padding);
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption(title, ("sans-serif", 28))
+        .margin(20)
+        .x_label_area_size(40)
+        .y_label_area_size(60)
+        .build_cartesian_2d(x_range.clone(), y_range)?;
+
+    chart
+        .configure_mesh()
+        .x_desc("Index")
+        .y_desc(y_label)
+        .light_line_style(&RGBColor(220, 220, 220))
+        .bold_line_style(&RGBColor(180, 180, 180))
+        .label_style(("sans-serif", 14))
+        .draw()?;
+
+    chart.draw_series(LineSeries::new(
+        data.iter().enumerate().map(|(i, v)| (i, *v)),
+        ShapeStyle::from(&BLUE).stroke_width(2),
+    ))?;
+
+    // // Optional: highlight points
+    // chart.draw_series(
+    //     data.iter()
+    //         .enumerate()
+    //         .map(|(i, v)| Circle::new((i, *v), 3, BLUE.filled())),
+    // )?;
+
+    root.present()?;
+    Ok(())
+}
+
 #[test]
 fn test_material_schemes_against_reference() -> Result<()> {
     let entries = parse_reference_schemes()?;
@@ -109,6 +160,11 @@ fn test_material_schemes_against_reference() -> Result<()> {
     let mut tested_color = 0;
     let mut tested_role = 0;
     let mut tested_scheme = 0;
+
+    // Explicitly type to take ownership of String keys rather than references
+    let mut role_mismatch_count_map: HashMap<String, usize> = HashMap::new();
+    let mut scheme_mismatch_count_map: HashMap<String, usize> = HashMap::new();
+    let mut color_mismatch_distances = Vec::new();
 
     for entry in entries {
         tested_scheme += 1;
@@ -136,9 +192,26 @@ fn test_material_schemes_against_reference() -> Result<()> {
                         tested_color += 1;
                         if actual != expected {
                             mismatch_color.push(format!(
-                                "Mismatch for scheme {} role {}: expected {:#010X}, got {:#010X}",
-                                entry.scheme, role_name, expected, actual
+                                "scheme: {}, role: {}, expected: {}, got: {}",
+                                &entry.scheme,
+                                role_name,
+                                StringUtils::hex_from_argb(Argb(expected)),
+                                StringUtils::hex_from_argb(Argb(actual))
                             ));
+
+                            // The entry API is the idiomatic way to handle map counts in Rust
+                            // It passes a cloned owned String, resolving all borrow checker errors.
+                            *role_mismatch_count_map
+                                .entry(role_name.clone())
+                                .or_insert(0) += 1;
+                            *scheme_mismatch_count_map
+                                .entry(entry.scheme.clone())
+                                .or_insert(0) += 1;
+
+                            let col1 = Cam16::from_int(Argb(expected));
+                            let col2 = Cam16::from_int(Argb(actual));
+                            let distance = col1.distance(&col2);
+                            color_mismatch_distances.push(distance);
                         }
                     }
                     None => {
@@ -155,55 +228,70 @@ fn test_material_schemes_against_reference() -> Result<()> {
     }
 
     if missing_scheme.is_empty() {
-        println!("\n\n\n✅ No missing_scheme, {tested_scheme} checks done");
+        println!("\n✅ No missing_scheme, {tested_scheme} checks done");
     } else {
         eprintln!(
-            "\n\n\nFound {}/{} missing_scheme:",
+            "\nFound {}/{} missing_scheme:",
             missing_scheme.len(),
             tested_scheme
         );
-        // for m in &missing_scheme {
-        //     eprintln!("{m}");
-        // }
     }
 
     if invalid_hex.is_empty() {
-        println!("\n\n\n✅ No invalid_hex, {tested_hex} checks done");
+        println!("\n✅ No invalid_hex, {tested_hex} checks done");
     } else {
-        eprintln!(
-            "\n\n\nFound {}/{} invalid_hex:",
-            invalid_hex.len(),
-            tested_hex
-        );
-        // for m in &invalid_hex {
-        //     eprintln!("{m}");
-        // }
+        eprintln!("\nFound {}/{} invalid_hex:", invalid_hex.len(), tested_hex);
     }
 
     if mismatch_color.is_empty() {
-        println!("\n\n\n✅ No mismatch_color, {tested_color} checks done");
+        println!("\n✅ No mismatch_color, {tested_color} checks done");
     } else {
         eprintln!(
-            "\n\n\nFound {}/{} mismatch_color:",
+            "\n⛔ Found {}/{} mismatch_color:",
             mismatch_color.len(),
             tested_color
         );
-        // for m in &mismatch_color {
-        //     eprintln!("{m}");
-        // }
+        let mut rng = rand::rng();
+        let sample: Vec<&String> = mismatch_color.sample(&mut rng, 15).collect();
+        eprintln!("Sample of {} random mismatches", sample.len());
+        for m in &sample {
+            eprintln!("\t{m}");
+        }
+        eprintln!(
+            "\nMismatches per scheme:\n{}",
+            serde_json::to_string_pretty(&scheme_mismatch_count_map)?
+        );
+        eprintln!(
+            "Mismatches per role:\n{}",
+            serde_json::to_string_pretty(&role_mismatch_count_map)?
+        );
+        eprintln!("Mismatch color distance stats:");
+        eprintln!("\t* Mean: {}", (&color_mismatch_distances).mean());
+        eprintln!("\t* Stddev: {}", (&color_mismatch_distances).std_dev());
+        let black = Cam16::from_int(Argb::from_rgb(0, 0, 0));
+        let white = Cam16::from_int(Argb::from_rgb(255, 255, 255));
+        let yellow = Cam16::from_int(Argb::from_rgb(255, 251, 0));
+        let orange = Cam16::from_int(Argb::from_rgb(255, 164, 0));
+        let red = Cam16::from_int(Argb::from_rgb(255, 0, 0));
+        eprintln!("black <-> white Distance: {}", black.distance(&white));
+        eprintln!("yellow <-> white Distance: {}", yellow.distance(&white));
+        eprintln!("yellow <-> orange Distance: {}", yellow.distance(&orange));
+        eprintln!("red <-> orange Distance: {}", red.distance(&orange));
+        plot_debug(
+            &color_mismatch_distances,
+            "Mismatch Color Distances",
+            "Distance in CAM16 space",
+        )?;
     }
 
     if missing_role.is_empty() {
-        println!("\n\n\n✅ No missing_role, {tested_role} checks done");
+        println!("\n✅ No missing_role, {tested_role} checks done");
     } else {
         eprintln!(
-            "\n\n\nFound {}/{} missing_role:",
+            "\nFound {}/{} missing_role:",
             missing_role.len(),
             tested_role
         );
-        // for m in &missing_role {
-        //     eprintln!("{m}");
-        // }
     }
 
     if !missing_scheme.is_empty()
