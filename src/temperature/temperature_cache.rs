@@ -95,8 +95,7 @@ impl TemperatureCache {
                 }
 
                 let possible_answer = hcts_by_hue[hue.round() as usize % 360];
-                let relative_temp =
-                    (self.get_temp(&possible_answer) - coldest_temp) / range;
+                let relative_temp = (self.get_temp(&possible_answer) - coldest_temp) / range;
                 let error = (complement_relative_temp - relative_temp).abs();
                 if error < smallest_error {
                     smallest_error = error;
@@ -305,7 +304,12 @@ impl TemperatureCache {
         let hue = MathUtils::sanitize_degrees_double(lab.b.atan2(lab.a).to_degrees());
         let chroma = lab.a.hypot(lab.b);
 
-        (0.02 * chroma.powf(1.07)).mul_add(MathUtils::sanitize_degrees_double(hue - 50.0).to_radians().cos(), -0.5)
+        (0.02 * chroma.powf(1.07)).mul_add(
+            MathUtils::sanitize_degrees_double(hue - 50.0)
+                .to_radians()
+                .cos(),
+            -0.5,
+        )
     }
 
     /// Determines if an angle is between two other angles, rotating clockwise.

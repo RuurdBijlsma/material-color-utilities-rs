@@ -81,7 +81,7 @@ impl Contrast {
     /// also known as relative luminance.
     ///
     /// The equation is ratio = lighter Y + 5 / darker Y + 5.
-    #[must_use] 
+    #[must_use]
     pub fn ratio_of_ys(y1: f64, y2: f64) -> f64 {
         let (lighter, darker) = if y1 > y2 { (y1, y2) } else { (y2, y1) };
         (lighter + 5.0) / (darker + 5.0)
@@ -100,7 +100,7 @@ impl Contrast {
     /// of a ratio, a linear difference. This allows a designer to determine what they need to adjust a
     /// color's lightness to in order to reach their desired contrast, instead of guessing & checking
     /// with hex codes.
-    #[must_use] 
+    #[must_use]
     pub fn ratio_of_tones(t1: f64, t2: f64) -> f64 {
         Self::ratio_of_ys(ColorUtils::y_from_lstar(t1), ColorUtils::y_from_lstar(t2))
     }
@@ -110,7 +110,7 @@ impl Contrast {
     ///
     /// * `tone` - Tone return value must contrast with.
     /// * `ratio` - Desired contrast ratio of return value and tone parameter.
-    #[must_use] 
+    #[must_use]
     pub fn lighter(tone: f64, ratio: f64) -> Option<f64> {
         if !(0.0..=100.0).contains(&tone) {
             return None;
@@ -142,7 +142,7 @@ impl Contrast {
     ///
     /// * `tone` - Tone return value must contrast with.
     /// * `ratio` - Desired contrast ratio of return value and tone parameter.
-    #[must_use] 
+    #[must_use]
     pub fn lighter_unsafe(tone: f64, ratio: f64) -> f64 {
         Self::lighter(tone, ratio).unwrap_or(100.0)
     }
@@ -152,7 +152,7 @@ impl Contrast {
     ///
     /// * `tone` - Tone return value must contrast with.
     /// * `ratio` - Desired contrast ratio of return value and tone parameter.
-    #[must_use] 
+    #[must_use]
     pub fn darker(tone: f64, ratio: f64) -> Option<f64> {
         if !(0.0..=100.0).contains(&tone) {
             return None;
@@ -185,7 +185,7 @@ impl Contrast {
     ///
     /// * `tone` - Tone return value must contrast with.
     /// * `ratio` - Desired contrast ratio of return value and tone parameter.
-    #[must_use] 
+    #[must_use]
     pub fn darker_unsafe(tone: f64, ratio: f64) -> f64 {
         Self::darker(tone, ratio).unwrap_or(0.0)
     }

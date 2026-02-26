@@ -30,7 +30,7 @@ use crate::utils::color_utils::Argb;
 pub struct QuantizerCelebi;
 
 impl QuantizerCelebi {
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self
     }

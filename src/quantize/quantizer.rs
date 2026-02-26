@@ -25,7 +25,7 @@ pub struct QuantizerResult {
 }
 
 impl QuantizerResult {
-    #[must_use] 
+    #[must_use]
     pub const fn new(color_to_count: HashMap<Argb, u32>) -> Self {
         Self { color_to_count }
     }

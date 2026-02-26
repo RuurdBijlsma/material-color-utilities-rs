@@ -66,7 +66,7 @@ impl Hct {
     /// # Returns
     ///
     /// HCT representation of a color in default viewing conditions.
-    #[must_use] 
+    #[must_use]
     pub fn from(hue: f64, chroma: f64, tone: f64) -> Self {
         let argb = HctSolver::solve_to_int(hue, chroma, tone);
         Self::new_internal(argb)
@@ -81,27 +81,27 @@ impl Hct {
     /// # Returns
     ///
     /// HCT representation of a color in default viewing conditions.
-    #[must_use] 
+    #[must_use]
     pub fn from_int(argb: Argb) -> Self {
         Self::new_internal(argb)
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn hue(&self) -> f64 {
         self.hue
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn chroma(&self) -> f64 {
         self.chroma
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn tone(&self) -> f64 {
         self.tone
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn to_int(&self) -> Argb {
         self.argb
     }
@@ -155,7 +155,7 @@ impl Hct {
     /// make these calculations.
     ///
     /// See `ViewingConditions::make` for parameters affecting color appearance.
-    #[must_use] 
+    #[must_use]
     pub fn in_viewing_conditions(&self, vc: &ViewingConditions) -> Self {
         // 1. Use CAM16 to find XYZ coordinates of color in specified VC.
         let cam16 = Cam16::from_int(self.argb);
@@ -179,17 +179,17 @@ impl Hct {
         )
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_blue(hue: f64) -> bool {
         (250.0..270.0).contains(&hue)
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_yellow(hue: f64) -> bool {
         (105.0..125.0).contains(&hue)
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_cyan(hue: f64) -> bool {
         (170.0..207.0).contains(&hue)
     }

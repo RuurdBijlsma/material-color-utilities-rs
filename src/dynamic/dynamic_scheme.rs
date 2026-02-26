@@ -104,11 +104,7 @@ impl DynamicScheme {
         Self::from_scheme_with_contrast(other, is_dark, other.contrast_level)
     }
 
-    pub fn from_scheme_with_contrast(
-        other: &Self,
-        is_dark: bool,
-        contrast_level: f64,
-    ) -> Self {
+    pub fn from_scheme_with_contrast(other: &Self, is_dark: bool, contrast_level: f64) -> Self {
         Self {
             source_color_hct_list: other.source_color_hct_list.clone(),
             variant: other.variant,

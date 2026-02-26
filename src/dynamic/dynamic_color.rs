@@ -274,16 +274,16 @@ impl DynamicColor {
         ))
     }
 
-    fn validate_extended_color(
-        &self,
-        spec_version: SpecVersion,
-        extended_color: &Self,
-    ) {
-        assert!(self.name == extended_color.name,
+    fn validate_extended_color(&self, spec_version: SpecVersion, extended_color: &Self) {
+        assert!(
+            self.name == extended_color.name,
             "Attempting to extend color {} with color {} of different name for spec version {:?}.",
-            self.name, extended_color.name, spec_version
+            self.name,
+            extended_color.name,
+            spec_version
         );
-        assert!(self.is_background == extended_color.is_background,
+        assert!(
+            self.is_background == extended_color.is_background,
             "Attempting to extend color {} as a {} with color {} as a {} for spec version {:?}.",
             self.name,
             if self.is_background {

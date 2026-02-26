@@ -242,8 +242,10 @@ impl QuantizerWu {
             + moments[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b1 as usize)]
             - moments[Self::get_index(cube.r0 as usize, cube.g0 as usize, cube.b0 as usize)];
 
-        let hypotenuse =
-            f64::from(db).mul_add(f64::from(db), f64::from(dr).mul_add(f64::from(dr), f64::from(dg) * f64::from(dg)));
+        let hypotenuse = f64::from(db).mul_add(
+            f64::from(db),
+            f64::from(dr).mul_add(f64::from(dr), f64::from(dg) * f64::from(dg)),
+        );
         let volume = Self::volume(cube, weights);
         xx - (hypotenuse / f64::from(volume))
     }
@@ -382,7 +384,10 @@ impl QuantizerWu {
                 continue;
             }
 
-            let mut temp_numerator = f64::from(half_b).mul_add(f64::from(half_b), f64::from(half_r).mul_add(f64::from(half_r), f64::from(half_g) * f64::from(half_g)));
+            let mut temp_numerator = f64::from(half_b).mul_add(
+                f64::from(half_b),
+                f64::from(half_r).mul_add(f64::from(half_r), f64::from(half_g) * f64::from(half_g)),
+            );
             let mut temp_denominator = f64::from(half_w);
             let mut temp = temp_numerator / temp_denominator;
 
@@ -395,7 +400,10 @@ impl QuantizerWu {
                 continue;
             }
 
-            temp_numerator = f64::from(half_b).mul_add(f64::from(half_b), f64::from(half_r).mul_add(f64::from(half_r), f64::from(half_g) * f64::from(half_g)));
+            temp_numerator = f64::from(half_b).mul_add(
+                f64::from(half_b),
+                f64::from(half_r).mul_add(f64::from(half_r), f64::from(half_g) * f64::from(half_g)),
+            );
             temp_denominator = f64::from(half_w);
             temp += temp_numerator / temp_denominator;
 

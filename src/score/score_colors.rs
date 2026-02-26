@@ -39,18 +39,18 @@ impl Score {
     const CUTOFF_CHROMA: f64 = 5.0;
     const CUTOFF_EXCITED_PROPORTION: f64 = 0.01;
 
-    #[must_use] 
+    #[must_use]
     pub fn score(colors_to_population: &HashMap<Argb, u32>) -> Vec<Argb> {
         // Fallback color is Google Blue.
         Self::score_with_options(colors_to_population, 4, Argb(0xff4285f4), true)
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn score_desired(colors_to_population: &HashMap<Argb, u32>, desired: usize) -> Vec<Argb> {
         Self::score_with_options(colors_to_population, desired, Argb(0xff4285f4), true)
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn score_fallback(
         colors_to_population: &HashMap<Argb, u32>,
         desired: usize,
@@ -75,7 +75,7 @@ impl Score {
     /// Colors sorted by suitability for a UI theme. The most suitable color is the first item,
     /// the least suitable is the last. There will always be at least one color returned. If all the
     /// input colors were not suitable for a theme, a default fallback color will be provided.
-    #[must_use] 
+    #[must_use]
     pub fn score_with_options(
         colors_to_population: &HashMap<Argb, u32>,
         desired: usize,

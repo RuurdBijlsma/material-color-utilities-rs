@@ -8,7 +8,7 @@ use crate::hct::hct_color::Hct;
 pub struct SchemeTonalSpot;
 
 impl SchemeTonalSpot {
-    #[must_use] 
+    #[must_use]
     pub fn new(source_color_hct: Hct, is_dark: bool, contrast_level: f64) -> DynamicScheme {
         Self::new_with_platform_and_spec(
             source_color_hct,
@@ -19,7 +19,7 @@ impl SchemeTonalSpot {
         )
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn new_with_platform_and_spec(
         source_color_hct: Hct,
         is_dark: bool,
@@ -36,7 +36,7 @@ impl SchemeTonalSpot {
         )
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn new_with_list_and_platform_and_spec(
         source_color_hct_list: Vec<Hct>,
         is_dark: bool,

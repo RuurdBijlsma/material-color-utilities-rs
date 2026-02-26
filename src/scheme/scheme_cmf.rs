@@ -44,7 +44,11 @@ impl SchemeCmf {
         spec_version: SpecVersion,
         platform: Platform,
     ) -> DynamicScheme {
-        assert_eq!(spec_version, SpecVersion::Spec2026, "SchemeCmf can only be used with spec version 2026.");
+        assert_eq!(
+            spec_version,
+            SpecVersion::Spec2026,
+            "SchemeCmf can only be used with spec version 2026."
+        );
 
         let source_color_hct = source_color_hct_list[0];
 

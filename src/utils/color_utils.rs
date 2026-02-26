@@ -108,9 +108,12 @@ impl Argb {
     #[must_use]
     pub fn from_xyz(xyz: Xyz) -> Self {
         let matrix = Self::XYZ_TO_SRGB;
-        let linear_r = matrix[0][2].mul_add(xyz.z, matrix[0][0].mul_add(xyz.x, matrix[0][1] * xyz.y));
-        let linear_g = matrix[1][2].mul_add(xyz.z, matrix[1][0].mul_add(xyz.x, matrix[1][1] * xyz.y));
-        let linear_b = matrix[2][2].mul_add(xyz.z, matrix[2][0].mul_add(xyz.x, matrix[2][1] * xyz.y));
+        let linear_r =
+            matrix[0][2].mul_add(xyz.z, matrix[0][0].mul_add(xyz.x, matrix[0][1] * xyz.y));
+        let linear_g =
+            matrix[1][2].mul_add(xyz.z, matrix[1][0].mul_add(xyz.x, matrix[1][1] * xyz.y));
+        let linear_b =
+            matrix[2][2].mul_add(xyz.z, matrix[2][0].mul_add(xyz.x, matrix[2][1] * xyz.y));
         let r = ColorUtils::delinearized(linear_r);
         let g = ColorUtils::delinearized(linear_g);
         let b = ColorUtils::delinearized(linear_b);

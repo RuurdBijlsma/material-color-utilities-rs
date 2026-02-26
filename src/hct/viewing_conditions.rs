@@ -71,9 +71,18 @@ impl ViewingConditions {
         let background_lstar = background_lstar.max(0.1);
         // Transform white point XYZ to 'cone'/'rgb' responses
         let matrix = Cam16::XYZ_TO_CAM16RGB;
-        let r_w = white_point[2].mul_add(matrix[0][2], white_point[0].mul_add(matrix[0][0], white_point[1] * matrix[0][1]));
-        let g_w = white_point[2].mul_add(matrix[1][2], white_point[0].mul_add(matrix[1][0], white_point[1] * matrix[1][1]));
-        let b_w = white_point[2].mul_add(matrix[2][2], white_point[0].mul_add(matrix[2][0], white_point[1] * matrix[2][1]));
+        let r_w = white_point[2].mul_add(
+            matrix[0][2],
+            white_point[0].mul_add(matrix[0][0], white_point[1] * matrix[0][1]),
+        );
+        let g_w = white_point[2].mul_add(
+            matrix[1][2],
+            white_point[0].mul_add(matrix[1][0], white_point[1] * matrix[1][1]),
+        );
+        let b_w = white_point[2].mul_add(
+            matrix[2][2],
+            white_point[0].mul_add(matrix[2][0], white_point[1] * matrix[2][1]),
+        );
 
         let f = 0.8 + surround / 10.0;
         let c = if f >= 0.9 {
@@ -129,7 +138,7 @@ impl ViewingConditions {
     /// Create sRGB-like viewing conditions with a custom background lstar.
     ///
     /// Default viewing conditions have a lstar of 50, midgray.
-    #[must_use] 
+    #[must_use]
     pub fn default_with_background_lstar(lstar: f64) -> Self {
         Self::make(
             ColorUtils::white_point_d65(),
