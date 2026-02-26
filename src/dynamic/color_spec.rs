@@ -26,7 +26,7 @@ use crate::palettes::tonal_palette::TonalPalette;
 ///
 /// The `PartialOrd` / `Ord` derivations are intentional: `DynamicColor::extend_spec_version`
 /// uses `>=` to decide which branch of a color definition applies at runtime.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SpecVersion {
     Spec2021,
     Spec2025,
@@ -34,7 +34,7 @@ pub enum SpecVersion {
 }
 
 /// The device platform that the scheme is being generated for.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Platform {
     Phone,
     Watch,

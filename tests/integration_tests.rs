@@ -135,13 +135,6 @@ pub fn plot_debug(data: &[f64], title: &str, y_label: &str) -> Result<()> {
         ShapeStyle::from(&BLUE).stroke_width(2),
     ))?;
 
-    // // Optional: highlight points
-    // chart.draw_series(
-    //     data.iter()
-    //         .enumerate()
-    //         .map(|(i, v)| Circle::new((i, *v), 3, BLUE.filled())),
-    // )?;
-
     root.present()?;
     Ok(())
 }

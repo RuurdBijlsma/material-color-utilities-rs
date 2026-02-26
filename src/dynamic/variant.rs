@@ -15,7 +15,7 @@
  */
 
 /// Themes for Dynamic Color.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Variant {
     Monochrome,
     Neutral,
