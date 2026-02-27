@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+use std::fmt;
+use std::fmt::Debug;
 use crate::contrast::contrast_utils::Contrast;
 use crate::dynamic::color_spec::SpecVersion;
 use crate::dynamic::color_specs::ColorSpecs;
@@ -39,6 +40,23 @@ pub struct DynamicColor {
     pub contrast_curve: Option<DynamicColorFunction<Option<ContrastCurve>>>,
     pub tone_delta_pair: Option<DynamicColorFunction<Option<ToneDeltaPair>>>,
     pub opacity: Option<DynamicColorFunction<Option<f64>>>,
+}
+
+impl Debug for DynamicColor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DynamicColor")
+            .field("name", &self.name)
+            .field("is_background", &self.is_background)
+            .field("palette", &"<function>")
+            .field("chroma_multiplier", &self.chroma_multiplier.as_ref().map(|_| "<function>"))
+            .field("background", &self.background.as_ref().map(|_| "<function>"))
+            .field("tone", &"<function>")
+            .field("second_background", &self.second_background.as_ref().map(|_| "<function>"))
+            .field("contrast_curve", &self.contrast_curve.as_ref().map(|_| "<function>"))
+            .field("tone_delta_pair", &self.tone_delta_pair.as_ref().map(|_| "<function>"))
+            .field("opacity", &self.opacity.as_ref().map(|_| "<function>"))
+            .finish()
+    }
 }
 
 impl DynamicColor {
@@ -96,6 +114,7 @@ impl DynamicColor {
 
     pub fn get_argb(&self, scheme: &DynamicScheme) -> Argb {
         let argb = self.get_hct(scheme).to_int();
+        dbg!(&argb);
         if let Some(ref opacity_func) = self.opacity
             && let Some(opacity_percentage) = opacity_func(scheme)
         {
@@ -108,8 +127,10 @@ impl DynamicColor {
 
     pub fn get_hct(&self, scheme: &DynamicScheme) -> Hct {
         // TODO: cache here same as DynamicColor.kt
-        // Skipping cache for minimal implementation
-        ColorSpecs::get(scheme.spec_version).get_hct(scheme, self)
+        dbg!(&scheme.spec_version);
+        let get_hct_result = ColorSpecs::get(scheme.spec_version).get_hct(scheme, self);
+        dbg!(&get_hct_result);
+        get_hct_result
     }
 
     pub fn get_tone(&self, scheme: &DynamicScheme) -> f64 {

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 use crate::dynamic::dynamic_color::DynamicColor;
+use std::fmt::Debug;
 use std::sync::Arc;
 
 /// Describes how to fulfill a tone delta pair constraint.
@@ -59,7 +59,7 @@ pub enum TonePolarity {
 /// Prefer a `DynamicColor` with a background, this is for special cases when designers want tonal
 /// distance, literally contrast, between two colors that don't have a background / foreground
 /// relationship or a contrast guarantee.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ToneDeltaPair {
     pub role_a: Arc<DynamicColor>,
     pub role_b: Arc<DynamicColor>,

@@ -1,16 +1,15 @@
+use color_eyre::Result;
+use color_eyre::eyre::{bail, eyre};
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
-
-use color_eyre::eyre::eyre;
-use color_eyre::Result;
-use plotters::prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries, BLUE, WHITE};
-use serde::Deserialize;
+use std::path::Path;
 
 use material_color_utilities::dynamic::color_spec::SpecVersion;
 use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
 use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
-use material_color_utilities::hct::hct_color::Hct;
 use material_color_utilities::hct::Cam16;
+use material_color_utilities::hct::hct_color::Hct;
 use material_color_utilities::scheme::scheme_content::SchemeContent;
 use material_color_utilities::scheme::scheme_expressive::SchemeExpressive;
 use material_color_utilities::scheme::scheme_monochrome::SchemeMonochrome;
@@ -20,7 +19,6 @@ use material_color_utilities::scheme::{
     SchemeCmf, SchemeFidelity, SchemeFruitSalad, SchemeNeutral, SchemeRainbow,
 };
 use material_color_utilities::utils::color_utils::Argb;
-use plotters::prelude::*;
 use rand::prelude::IndexedRandom;
 use statrs::statistics::Statistics;
 
@@ -33,8 +31,8 @@ struct ReferenceEntry {
     roles: HashMap<String, String>,
 }
 
-fn parse_reference_schemes() -> Result<Vec<ReferenceEntry>> {
-    let content = fs::read_to_string("tests/reference_schemes_large.json")?;
+fn parse_reference_schemes(path: &Path) -> Result<Vec<ReferenceEntry>> {
+    let content = fs::read_to_string(path)?;
     let entries: Vec<ReferenceEntry> = serde_json::from_str(&content)?;
     Ok(entries)
 }
@@ -100,48 +98,9 @@ fn make_scheme_from_entry(entry: &ReferenceEntry) -> Option<DynamicScheme> {
     }
 }
 
-pub fn plot_debug(data: &[f64], title: &str, y_label: &str) -> Result<()> {
-    let root = BitMapBackend::new("plot.png", (1000, 600)).into_drawing_area();
-    root.fill(&WHITE)?;
-
-    let x_range = 0..data.len();
-    let (y_min, y_max) = data
-        .iter()
-        .fold((f64::INFINITY, f64::NEG_INFINITY), |(lo, hi), &v| {
-            (lo.min(v), hi.max(v))
-        });
-
-    let padding = (y_max - y_min).abs() * 0.1;
-    let y_range = (y_min - padding)..(y_max + padding);
-
-    let mut chart = ChartBuilder::on(&root)
-        .caption(title, ("sans-serif", 28))
-        .margin(20)
-        .x_label_area_size(40)
-        .y_label_area_size(60)
-        .build_cartesian_2d(x_range.clone(), y_range)?;
-
-    chart
-        .configure_mesh()
-        .x_desc("Index")
-        .y_desc(y_label)
-        .light_line_style(&RGBColor(220, 220, 220))
-        .bold_line_style(&RGBColor(180, 180, 180))
-        .label_style(("sans-serif", 14))
-        .draw()?;
-
-    chart.draw_series(LineSeries::new(
-        data.iter().enumerate().map(|(i, v)| (i, *v)),
-        ShapeStyle::from(&BLUE).stroke_width(2),
-    ))?;
-
-    root.present()?;
-    Ok(())
-}
-
 #[test]
 fn test_material_schemes_against_reference() -> Result<()> {
-    let entries = parse_reference_schemes()?;
+    let entries = parse_reference_schemes(Path::new("tests/reference_schemes_large.json"))?;
 
     let mdc = MaterialDynamicColors::new_with_spec(SpecVersion::Spec2026);
     let mut invalid_hex: Vec<String> = Vec::new();
@@ -156,6 +115,8 @@ fn test_material_schemes_against_reference() -> Result<()> {
     // Explicitly type to take ownership of String keys rather than references
     let mut role_mismatch_count_map: HashMap<String, usize> = HashMap::new();
     let mut scheme_mismatch_count_map: HashMap<String, usize> = HashMap::new();
+    let mut contrast_mismatch_count: HashMap<String, usize> = HashMap::new();
+    let mut is_dark_mismatch_count: HashMap<bool, usize> = HashMap::new();
     let mut color_mismatch_distances = Vec::new();
 
     for entry in entries {
@@ -191,14 +152,16 @@ fn test_material_schemes_against_reference() -> Result<()> {
                                 Hct::from_int(Argb(actual))
                             ));
 
-                            // The entry API is the idiomatic way to handle map counts in Rust
-                            // It passes a cloned owned String, resolving all borrow checker errors.
                             *role_mismatch_count_map
                                 .entry(role_name.clone())
                                 .or_insert(0) += 1;
                             *scheme_mismatch_count_map
                                 .entry(entry.scheme.clone())
                                 .or_insert(0) += 1;
+                            *contrast_mismatch_count
+                                .entry(entry.contrast.to_string())
+                                .or_insert(0) += 1;
+                            *is_dark_mismatch_count.entry(entry.is_dark).or_insert(0) += 1;
 
                             let col1 = Cam16::from_int(Argb(expected));
                             let col2 = Cam16::from_int(Argb(actual));
@@ -257,6 +220,14 @@ fn test_material_schemes_against_reference() -> Result<()> {
             "Mismatches per role:\n{}",
             serde_json::to_string_pretty(&role_mismatch_count_map)?
         );
+        eprintln!(
+            "Mismatches per contrast:\n{}",
+            serde_json::to_string_pretty(&contrast_mismatch_count)?
+        );
+        eprintln!(
+            "Mismatches per is_dark:\n{}",
+            serde_json::to_string_pretty(&is_dark_mismatch_count)?
+        );
         eprintln!("Mismatch color distance stats:");
         eprintln!("\t* Mean: {}", (&color_mismatch_distances).mean());
         eprintln!("\t* Stddev: {}", (&color_mismatch_distances).std_dev());
@@ -269,11 +240,6 @@ fn test_material_schemes_against_reference() -> Result<()> {
         eprintln!("yellow <-> white Distance: {}", yellow.distance(&white));
         eprintln!("yellow <-> orange Distance: {}", yellow.distance(&orange));
         eprintln!("red <-> orange Distance: {}", red.distance(&orange));
-        plot_debug(
-            &color_mismatch_distances,
-            "Mismatch Color Distances",
-            "Distance in CAM16 space",
-        )?;
     }
 
     if missing_role.is_empty() {
@@ -292,6 +258,66 @@ fn test_material_schemes_against_reference() -> Result<()> {
         || !mismatch_color.is_empty()
     {
         return Err(eyre!("Test failed"));
+    }
+
+    Ok(())
+}
+
+#[test]
+fn test_single_failing_color() -> Result<()> {
+    let entries = parse_reference_schemes(Path::new("tests/reference_schemes_single.json"))?;
+
+    let mdc = MaterialDynamicColors::new();
+
+    for entry in entries {
+        if let Some(scheme) = make_scheme_from_entry(&entry) {
+            let mut actual_roles: HashMap<String, u32> = HashMap::new();
+            for getter in mdc.all_dynamic_colors() {
+                if let Some(dc) = getter() {
+                    if dc.name != "primary_dim" {
+                        continue;
+                    }
+                    actual_roles.insert(dc.name.clone(), dc.get_argb(&scheme).0);
+                }
+            }
+
+            for (role_name, hex_str) in entry.roles {
+                let Ok(expected) = u32::from_str_radix(hex_str.trim_start_matches("0x"), 16) else {
+                    bail!("WRONG");
+                };
+
+                match actual_roles.get(&role_name).copied() {
+                    Some(actual) => {
+                        if actual == expected {
+                            println!(
+                                "GOOD! - scheme: {}, role: {}, expected: {}, got: {}",
+                                &entry.scheme,
+                                role_name,
+                                Hct::from_int(Argb(expected)),
+                                Hct::from_int(Argb(actual))
+                            );
+                        } else {
+                            bail!(
+                                "BAD! - scheme: {}, role: {}, expected: {}, got: {}",
+                                &entry.scheme,
+                                role_name,
+                                Hct::from_int(Argb(expected)),
+                                Hct::from_int(Argb(actual))
+                            );
+                        }
+                    }
+                    None => {
+                        bail!(
+                            "Role {} not found in MaterialDynamicColors for scheme {}",
+                            role_name,
+                            entry.scheme
+                        );
+                    }
+                }
+            }
+        } else {
+            bail!("Scheme {} is unsupported", entry.scheme);
+        }
     }
 
     Ok(())
