@@ -114,7 +114,6 @@ impl DynamicColor {
 
     pub fn get_argb(&self, scheme: &DynamicScheme) -> Argb {
         let argb = self.get_hct(scheme).to_int();
-        dbg!(&argb);
         if let Some(ref opacity_func) = self.opacity
             && let Some(opacity_percentage) = opacity_func(scheme)
         {
@@ -127,9 +126,7 @@ impl DynamicColor {
 
     pub fn get_hct(&self, scheme: &DynamicScheme) -> Hct {
         // TODO: cache here same as DynamicColor.kt
-        dbg!(&scheme.spec_version);
         let get_hct_result = ColorSpecs::get(scheme.spec_version).get_hct(scheme, self);
-        dbg!(&get_hct_result);
         get_hct_result
     }
 

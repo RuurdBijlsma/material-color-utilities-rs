@@ -1373,17 +1373,12 @@ impl ColorSpec for ColorSpec2021 {
 
     fn get_hct(&self, scheme: &DynamicScheme, color: &DynamicColor) -> Hct {
         let tone = self.get_tone(scheme, color);
-        dbg!(&tone);
         (color.palette)(scheme).get_hct(tone)
     }
 
     fn get_tone(&self, scheme: &DynamicScheme, color: &DynamicColor) -> f64 {
         let decreasing_contrast = scheme.contrast_level < 0.0;
         let tone_delta_pair = color.tone_delta_pair.as_ref().and_then(|f| f(scheme));
-        println!(
-            "color_spec_2021.rs - get_tone - tone_delta_pair is None?: {}",
-            tone_delta_pair.is_none()
-        );
 
         if let Some(tdp) = tone_delta_pair {
             let role_a = &tdp.role_a;
