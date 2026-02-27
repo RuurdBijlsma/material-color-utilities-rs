@@ -126,9 +126,7 @@ impl DynamicColor {
 
     pub fn get_hct(&self, scheme: &DynamicScheme) -> Hct {
         // TODO: cache here same as DynamicColor.kt
-        let get_hct_result = ColorSpecs::get(scheme.spec_version).get_hct(scheme, self);
-        // dbg!(get_hct_result);
-        get_hct_result
+        ColorSpecs::get(scheme.spec_version).get_hct(scheme, self)
     }
 
     pub fn get_tone(&self, scheme: &DynamicScheme) -> f64 {

@@ -961,7 +961,7 @@ impl ColorSpec for ColorSpec2026 {
             Some(Arc::new(|s| {
                 s.source_color_hct_list
                     .get(1)
-                    .map_or(s.source_color_hct().tone(), |h| h.tone())
+                    .map_or_else(|| s.source_color_hct().tone(), Hct::tone)
             })),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
@@ -1006,7 +1006,7 @@ impl ColorSpec for ColorSpec2026 {
                 let sec_hct = s
                     .source_color_hct_list
                     .get(1)
-                    .unwrap_or(s.source_color_hct());
+                    .unwrap_or_else(|| s.source_color_hct());
                 if sec_hct.tone() > 55.0 {
                     sec_hct.tone().clamp(61.0, 90.0)
                 } else {

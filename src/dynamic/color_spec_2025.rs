@@ -221,13 +221,11 @@ impl ColorSpec for ColorSpec2025 {
                     .map_or(1.0, |f| f(s))
             })),
             Some(Arc::new(move |s| {
-                Some(
-                    ColorSpecs::get(override_spec[0])
-                        .on_surface()
-                        .background
-                        .as_ref()
-                        .and_then(|f| f(s))?,
-                )
+                ColorSpecs::get(override_spec[0])
+                    .on_surface()
+                    .background
+                    .as_ref()
+                    .and_then(|f| f(s))
             })),
             Some(Arc::new(move |s| {
                 if s.platform == Platform::Watch {
@@ -258,7 +256,9 @@ impl ColorSpec for ColorSpec2025 {
             Arc::new(|s| s.neutral_palette.clone()),
             true,
             Some(Arc::new(|s| {
-                if !s.is_dark {
+                if s.is_dark {
+                    1.0
+                } else {
                     match s.variant {
                         Variant::Neutral => 2.5,
                         Variant::TonalSpot => 1.7,
@@ -272,8 +272,6 @@ impl ColorSpec for ColorSpec2025 {
                         Variant::Vibrant => 1.36,
                         _ => 1.0,
                     }
-                } else {
-                    1.0
                 }
             })),
             None,
@@ -1743,12 +1741,10 @@ impl ColorSpec for ColorSpec2025 {
             Some(Arc::new(|s| {
                 if s.platform == Platform::Watch {
                     30.0
+                } else if s.is_dark {
+                    Self::t_min_c(&s.error_palette, 30.0, 93.0)
                 } else {
-                    if s.is_dark {
-                        Self::t_min_c(&s.error_palette, 30.0, 93.0)
-                    } else {
-                        Self::t_max_c(&s.error_palette, 0.0, 90.0, 1.0)
-                    }
+                    Self::t_max_c(&s.error_palette, 0.0, 90.0, 1.0)
                 }
             })),
             None,
@@ -2155,7 +2151,7 @@ impl ColorSpec for ColorSpec2025 {
 
             match tdp.constraint {
                 DeltaConstraint::Exact => {
-                    self_tone = (reference_tone + relative_delta).clamp(0.0, 100.0)
+                    self_tone = (reference_tone + relative_delta).clamp(0.0, 100.0);
                 }
                 DeltaConstraint::Nearer => {
                     if relative_delta > 0.0 {
@@ -2187,15 +2183,14 @@ impl ColorSpec for ColorSpec2025 {
 
             if let (Some(bg_fn), Some(cc_fn)) =
                 (color.background.as_ref(), color.contrast_curve.as_ref())
+                && let (Some(bg), Some(cc)) = (bg_fn(scheme), cc_fn(scheme))
             {
-                if let (Some(bg), Some(cc)) = (bg_fn(scheme), cc_fn(scheme)) {
-                    let bg_tone = bg.get_tone(scheme);
-                    let self_contrast = cc.get(scheme.contrast_level);
-                    if !(Contrast::ratio_of_tones(bg_tone, self_tone) >= self_contrast
-                        && scheme.contrast_level >= 0.0)
-                    {
-                        self_tone = DynamicColor::foreground_tone(bg_tone, self_contrast);
-                    }
+                let bg_tone = bg.get_tone(scheme);
+                let self_contrast = cc.get(scheme.contrast_level);
+                if !(Contrast::ratio_of_tones(bg_tone, self_tone) >= self_contrast
+                    && scheme.contrast_level >= 0.0)
+                {
+                    self_tone = DynamicColor::foreground_tone(bg_tone, self_contrast);
                 }
             }
             if color.is_background && !color.name.ends_with("_fixed_dim") {
@@ -2210,15 +2205,14 @@ impl ColorSpec for ColorSpec2025 {
             let mut answer = (color.tone)(scheme);
             if let (Some(bg_fn), Some(cc_fn)) =
                 (color.background.as_ref(), color.contrast_curve.as_ref())
+                && let (Some(bg), Some(cc)) = (bg_fn(scheme), cc_fn(scheme))
             {
-                if let (Some(bg), Some(cc)) = (bg_fn(scheme), cc_fn(scheme)) {
-                    let bg_tone = bg.get_tone(scheme);
-                    let desired_ratio = cc.get(scheme.contrast_level);
-                    if !(Contrast::ratio_of_tones(bg_tone, answer) >= desired_ratio
-                        && scheme.contrast_level >= 0.0)
-                    {
-                        answer = DynamicColor::foreground_tone(bg_tone, desired_ratio);
-                    }
+                let bg_tone = bg.get_tone(scheme);
+                let desired_ratio = cc.get(scheme.contrast_level);
+                if !(Contrast::ratio_of_tones(bg_tone, answer) >= desired_ratio
+                    && scheme.contrast_level >= 0.0)
+                {
+                    answer = DynamicColor::foreground_tone(bg_tone, desired_ratio);
                 }
             }
             if color.is_background && !color.name.ends_with("_fixed_dim") {
@@ -2228,26 +2222,26 @@ impl ColorSpec for ColorSpec2025 {
                     answer.clamp(0.0, 49.0)
                 };
             }
-            if let Some(bg2_fn) = color.second_background.as_ref() {
-                if let (Some(bg1), Some(bg2), Some(cc_fn)) = (
+            if let Some(bg2_fn) = color.second_background.as_ref()
+                && let (Some(bg1), Some(bg2), Some(cc_fn)) = (
                     color.background.as_ref().and_then(|f| f(scheme)),
                     bg2_fn(scheme),
                     color.contrast_curve.as_ref().and_then(|f| f(scheme)),
-                ) {
-                    let (t1, t2) = (bg1.get_tone(scheme), bg2.get_tone(scheme));
-                    let desired = cc_fn.get(scheme.contrast_level);
-                    if Contrast::ratio_of_tones(t1.max(t2), answer) < desired
-                        || Contrast::ratio_of_tones(t1.min(t2), answer) < desired
+                )
+            {
+                let (t1, t2) = (bg1.get_tone(scheme), bg2.get_tone(scheme));
+                let desired = cc_fn.get(scheme.contrast_level);
+                if Contrast::ratio_of_tones(t1.max(t2), answer) < desired
+                    || Contrast::ratio_of_tones(t1.min(t2), answer) < desired
+                {
+                    let light = Contrast::lighter(t1.max(t2), desired);
+                    let dark = Contrast::darker(t1.min(t2), desired);
+                    if DynamicColor::tone_prefers_light_foreground(t1)
+                        || DynamicColor::tone_prefers_light_foreground(t2)
                     {
-                        let light = Contrast::lighter(t1.max(t2), desired);
-                        let dark = Contrast::darker(t1.min(t2), desired);
-                        if DynamicColor::tone_prefers_light_foreground(t1)
-                            || DynamicColor::tone_prefers_light_foreground(t2)
-                        {
-                            return light.unwrap_or(100.0);
-                        }
-                        return dark.or(light).unwrap_or(0.0);
+                        return light.unwrap_or(100.0);
                     }
+                    return dark.or(light).unwrap_or(0.0);
                 }
             }
             answer
@@ -2271,12 +2265,10 @@ impl ColorSpec for ColorSpec2025 {
                     } else {
                         8.0
                     }
+                } else if Hct::is_blue(source_color_hct.hue()) {
+                    16.0
                 } else {
-                    if Hct::is_blue(source_color_hct.hue()) {
-                        16.0
-                    } else {
-                        12.0
-                    }
+                    12.0
                 },
             ),
             Variant::TonalSpot => TonalPalette::from_hue_and_chroma(
@@ -2330,12 +2322,10 @@ impl ColorSpec for ColorSpec2025 {
                     } else {
                         4.0
                     }
+                } else if Hct::is_blue(source_color_hct.hue()) {
+                    10.0
                 } else {
-                    if Hct::is_blue(source_color_hct.hue()) {
-                        10.0
-                    } else {
-                        6.0
-                    }
+                    6.0
                 },
             ),
             Variant::TonalSpot => TonalPalette::from_hue_and_chroma(source_color_hct.hue(), 16.0),
@@ -2480,10 +2470,10 @@ impl ColorSpec for ColorSpec2025 {
                     &[0.0, 38.0, 105.0, 140.0, 333.0, 360.0],
                     &[-14.0, 10.0, -14.0, 10.0, -14.0],
                 );
-                let c = if platform == Platform::Phone {
+                let c = if platform == Platform::Phone || Hct::is_blue(h) {
                     28.0
                 } else {
-                    if Hct::is_blue(h) { 28.0 } else { 20.0 }
+                    20.0
                 };
                 TonalPalette::from_hue_and_chroma(h, c)
             }
@@ -2539,7 +2529,11 @@ impl ColorSpec for ColorSpec2025 {
                 };
                 TonalPalette::from_hue_and_chroma(
                     h,
-                    c * if h >= 105.0 && h < 125.0 { 1.6 } else { 2.3 },
+                    c * if (105.0..125.0).contains(&h) {
+                        1.6
+                    } else {
+                        2.3
+                    },
                 )
             }
             Variant::Vibrant => {
@@ -2548,10 +2542,10 @@ impl ColorSpec for ColorSpec2025 {
                     &[0.0, 38.0, 105.0, 140.0, 333.0, 360.0],
                     &[-14.0, 10.0, -14.0, 10.0, -14.0],
                 );
-                let c = if platform == Platform::Phone {
+                let c = if platform == Platform::Phone || Hct::is_blue(h) {
                     28.0
                 } else {
-                    if Hct::is_blue(h) { 28.0 } else { 20.0 }
+                    20.0
                 };
                 TonalPalette::from_hue_and_chroma(h, c * 1.29)
             }

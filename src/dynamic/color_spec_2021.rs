@@ -669,8 +669,10 @@ impl ColorSpec for ColorSpec2021 {
                     DynamicColor::foreground_tone(pc_raw_tone, 4.5)
                 } else if Self::is_monochrome(s) {
                     if s.is_dark { 0.0 } else { 100.0 }
+                } else if s.is_dark {
+                    90.0
                 } else {
-                    if s.is_dark { 90.0 } else { 30.0 }
+                    30.0
                 }
             })),
             None,
@@ -1495,9 +1497,8 @@ impl ColorSpec for ColorSpec2021 {
                 return light_option.unwrap_or(100.0);
             }
             match (light_option, dark_option) {
-                (Some(_), Some(d)) => d,
                 (Some(l), None) => l,
-                (None, Some(d)) => d,
+                (Some(_) | None, Some(d)) => d,
                 (None, None) => 0.0,
             }
         }
