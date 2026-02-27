@@ -198,6 +198,8 @@ impl ColorSpec for ColorSpec2025 {
     }
 
     fn on_background(&self) -> Arc<DynamicColor> {
+        // Technically, every use of ColorSpecs::get(s.spec_version) should instead use the override spec,
+        // but I'll just fix it where the issue comes up for now.
         let override_spec = [self.override_spec; 1];
         let color2025 = DynamicColor::new(
             "on_background".to_string(),
@@ -245,7 +247,6 @@ impl ColorSpec for ColorSpec2025 {
             None,
             None,
         );
-        dbg!(&color2025);
         self.base
             .on_background()
             .extend_spec_version(SpecVersion::Spec2025, &color2025)

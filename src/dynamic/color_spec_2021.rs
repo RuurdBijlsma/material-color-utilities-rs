@@ -652,28 +652,25 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_primary_container(&self) -> Arc<DynamicColor> {
+        let override_spec = [self.override_spec; 1];
         Arc::new(DynamicColor::new(
             "on_primary_container".into(),
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).primary_container())
+            Some(Arc::new(move |s| {
+                Some(ColorSpecs::get(override_spec[0]).primary_container())
             })),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 if Self::is_fidelity(s) {
-                    DynamicColor::foreground_tone(
-                        ColorSpecs::get(s.spec_version)
-                            .primary_container()
-                            .get_tone(s),
-                        4.5,
-                    )
+                    // make sure it uses the tone getter from DynamicColor, not the get_tone function on ColorSpec
+                    let pc = ColorSpecs::get(override_spec[0]).primary_container();
+                    let pc_raw_tone = (pc.tone)(s);
+                    DynamicColor::foreground_tone(pc_raw_tone, 4.5)
                 } else if Self::is_monochrome(s) {
                     if s.is_dark { 0.0 } else { 100.0 }
-                } else if s.is_dark {
-                    90.0
                 } else {
-                    30.0
+                    if s.is_dark { 90.0 } else { 30.0 }
                 }
             })),
             None,
@@ -802,6 +799,7 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_secondary_container(&self) -> Arc<DynamicColor> {
+        let override_spec = [self.override_spec; 1];
         Arc::new(DynamicColor::new(
             "on_secondary_container".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -810,18 +808,15 @@ impl ColorSpec for ColorSpec2021 {
             Some(Arc::new(|s| {
                 Some(ColorSpecs::get(s.spec_version).secondary_container())
             })),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 90.0 } else { 10.0 }
                 } else if !Self::is_fidelity(s) {
                     if s.is_dark { 90.0 } else { 30.0 }
                 } else {
-                    DynamicColor::foreground_tone(
-                        ColorSpecs::get(s.spec_version)
-                            .secondary_container()
-                            .get_tone(s),
-                        4.5,
-                    )
+                    let sc = ColorSpecs::get(override_spec[0]).secondary_container();
+                    let sc_raw_tone = (sc.tone)(s);
+                    DynamicColor::foreground_tone(sc_raw_tone, 4.5)
                 }
             })),
             None,
@@ -936,6 +931,7 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_tertiary_container(&self) -> Arc<DynamicColor> {
+        let override_spec = [self.override_spec; 1];
         Arc::new(DynamicColor::new(
             "on_tertiary_container".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -944,18 +940,15 @@ impl ColorSpec for ColorSpec2021 {
             Some(Arc::new(|s| {
                 Some(ColorSpecs::get(s.spec_version).tertiary_container())
             })),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 if Self::is_monochrome(s) {
                     if s.is_dark { 0.0 } else { 100.0 }
                 } else if !Self::is_fidelity(s) {
                     if s.is_dark { 90.0 } else { 30.0 }
                 } else {
-                    DynamicColor::foreground_tone(
-                        ColorSpecs::get(s.spec_version)
-                            .tertiary_container()
-                            .get_tone(s),
-                        4.5,
-                    )
+                    let tc = ColorSpecs::get(override_spec[0]).tertiary_container();
+                    let tc_raw_tone = (tc.tone)(s);
+                    DynamicColor::foreground_tone(tc_raw_tone, 4.5)
                 }
             })),
             None,
@@ -1383,12 +1376,14 @@ impl ColorSpec for ColorSpec2021 {
 
     fn get_hct(&self, scheme: &DynamicScheme, color: &DynamicColor) -> Hct {
         let tone = self.get_tone(scheme, color);
+        // dbg!(&tone);
         (color.palette)(scheme).get_hct(tone)
     }
 
     fn get_tone(&self, scheme: &DynamicScheme, color: &DynamicColor) -> f64 {
         let decreasing_contrast = scheme.contrast_level < 0.0;
         let tone_delta_pair = color.tone_delta_pair.as_ref().and_then(|f| f(scheme));
+        // dbg!(&tone_delta_pair.is_none());
 
         if let Some(tdp) = tone_delta_pair {
             let role_a = &tdp.role_a;
@@ -1458,6 +1453,7 @@ impl ColorSpec for ColorSpec2021 {
             if am_nearer { n_tone } else { f_tone }
         } else {
             let mut answer = (color.tone)(scheme);
+            // dbg!(&answer);
             let background = color.background.as_ref().and_then(|f| f(scheme));
             let contrast_curve = color.contrast_curve.as_ref().and_then(|f| f(scheme));
             let (Some(bg_color), Some(cc)) = (background, contrast_curve) else {

@@ -275,7 +275,7 @@ fn test_single_failing_color() -> Result<()> {
             let mut actual_roles: HashMap<String, u32> = HashMap::new();
             for getter in mdc.all_dynamic_colors() {
                 if let Some(dc) = getter() {
-                    if dc.name != "on_background" {
+                    if dc.name != "on_primary_container" {
                         continue;
                     }
                     actual_roles.insert(dc.name.clone(), dc.get_argb(&scheme).0);

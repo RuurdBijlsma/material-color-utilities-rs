@@ -29,6 +29,7 @@ use crate::palettes::tonal_palette::TonalPalette;
 
 pub struct ColorSpec2026 {
     base: ColorSpec2025,
+    override_spec: SpecVersion,
 }
 
 impl Default for ColorSpec2026 {
@@ -42,6 +43,7 @@ impl ColorSpec2026 {
     pub const fn new() -> Self {
         Self {
             base: ColorSpec2025::with_override_spec(SpecVersion::Spec2026),
+            override_spec: SpecVersion::Spec2026,
         }
     }
 
@@ -346,7 +348,6 @@ impl ColorSpec for ColorSpec2026 {
     }
 
     fn on_surface(&self) -> Arc<DynamicColor> {
-        println!("Using on_surface os spec 2026");
         let color2026 = DynamicColor::new(
             "on_surface".to_string(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -545,13 +546,14 @@ impl ColorSpec for ColorSpec2026 {
     }
 
     fn primary_container(&self) -> Arc<DynamicColor> {
+        let override_spec = [self.override_spec; 1];
         let color2026 = DynamicColor::new(
             "primary_container".to_string(),
             Arc::new(|s| s.primary_palette.clone()),
             true,
             None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+            Some(Arc::new(move |s| {
+                Some(ColorSpecs::get(override_spec[0]).highest_surface(s))
             })),
             Some(Arc::new(|s| {
                 if !s.is_dark && s.source_color_hct().chroma() <= 12.0 {
@@ -570,10 +572,10 @@ impl ColorSpec for ColorSpec2026 {
                     None
                 }
             })),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 Some(ToneDeltaPair::new(
-                    ColorSpecs::get(s.spec_version).primary_container(),
-                    ColorSpecs::get(s.spec_version).primary(),
+                    ColorSpecs::get(override_spec[0]).primary_container(),
+                    ColorSpecs::get(override_spec[0]).primary(),
                     5.0,
                     TonePolarity::RelativeLighter,
                     true,
@@ -588,13 +590,14 @@ impl ColorSpec for ColorSpec2026 {
     }
 
     fn on_primary_container(&self) -> Arc<DynamicColor> {
+        let override_spec = [self.override_spec; 1];
         let color2026 = DynamicColor::new(
             "on_primary_container".to_string(),
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).primary_container())
+            Some(Arc::new(move |s| {
+                Some(ColorSpecs::get(override_spec[0]).primary_container())
             })),
             None,
             None,
