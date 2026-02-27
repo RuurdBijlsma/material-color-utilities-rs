@@ -936,7 +936,7 @@ impl ColorSpec for ColorSpec2025 {
             })),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 // Workaround because we don't have inheritance:
                 // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
                 let spec = ColorSpecs::get(override_spec);
@@ -1220,7 +1220,7 @@ impl ColorSpec for ColorSpec2025 {
             })),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 // Workaround because we don't have inheritance:
                 // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
                 let spec = ColorSpecs::get(override_spec);
@@ -1455,7 +1455,7 @@ impl ColorSpec for ColorSpec2025 {
             })),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 // Workaround because we don't have inheritance:
                 // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
                 let spec = ColorSpecs::get(override_spec);
@@ -1679,7 +1679,7 @@ impl ColorSpec for ColorSpec2025 {
             Some(Arc::new(|s| Self::t_min_c(&s.error_palette, 0.0, 100.0))),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 // Workaround because we don't have inheritance:
                 // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
                 let spec = ColorSpecs::get(override_spec);

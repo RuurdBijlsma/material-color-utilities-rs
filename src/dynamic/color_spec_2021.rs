@@ -213,7 +213,7 @@ impl ColorSpec for ColorSpec2021 {
             Arc::new(|s| s.neutral_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 Some(ColorSpecs::get(override_spec).background())
             })),
             Some(Arc::new(|s| if s.is_dark { 90.0 } else { 10.0 })),
@@ -658,7 +658,7 @@ impl ColorSpec for ColorSpec2021 {
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 Some(ColorSpecs::get(override_spec[0]).primary_container())
             })),
             Some(Arc::new(move |s| {

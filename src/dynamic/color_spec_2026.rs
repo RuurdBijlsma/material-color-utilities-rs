@@ -572,7 +572,7 @@ impl ColorSpec for ColorSpec2026 {
                     None
                 }
             })),
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 Some(ToneDeltaPair::new(
                     ColorSpecs::get(override_spec[0]).primary_container(),
                     ColorSpecs::get(override_spec[0]).primary(),
@@ -596,7 +596,7 @@ impl ColorSpec for ColorSpec2026 {
             Arc::new(|s| s.primary_palette.clone()),
             false,
             None,
-            Some(Arc::new(move |s| {
+            Some(Arc::new(move |_s| {
                 Some(ColorSpecs::get(override_spec[0]).primary_container())
             })),
             None,
