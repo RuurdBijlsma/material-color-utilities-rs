@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use crate::contrast::contrast_utils::Contrast;
 use crate::dislike::dislike_analyzer::DislikeAnalyzer;
-use crate::dynamic::color_spec::{ColorSpec, Platform};
+use crate::dynamic::color_spec::{ColorSpec, Platform, SpecVersion};
 use crate::dynamic::color_specs::ColorSpecs;
 use crate::dynamic::contrast_curve::ContrastCurve;
 use crate::dynamic::dynamic_color::DynamicColor;
@@ -30,12 +30,21 @@ use crate::palettes::tonal_palette::TonalPalette;
 use crate::temperature::temperature_cache::TemperatureCache;
 use crate::utils::math_utils::MathUtils;
 
-pub struct ColorSpec2021;
+pub struct ColorSpec2021 {
+    override_spec: SpecVersion,
+}
 
 impl ColorSpec2021 {
     #[must_use]
+    pub const fn with_override_spec(override_spec: SpecVersion) -> Self {
+        Self { override_spec }
+    }
+
+    #[must_use]
     pub const fn new() -> Self {
-        Self
+        Self {
+            override_spec: SpecVersion::Spec2021,
+        }
     }
 
     fn is_fidelity(scheme: &DynamicScheme) -> bool {
@@ -198,13 +207,14 @@ impl ColorSpec for ColorSpec2021 {
     }
 
     fn on_background(&self) -> Arc<DynamicColor> {
+        let override_spec = self.override_spec;
         Arc::new(DynamicColor::new(
             "on_background".into(),
             Arc::new(|s| s.neutral_palette.clone()),
             false,
             None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).background())
+            Some(Arc::new(move |s| {
+                Some(ColorSpecs::get(override_spec).background())
             })),
             Some(Arc::new(|s| if s.is_dark { 90.0 } else { 10.0 })),
             None,

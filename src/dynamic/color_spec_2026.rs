@@ -41,7 +41,7 @@ impl ColorSpec2026 {
     #[must_use]
     pub const fn new() -> Self {
         Self {
-            base: ColorSpec2025::new(),
+            base: ColorSpec2025::with_override_spec(SpecVersion::Spec2026),
         }
     }
 
@@ -346,6 +346,7 @@ impl ColorSpec for ColorSpec2026 {
     }
 
     fn on_surface(&self) -> Arc<DynamicColor> {
+        println!("Using on_surface os spec 2026");
         let color2026 = DynamicColor::new(
             "on_surface".to_string(),
             Arc::new(|s| s.neutral_palette.clone()),

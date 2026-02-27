@@ -30,6 +30,7 @@ use crate::palettes::tonal_palette::TonalPalette;
 
 pub struct ColorSpec2025 {
     base: ColorSpec2021,
+    override_spec: SpecVersion,
 }
 
 impl Default for ColorSpec2025 {
@@ -40,10 +41,16 @@ impl Default for ColorSpec2025 {
 
 impl ColorSpec2025 {
     #[must_use]
-    pub const fn new() -> Self {
+    pub const fn with_override_spec(override_spec: SpecVersion) -> Self {
         Self {
-            base: ColorSpec2021::new(),
+            override_spec,
+            base: ColorSpec2021::with_override_spec(override_spec),
         }
+    }
+
+    #[must_use]
+    pub const fn new() -> Self {
+        Self::with_override_spec(SpecVersion::Spec2025)
     }
 
     fn t_max_c(
@@ -191,30 +198,45 @@ impl ColorSpec for ColorSpec2025 {
     }
 
     fn on_background(&self) -> Arc<DynamicColor> {
+        let override_spec = [self.override_spec; 1];
         let color2025 = DynamicColor::new(
             "on_background".to_string(),
-            Arc::new(|s| ColorSpecs::get(s.spec_version).on_surface().palette.clone()(s)),
+            Arc::new(move |s| {
+                ColorSpecs::get(override_spec[0])
+                    .on_surface()
+                    .palette
+                    .clone()(s)
+            }),
             false,
-            None,
-            Some(Arc::new(|s| {
+            // Inheritance workaround: we have to specify chroma_multplier arg here,
+            // because if on_background is called via color_spec_2026,
+            // then it should use the on_surface from 2026, which does have a chroma multiplier.
+            Some(Arc::new(move |s| {
+                ColorSpecs::get(override_spec[0])
+                    .on_surface()
+                    .chroma_multiplier
+                    .as_ref()
+                    .map_or(1.0, |f| f(s))
+            })),
+            Some(Arc::new(move |s| {
                 Some(
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(override_spec[0])
                         .on_surface()
                         .background
                         .as_ref()
                         .and_then(|f| f(s))?,
                 )
             })),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 if s.platform == Platform::Watch {
                     100.0
                 } else {
-                    ColorSpecs::get(s.spec_version).on_surface().get_tone(s)
+                    ColorSpecs::get(override_spec[0]).on_surface().get_tone(s)
                 }
             })),
             None,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version)
+            Some(Arc::new(move |s| {
+                ColorSpecs::get(override_spec[0])
                     .on_surface()
                     .contrast_curve
                     .as_ref()
@@ -223,6 +245,7 @@ impl ColorSpec for ColorSpec2025 {
             None,
             None,
         );
+        dbg!(&color2025);
         self.base
             .on_background()
             .extend_spec_version(SpecVersion::Spec2025, &color2025)
@@ -896,6 +919,7 @@ impl ColorSpec for ColorSpec2025 {
     }
 
     fn primary_dim(&self) -> Option<Arc<DynamicColor>> {
+        let override_spec = self.override_spec;
         Some(Arc::new(DynamicColor::new(
             "primary_dim".to_string(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -911,12 +935,12 @@ impl ColorSpec for ColorSpec2025 {
             })),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 // Workaround because we don't have inheritance:
-                // Just set the spec here manually or else it gets the wrong spec
-                let spec = ColorSpecs::get(SpecVersion::Spec2025);
+                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                let spec = ColorSpecs::get(override_spec);
                 let spec_primary_dim = spec.primary_dim()?;
-                 Some(ToneDeltaPair::new(
+                Some(ToneDeltaPair::new(
                     spec_primary_dim,
                     spec.primary(),
                     5.0,
@@ -1177,6 +1201,7 @@ impl ColorSpec for ColorSpec2025 {
     }
 
     fn secondary_dim(&self) -> Option<Arc<DynamicColor>> {
+        let override_spec = self.override_spec;
         Some(Arc::new(DynamicColor::new(
             "secondary_dim".to_string(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -1194,10 +1219,10 @@ impl ColorSpec for ColorSpec2025 {
             })),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 // Workaround because we don't have inheritance:
-                // Just set the spec here manually or else it gets the wrong spec
-                let spec = ColorSpecs::get(SpecVersion::Spec2025);
+                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                let spec = ColorSpecs::get(override_spec);
                 Some(ToneDeltaPair::new(
                     spec.secondary_dim()?,
                     spec.secondary(),
@@ -1411,6 +1436,7 @@ impl ColorSpec for ColorSpec2025 {
     }
 
     fn tertiary_dim(&self) -> Option<Arc<DynamicColor>> {
+        let override_spec = self.override_spec;
         Some(Arc::new(DynamicColor::new(
             "tertiary_dim".to_string(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -1428,10 +1454,10 @@ impl ColorSpec for ColorSpec2025 {
             })),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 // Workaround because we don't have inheritance:
-                // Just set the spec here manually or else it gets the wrong spec
-                let spec = ColorSpecs::get(SpecVersion::Spec2025);
+                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                let spec = ColorSpecs::get(override_spec);
                 Some(ToneDeltaPair::new(
                     spec.tertiary_dim()?,
                     spec.tertiary(),
@@ -1640,6 +1666,7 @@ impl ColorSpec for ColorSpec2025 {
     }
 
     fn error_dim(&self) -> Option<Arc<DynamicColor>> {
+        let override_spec = self.override_spec;
         Some(Arc::new(DynamicColor::new(
             "error_dim".to_string(),
             Arc::new(|s| s.error_palette.clone()),
@@ -1651,10 +1678,10 @@ impl ColorSpec for ColorSpec2025 {
             Some(Arc::new(|s| Self::t_min_c(&s.error_palette, 0.0, 100.0))),
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(|s| {
+            Some(Arc::new(move |s| {
                 // Workaround because we don't have inheritance:
-                // Just set the spec here manually or else it gets the wrong spec
-                let spec = ColorSpecs::get(SpecVersion::Spec2025);
+                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                let spec = ColorSpecs::get(override_spec);
                 Some(ToneDeltaPair::new(
                     spec.error_dim()?,
                     spec.error(),

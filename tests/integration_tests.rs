@@ -144,6 +144,7 @@ fn test_material_schemes_against_reference() -> Result<()> {
                     Some(actual) => {
                         tested_color += 1;
                         if actual != expected {
+                            // bail!("COLOR {}, {}, {}, {}, {} fail", role_name, entry.scheme, entry.contrast, entry.color, entry.is_dark);
                             mismatch_color.push(format!(
                                 "scheme: {}, role: {}, expected: {}, got: {}",
                                 &entry.scheme,
@@ -274,7 +275,7 @@ fn test_single_failing_color() -> Result<()> {
             let mut actual_roles: HashMap<String, u32> = HashMap::new();
             for getter in mdc.all_dynamic_colors() {
                 if let Some(dc) = getter() {
-                    if dc.name != "primary_dim" {
+                    if dc.name != "on_background" {
                         continue;
                     }
                     actual_roles.insert(dc.name.clone(), dc.get_argb(&scheme).0);
