@@ -912,13 +912,11 @@ impl ColorSpec for ColorSpec2025 {
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
             Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                // todo: problem found: it tries to get primary dim here from spec 2021, but that returns None
-                // The kotlin implementation gets primary dim through inheritance somehow and it is not None.
-                // possible fix found: Call spec version 2025 -> primary_dim here, and it passes the test. but thats weird.
-                // ik denk dat soort van de root cause is, dat we de spec uit s.spec_version halen, maar dat is de spec van de scheme, niet echt de spec waar we onze fields uit moeten halen.
+                // Workaround because we don't have inheritance:
+                // Just set the spec here manually or else it gets the wrong spec
+                let spec = ColorSpecs::get(SpecVersion::Spec2025);
                 let spec_primary_dim = spec.primary_dim()?;
-                Some(ToneDeltaPair::new(
+                 Some(ToneDeltaPair::new(
                     spec_primary_dim,
                     spec.primary(),
                     5.0,
@@ -1197,7 +1195,9 @@ impl ColorSpec for ColorSpec2025 {
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
             Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
+                // Workaround because we don't have inheritance:
+                // Just set the spec here manually or else it gets the wrong spec
+                let spec = ColorSpecs::get(SpecVersion::Spec2025);
                 Some(ToneDeltaPair::new(
                     spec.secondary_dim()?,
                     spec.secondary(),
@@ -1429,7 +1429,9 @@ impl ColorSpec for ColorSpec2025 {
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
             Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
+                // Workaround because we don't have inheritance:
+                // Just set the spec here manually or else it gets the wrong spec
+                let spec = ColorSpecs::get(SpecVersion::Spec2025);
                 Some(ToneDeltaPair::new(
                     spec.tertiary_dim()?,
                     spec.tertiary(),
@@ -1650,7 +1652,9 @@ impl ColorSpec for ColorSpec2025 {
             None,
             Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
             Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
+                // Workaround because we don't have inheritance:
+                // Just set the spec here manually or else it gets the wrong spec
+                let spec = ColorSpecs::get(SpecVersion::Spec2025);
                 Some(ToneDeltaPair::new(
                     spec.error_dim()?,
                     spec.error(),
