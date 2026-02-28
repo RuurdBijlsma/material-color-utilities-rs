@@ -1,325 +1,184 @@
 use color_eyre::Result;
-use color_eyre::eyre::{bail, eyre};
-use serde::Deserialize;
-use std::collections::HashMap;
-use std::fs;
-use std::path::Path;
-
+use color_eyre::eyre::{Context, eyre};
 use material_color_utilities::dynamic::color_spec::SpecVersion;
 use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
 use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
 use material_color_utilities::hct::Cam16;
 use material_color_utilities::hct::hct_color::Hct;
-use material_color_utilities::scheme::scheme_content::SchemeContent;
-use material_color_utilities::scheme::scheme_expressive::SchemeExpressive;
-use material_color_utilities::scheme::scheme_monochrome::SchemeMonochrome;
-use material_color_utilities::scheme::scheme_tonal_spot::SchemeTonalSpot;
-use material_color_utilities::scheme::scheme_vibrant::SchemeVibrant;
 use material_color_utilities::scheme::{
     SchemeCmf, SchemeFidelity, SchemeFruitSalad, SchemeNeutral, SchemeRainbow,
+    scheme_content::SchemeContent, scheme_expressive::SchemeExpressive,
+    scheme_monochrome::SchemeMonochrome, scheme_tonal_spot::SchemeTonalSpot,
+    scheme_vibrant::SchemeVibrant,
 };
 use material_color_utilities::utils::color_utils::Argb;
 use rand::prelude::IndexedRandom;
+use serde::Deserialize;
 use statrs::statistics::Statistics;
+use std::collections::HashMap;
+use std::fs;
 
 #[derive(Debug, Deserialize)]
 struct ReferenceEntry {
     color: String,
     scheme: String,
     contrast: f64,
+    #[serde(rename = "is_dark")]
     is_dark: bool,
     roles: HashMap<String, String>,
 }
 
-fn parse_reference_schemes(path: &Path) -> Result<Vec<ReferenceEntry>> {
-    let content = fs::read_to_string(path)?;
-    let entries: Vec<ReferenceEntry> = serde_json::from_str(&content)?;
-    Ok(entries)
+impl ReferenceEntry {
+    fn parse_color(&self, hex: &str) -> Result<Argb> {
+        let val = u32::from_str_radix(hex.trim_start_matches("0x"), 16)
+            .map_err(|_| eyre!("Invalid hex format: {}", hex))?;
+        Ok(Argb(val))
+    }
+
+    fn to_dynamic_scheme(&self) -> Result<DynamicScheme> {
+        let hct = Hct::from_int(self.parse_color(&self.color)?);
+        let d = self.is_dark;
+        let c = self.contrast;
+
+        match self.scheme.as_str() {
+            "CMF" => Ok(SchemeCmf::new(hct, d, c)),
+            "CONTENT" => Ok(SchemeContent::new(hct, d, c)),
+            "EXPRESSIVE" => Ok(SchemeExpressive::new(hct, d, c)),
+            "FIDELITY" => Ok(SchemeFidelity::new(hct, d, c)),
+            "FRUIT_SALAD" => Ok(SchemeFruitSalad::new(hct, d, c)),
+            "MONOCHROME" => Ok(SchemeMonochrome::new(hct, d, c)),
+            "NEUTRAL" => Ok(SchemeNeutral::new(hct, d, c)),
+            "RAINBOW" => Ok(SchemeRainbow::new(hct, d, c)),
+            "TONAL_SPOT" => Ok(SchemeTonalSpot::new(hct, d, c)),
+            "VIBRANT" => Ok(SchemeVibrant::new(hct, d, c)),
+            _ => Err(eyre!("Unsupported scheme type: {}", self.scheme)),
+        }
+    }
 }
 
-fn make_scheme_from_entry(entry: &ReferenceEntry) -> Option<DynamicScheme> {
-    // Parse color hex like "0xFFDCDCDC" -> 0xFFDCDCDC
-    let Ok(color_val) = u32::from_str_radix(entry.color.trim_start_matches("0x"), 16) else {
-        return None;
-    };
+#[derive(Default)]
+struct ValidationTracker {
+    mismatches: Vec<String>,
+    distances: Vec<f64>,
+    role_counts: HashMap<String, usize>,
+    scheme_counts: HashMap<String, usize>,
+    total_tested: usize,
+}
 
-    match entry.scheme.as_str() {
-        "CMF" => Some(SchemeCmf::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "CONTENT" => Some(SchemeContent::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "EXPRESSIVE" => Some(SchemeExpressive::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "FIDELITY" => Some(SchemeFidelity::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "FRUIT_SALAD" => Some(SchemeFruitSalad::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "MONOCHROME" => Some(SchemeMonochrome::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "NEUTRAL" => Some(SchemeNeutral::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "RAINBOW" => Some(SchemeRainbow::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "TONAL_SPOT" => Some(SchemeTonalSpot::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        "VIBRANT" => Some(SchemeVibrant::new(
-            Hct::from_int(Argb(color_val)),
-            entry.is_dark,
-            entry.contrast,
-        )),
-        _ => None,
+impl ValidationTracker {
+    fn record_mismatch(&mut self, role: &str, scheme: &str, expected: Argb, actual: Argb) {
+        let d = Cam16::from_int(expected).distance(&Cam16::from_int(actual));
+        self.distances.push(d);
+
+        let fmt_hct = |argb: Argb| {
+            let hct = Hct::from_int(argb);
+            format!("HCT: ({:.1}, {:.1}, {:.1})", hct.hue(), hct.chroma(), hct.tone())
+        };
+
+        self.mismatches.push(format!(
+            "[{scheme: <10}] {role: <25} | Exp: [{}] | Got: [{}] | ΔE: {d:.2}",
+            fmt_hct(expected),
+            fmt_hct(actual)
+        ));
+
+        // Increment counts separately
+        *self.role_counts.entry(role.to_string()).or_insert(0) += 1;
+        *self.scheme_counts.entry(scheme.to_string()).or_insert(0) += 1;
     }
+
+    fn finalize(&self) -> Result<()> {
+        if self.mismatches.is_empty() {
+            println!("✅ All {} checks passed successfully.", self.total_tested);
+            return Ok(());
+        }
+
+        let total_errs = self.mismatches.len();
+        println!("\n⛔ FOUND {} MISMATCHES", total_errs);
+
+        // 1. Random Sample
+        let mut rng = rand::rng();
+        let sample_size = 10.min(total_errs);
+        println!("\n--- Random Sample ---");
+        for m in self.mismatches.sample(&mut rng, sample_size) {
+            println!("{m}");
+        }
+
+        // 2. Breakdown by Role
+        println!("\n--- Top Failing Roles ---");
+        let mut roles: Vec<_> = self.role_counts.iter().collect();
+        roles.sort_by(|a, b| b.1.cmp(a.1));
+        for (name, count) in roles.iter().take(10) {
+            let pct = (**count as f64 / total_errs as f64) * 100.0;
+            println!("{name: <25}: {count: <5} ({pct:>5.1}% of all errors)");
+        }
+
+        // 3. Breakdown by Scheme
+        println!("\n--- Top Failing Schemes ---");
+        let mut schemes: Vec<_> = self.scheme_counts.iter().collect();
+        schemes.sort_by(|a, b| b.1.cmp(a.1));
+        for (name, count) in schemes.iter().take(10) {
+            let pct = (**count as f64 / total_errs as f64) * 100.0;
+            println!("{name: <25}: {count: <5} ({pct:>5.1}% of all errors)");
+        }
+
+        // 4. Global Stats
+        println!("\n--- Error Magnitude (Cam16 ΔE) ---");
+        println!("Mean:   {:.4}", (&self.distances).mean());
+        println!("StdDev: {:.4}", (&self.distances).std_dev());
+
+        Err(eyre!("Integration test failed: {total_errs} mismatches"))
+    }
+}
+
+fn run_reference_test(path: &str, spec: SpecVersion, filter_role: Option<&str>) -> Result<()> {
+    let content = fs::read_to_string(path).wrap_err("Failed to read reference file")?;
+    let entries: Vec<ReferenceEntry> = serde_json::from_str(&content)?;
+    let mdc = MaterialDynamicColors::new_with_spec(spec);
+    let mut tracker = ValidationTracker::default();
+
+    for entry in entries {
+        let scheme = entry.to_dynamic_scheme()?;
+
+        for getter in mdc.all_dynamic_colors() {
+            let Some(dc) = getter() else { continue };
+
+            if let Some(target) = filter_role {
+                if dc.name != target {
+                    continue;
+                }
+            }
+
+            let actual = dc.get_argb(&scheme);
+            let expected_hex = entry.roles.get(&dc.name).ok_or_else(|| {
+                eyre!("Role {} missing in reference for {}", dc.name, entry.scheme)
+            })?;
+
+            let expected = entry.parse_color(expected_hex)?;
+            tracker.total_tested += 1;
+
+            if actual != expected {
+                tracker.record_mismatch(&dc.name, &entry.scheme, expected, actual);
+            }
+        }
+    }
+
+    tracker.finalize()
 }
 
 #[test]
 fn test_material_schemes_against_reference() -> Result<()> {
-    let entries = parse_reference_schemes(Path::new("tests/reference_schemes_large.json"))?;
-
-    let mdc = MaterialDynamicColors::new_with_spec(SpecVersion::Spec2026);
-    let mut invalid_hex: Vec<String> = Vec::new();
-    let mut mismatch_color: Vec<String> = Vec::new();
-    let mut missing_role: Vec<String> = Vec::new();
-    let mut missing_scheme: Vec<String> = Vec::new();
-    let mut tested_hex = 0;
-    let mut tested_color = 0;
-    let mut tested_role = 0;
-    let mut tested_scheme = 0;
-
-    // Explicitly type to take ownership of String keys rather than references
-    let mut role_mismatch_count_map: HashMap<String, usize> = HashMap::new();
-    let mut scheme_mismatch_count_map: HashMap<String, usize> = HashMap::new();
-    let mut contrast_mismatch_count: HashMap<String, usize> = HashMap::new();
-    let mut is_dark_mismatch_count: HashMap<bool, usize> = HashMap::new();
-    let mut color_mismatch_distances = Vec::new();
-
-    for entry in entries {
-        tested_scheme += 1;
-        if let Some(scheme) = make_scheme_from_entry(&entry) {
-            // Build actual roles map from the Rust MaterialDynamicColors
-            let mut actual_roles: HashMap<String, u32> = HashMap::new();
-            for getter in mdc.all_dynamic_colors() {
-                if let Some(dc) = getter() {
-                    actual_roles.insert(dc.name.clone(), dc.get_argb(&scheme).0);
-                }
-            }
-
-            for (role_name, hex_str) in entry.roles {
-                tested_hex += 1;
-                let Ok(expected) = u32::from_str_radix(hex_str.trim_start_matches("0x"), 16) else {
-                    invalid_hex.push(format!(
-                        "Invalid hex for role {role_name} in reference: {hex_str}"
-                    ));
-                    continue;
-                };
-
-                tested_role += 1;
-                match actual_roles.get(&role_name).copied() {
-                    Some(actual) => {
-                        tested_color += 1;
-                        if actual != expected {
-                            // bail!("COLOR {}, {}, {}, {}, {} fail", role_name, entry.scheme, entry.contrast, entry.color, entry.is_dark);
-                            mismatch_color.push(format!(
-                                "scheme: {}, role: {}, expected: {}, got: {}",
-                                &entry.scheme,
-                                role_name,
-                                Hct::from_int(Argb(expected)),
-                                Hct::from_int(Argb(actual))
-                            ));
-
-                            *role_mismatch_count_map
-                                .entry(role_name.clone())
-                                .or_insert(0) += 1;
-                            *scheme_mismatch_count_map
-                                .entry(entry.scheme.clone())
-                                .or_insert(0) += 1;
-                            *contrast_mismatch_count
-                                .entry(entry.contrast.to_string())
-                                .or_insert(0) += 1;
-                            *is_dark_mismatch_count.entry(entry.is_dark).or_insert(0) += 1;
-
-                            let col1 = Cam16::from_int(Argb(expected));
-                            let col2 = Cam16::from_int(Argb(actual));
-                            let distance = col1.distance(&col2);
-                            color_mismatch_distances.push(distance);
-                        }
-                    }
-                    None => {
-                        missing_role.push(format!(
-                            "Role {} not found in MaterialDynamicColors for scheme {}",
-                            role_name, entry.scheme
-                        ));
-                    }
-                }
-            }
-        } else {
-            missing_scheme.push(format!("Scheme {} is unsupported", entry.scheme));
-        }
-    }
-
-    if missing_scheme.is_empty() {
-        println!("\n✅ No missing_scheme, {tested_scheme} checks done");
-    } else {
-        eprintln!(
-            "\nFound {}/{} missing_scheme:",
-            missing_scheme.len(),
-            tested_scheme
-        );
-    }
-
-    if invalid_hex.is_empty() {
-        println!("\n✅ No invalid_hex, {tested_hex} checks done");
-    } else {
-        eprintln!("\nFound {}/{} invalid_hex:", invalid_hex.len(), tested_hex);
-    }
-
-    if mismatch_color.is_empty() {
-        println!("\n✅ No mismatch_color, {tested_color} checks done");
-    } else {
-        eprintln!(
-            "\n⛔ Found {}/{} mismatch_color:",
-            mismatch_color.len(),
-            tested_color
-        );
-        let mut rng = rand::rng();
-        let sample: Vec<&String> = mismatch_color.sample(&mut rng, 15).collect();
-        eprintln!("Sample of {} random mismatches", sample.len());
-        for m in &sample {
-            eprintln!("\t{m}");
-        }
-        eprintln!(
-            "\nMismatches per scheme:\n{}",
-            serde_json::to_string_pretty(&scheme_mismatch_count_map)?
-        );
-        eprintln!(
-            "Mismatches per role:\n{}",
-            serde_json::to_string_pretty(&role_mismatch_count_map)?
-        );
-        eprintln!(
-            "Mismatches per contrast:\n{}",
-            serde_json::to_string_pretty(&contrast_mismatch_count)?
-        );
-        eprintln!(
-            "Mismatches per is_dark:\n{}",
-            serde_json::to_string_pretty(&is_dark_mismatch_count)?
-        );
-        eprintln!("Mismatch color distance stats:");
-        eprintln!("\t* Mean: {}", (&color_mismatch_distances).mean());
-        eprintln!("\t* Stddev: {}", (&color_mismatch_distances).std_dev());
-        let black = Cam16::from_int(Argb::from_rgb(0, 0, 0));
-        let white = Cam16::from_int(Argb::from_rgb(255, 255, 255));
-        let yellow = Cam16::from_int(Argb::from_rgb(255, 251, 0));
-        let orange = Cam16::from_int(Argb::from_rgb(255, 164, 0));
-        let red = Cam16::from_int(Argb::from_rgb(255, 0, 0));
-        eprintln!("black <-> white Distance: {}", black.distance(&white));
-        eprintln!("yellow <-> white Distance: {}", yellow.distance(&white));
-        eprintln!("yellow <-> orange Distance: {}", yellow.distance(&orange));
-        eprintln!("red <-> orange Distance: {}", red.distance(&orange));
-    }
-
-    if missing_role.is_empty() {
-        println!("\n✅ No missing_role, {tested_role} checks done");
-    } else {
-        eprintln!(
-            "\nFound {}/{} missing_role:",
-            missing_role.len(),
-            tested_role
-        );
-    }
-
-    if !missing_scheme.is_empty()
-        || !missing_role.is_empty()
-        || !invalid_hex.is_empty()
-        || !mismatch_color.is_empty()
-    {
-        return Err(eyre!("Test failed"));
-    }
-
-    Ok(())
+    run_reference_test(
+        "tests/reference_schemes_large.json",
+        SpecVersion::Spec2026,
+        None,
+    )
 }
 
 #[test]
 fn test_single_failing_color() -> Result<()> {
-    let entries = parse_reference_schemes(Path::new("tests/reference_schemes_single.json"))?;
-
-    let mdc = MaterialDynamicColors::new();
-
-    for entry in entries {
-        if let Some(scheme) = make_scheme_from_entry(&entry) {
-            let mut actual_roles: HashMap<String, u32> = HashMap::new();
-            for getter in mdc.all_dynamic_colors() {
-                if let Some(dc) = getter() {
-                    if dc.name != "on_primary_container" {
-                        continue;
-                    }
-                    actual_roles.insert(dc.name.clone(), dc.get_argb(&scheme).0);
-                }
-            }
-
-            for (role_name, hex_str) in entry.roles {
-                let Ok(expected) = u32::from_str_radix(hex_str.trim_start_matches("0x"), 16) else {
-                    bail!("WRONG");
-                };
-
-                match actual_roles.get(&role_name).copied() {
-                    Some(actual) => {
-                        if actual == expected {
-                            println!(
-                                "GOOD! - scheme: {}, role: {}, expected: {}, got: {}",
-                                &entry.scheme,
-                                role_name,
-                                Hct::from_int(Argb(expected)),
-                                Hct::from_int(Argb(actual))
-                            );
-                        } else {
-                            bail!(
-                                "BAD! - scheme: {}, role: {}, expected: {}, got: {}",
-                                &entry.scheme,
-                                role_name,
-                                Hct::from_int(Argb(expected)),
-                                Hct::from_int(Argb(actual))
-                            );
-                        }
-                    }
-                    None => {
-                        bail!(
-                            "Role {} not found in MaterialDynamicColors for scheme {}",
-                            role_name,
-                            entry.scheme
-                        );
-                    }
-                }
-            }
-        } else {
-            bail!("Scheme {} is unsupported", entry.scheme);
-        }
-    }
-
-    Ok(())
+    run_reference_test(
+        "tests/reference_schemes_single.json",
+        SpecVersion::Spec2026,
+        Some("on_primary_container"),
+    )
 }
