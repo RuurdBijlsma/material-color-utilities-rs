@@ -1378,14 +1378,12 @@ impl ColorSpec for ColorSpec2021 {
 
     fn get_hct(&self, scheme: &DynamicScheme, color: &DynamicColor) -> Hct {
         let tone = self.get_tone(scheme, color);
-        // dbg!(&tone);
         (color.palette)(scheme).get_hct(tone)
     }
 
     fn get_tone(&self, scheme: &DynamicScheme, color: &DynamicColor) -> f64 {
         let decreasing_contrast = scheme.contrast_level < 0.0;
         let tone_delta_pair = color.tone_delta_pair.as_ref().and_then(|f| f(scheme));
-        // dbg!(&tone_delta_pair.is_none());
 
         if let Some(tdp) = tone_delta_pair {
             let role_a = &tdp.role_a;
@@ -1455,7 +1453,6 @@ impl ColorSpec for ColorSpec2021 {
             if am_nearer { n_tone } else { f_tone }
         } else {
             let mut answer = (color.tone)(scheme);
-            // dbg!(&answer);
             let background = color.background.as_ref().and_then(|f| f(scheme));
             let contrast_curve = color.contrast_curve.as_ref().and_then(|f| f(scheme));
             let (Some(bg_color), Some(cc)) = (background, contrast_curve) else {

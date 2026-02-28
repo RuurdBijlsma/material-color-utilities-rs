@@ -1,290 +1,290 @@
 [
 {
-    "image": "cake.jpg",
+    "image": "cake.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 4
     },
-    "seeds": ["0xFFDD8439", "0xFFBDC8DF", "0xFFF9BCD5", "0xFFCCCDB5"]
+    "seeds": ["0xFF77410F", "0xFFBAC6DC", "0xFFF5ABC1", "0xFF3E3D34"]
 },
 {
-    "image": "cake.jpg",
+    "image": "cake.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 1
     },
-    "seeds": ["0xFFDD8439"]
+    "seeds": ["0xFF77410F"]
 },
 {
-    "image": "cake.jpg",
+    "image": "cake.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 4
     },
-    "seeds": ["0xFF9D5B27", "0xFFB8C3D9", "0xFFEA9CAA", "0xFFCBB66D"]
+    "seeds": ["0xFF754514", "0xFFC4310E", "0xFFC8D2E4", "0xFFEEA0B3"]
 },
 {
-    "image": "cake.jpg",
+    "image": "cake.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 1
     },
-    "seeds": ["0xFF9D5B27"]
+    "seeds": ["0xFF754514"]
 },
 {
-    "image": "cake.jpg",
+    "image": "cake.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 4
     },
-    "seeds": ["0xFF5C381E", "0xFFB6BFD2", "0xFFE5C2C8", "0xFFECE3BF"]
+    "seeds": ["0xFFA86521", "0xFF1E100B", "0xFFB7BECE"]
 },
 {
-    "image": "cake.jpg",
+    "image": "cake.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 1
     },
-    "seeds": ["0xFF5C381E"]
+    "seeds": ["0xFFA86521"]
 },
 {
-    "image": "desk.jpg",
+    "image": "desk.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 4
     },
-    "seeds": ["0xFFCF8D18", "0xFFBADA39", "0xFFEB5D7E", "0xFF1E272F"]
+    "seeds": ["0xFF804E0C", "0xFFFA5B89", "0xFF20A2DA", "0xFFC4BF40"]
 },
 {
-    "image": "desk.jpg",
+    "image": "desk.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 1
     },
-    "seeds": ["0xFFCF8D18"]
+    "seeds": ["0xFF804E0C"]
 },
 {
-    "image": "desk.jpg",
+    "image": "desk.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 4
     },
-    "seeds": ["0xFF75450D", "0xFFEA5D7D", "0xFFA89652", "0xFF22282F"]
+    "seeds": ["0xFF988164", "0xFFEE5C7F", "0xFFC3B039", "0xFF1C252D"]
 },
 {
-    "image": "desk.jpg",
+    "image": "desk.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 1
     },
-    "seeds": ["0xFF75450D"]
+    "seeds": ["0xFF988164"]
 },
 {
-    "image": "desk.jpg",
+    "image": "desk.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 4
     },
-    "seeds": ["0xFFF5E0C9", "0xFF7F380D", "0xFFA39053"]
+    "seeds": ["0xFF8B4F10", "0xFFED5D7F", "0xFFD1B036", "0xFF23292F"]
 },
 {
-    "image": "desk.jpg",
+    "image": "desk.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 1
     },
-    "seeds": ["0xFFF5E0C9"]
+    "seeds": ["0xFF8B4F10"]
 },
 {
-    "image": "island.jpg",
+    "image": "island.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 4
     },
-    "seeds": ["0xFF4C6171", "0xFFA87269", "0xFFA4AAA5", "0xFFA39D8C"]
+    "seeds": ["0xFF4E6479", "0xFF976865", "0xFFFFEA86", "0xFF0D0813"]
 },
 {
-    "image": "island.jpg",
+    "image": "island.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 1
     },
-    "seeds": ["0xFF4C6171"]
+    "seeds": ["0xFF4E6479"]
 },
 {
-    "image": "island.jpg",
+    "image": "island.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 4
     },
-    "seeds": ["0xFF7C8C98", "0xFFBC9971", "0xFF6F5B5D", "0xFFA1A7A4"]
+    "seeds": ["0xFF2F4350", "0xFF7F6261", "0xFFA29F92", "0xFF9FA5A2"]
 },
 {
-    "image": "island.jpg",
+    "image": "island.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 1
     },
-    "seeds": ["0xFF7C8C98"]
+    "seeds": ["0xFF2F4350"]
 },
 {
-    "image": "island.jpg",
+    "image": "island.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 4
     },
-    "seeds": ["0xFF282C2F", "0xFFB9966E", "0xFF8C6764", "0xFF9EA6A3"]
+    "seeds": ["0xFF515B61", "0xFF26292E", "0xFFA1746A", "0xFFAF9079"]
 },
 {
-    "image": "island.jpg",
+    "image": "island.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 1
     },
-    "seeds": ["0xFF282C2F"]
+    "seeds": ["0xFF515B61"]
 },
 {
-    "image": "river.jpg",
+    "image": "river.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 4
     },
-    "seeds": ["0xFF5FA017", "0xFFE1F54B", "0xFF6B966E"]
+    "seeds": ["0xFF639F10", "0xFF56570B", "0xFF7AA581", "0xFF3A2E0C"]
 },
 {
-    "image": "river.jpg",
+    "image": "river.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 1
     },
-    "seeds": ["0xFF5FA017"]
+    "seeds": ["0xFF639F10"]
 },
 {
-    "image": "river.jpg",
+    "image": "river.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 4
     },
-    "seeds": ["0xFFAACD3D", "0xFF698F65", "0xFF938931", "0xFF85A595"]
+    "seeds": ["0xFF678F18", "0xFF6D9373"]
 },
 {
-    "image": "river.jpg",
+    "image": "river.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 1
     },
-    "seeds": ["0xFFAACD3D"]
+    "seeds": ["0xFF678F18"]
 },
 {
-    "image": "river.jpg",
+    "image": "river.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 4
     },
-    "seeds": ["0xFF93BD2C", "0xFFECF6E5", "0xFF94B6BB"]
+    "seeds": ["0xFF558317", "0xFF9DBCC0"]
 },
 {
-    "image": "river.jpg",
+    "image": "river.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 1
     },
-    "seeds": ["0xFF93BD2C"]
+    "seeds": ["0xFF558317"]
 },
 {
-    "image": "santorini.jpg",
+    "image": "santorini.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 4
     },
-    "seeds": ["0xFF193255", "0xFF93804B", "0xFFCD9B77", "0xFFB1B3A9"]
+    "seeds": ["0xFF2A578B", "0xFFBE9B3B", "0xFF6D4323", "0xFFB3B3A6"]
 },
 {
-    "image": "santorini.jpg",
+    "image": "santorini.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 1
     },
-    "seeds": ["0xFF193255"]
+    "seeds": ["0xFF2A578B"]
 },
 {
-    "image": "santorini.jpg",
+    "image": "santorini.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 4
     },
-    "seeds": ["0xFF465067", "0xFFDFD0B5", "0xFF42301E"]
+    "seeds": ["0xFF192944", "0xFF948155", "0xFF5F5E68", "0xFF56402D"]
 },
 {
-    "image": "santorini.jpg",
+    "image": "santorini.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 1
     },
-    "seeds": ["0xFF465067"]
+    "seeds": ["0xFF192944"]
 },
 {
-    "image": "santorini.jpg",
+    "image": "santorini.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 4
     },
-    "seeds": ["0xFF6D8EB4", "0xFFF0E4CB", "0xFFDEDDE4"]
+    "seeds": ["0xFF3D4B65", "0xFFB7A589", "0xFF2E2621"]
 },
 {
-    "image": "santorini.jpg",
+    "image": "santorini.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 1
     },
-    "seeds": ["0xFF6D8EB4"]
+    "seeds": ["0xFF3D4B65"]
 },
 {
-    "image": "tree.jpg",
+    "image": "tree.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 4
     },
-    "seeds": ["0xFFD3DE27", "0xFF5E97E9", "0xFF221816", "0xFFB6C6C1"]
+    "seeds": ["0xFFF5F01D", "0xFF5990EE", "0xFF8D9B95", "0xFF130B08"]
 },
 {
-    "image": "tree.jpg",
+    "image": "tree.png",
     "settings": {
         "max_colors": 128,
         "desired_count": 1
     },
-    "seeds": ["0xFFD3DE27"]
+    "seeds": ["0xFFF5F01D"]
 },
 {
-    "image": "tree.jpg",
+    "image": "tree.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 4
     },
-    "seeds": ["0xFFF2F62A", "0xFF6E97E5", "0xFF484036", "0xFF271E1F"]
+    "seeds": ["0xFFDFD921", "0xFF70A7F3", "0xFF99A79F", "0xFF312415"]
 },
 {
-    "image": "tree.jpg",
+    "image": "tree.png",
     "settings": {
         "max_colors": 32,
         "desired_count": 1
     },
-    "seeds": ["0xFFF2F62A"]
+    "seeds": ["0xFFDFD921"]
 },
 {
-    "image": "tree.jpg",
+    "image": "tree.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 4
     },
-    "seeds": ["0xFFF0F529", "0xFF6B94CC", "0xFF959E8E"]
+    "seeds": ["0xFFD7D12A", "0xFF6292D1", "0xFF271F12", "0xFF758791"]
 },
 {
-    "image": "tree.jpg",
+    "image": "tree.png",
     "settings": {
         "max_colors": 16,
         "desired_count": 1
     },
-    "seeds": ["0xFFF0F529"]
+    "seeds": ["0xFFD7D12A"]
 }
 ]

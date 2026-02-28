@@ -38,7 +38,6 @@ impl QuantizerMap {
 
 impl Quantizer for QuantizerMap {
     fn quantize(&mut self, pixels: &[Argb], _max_colors: usize) -> QuantizerResult {
-        dbg!(pixels.len());
         let mut pixel_by_count = IndexMap::new();
         for &pixel in pixels {
             *pixel_by_count.entry(pixel).or_insert(0) += 1;

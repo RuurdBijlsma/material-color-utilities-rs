@@ -188,7 +188,7 @@ impl ExtractionTracker {
 
 #[test]
 fn test_color_extraction() -> Result<()> {
-    let json_data = fs::read_to_string("tests/assets/json/reference_extraction_single.json")
+    let json_data = fs::read_to_string("tests/assets/json/reference_extraction.json")
         .wrap_err("Unable to read reference file")?;
     let cases: Vec<ReferenceCase> = serde_json::from_str(&json_data)?;
 
