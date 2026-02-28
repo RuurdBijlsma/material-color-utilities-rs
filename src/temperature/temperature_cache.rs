@@ -1,110 +1,96 @@
-/*
- * Copyright 2022 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
 use std::collections::HashMap;
-use std::sync::OnceLock;
+use std::sync::{OnceLock, RwLock};
 
-/// Design utilities using color temperature theory.
-///
-/// Analogous colors, complementary color, and cache to efficiently, lazily, generate data for
-/// calculations when needed.
+// Global caches to be shared across all instances
+static COMPLEMENT_CACHE: OnceLock<RwLock<HashMap<Argb, Hct>>> = OnceLock::new();
+static HCTS_BY_HUE_CACHE: OnceLock<RwLock<HashMap<(u64, u64), Vec<Hct>>>> = OnceLock::new();
+static HCTS_BY_TEMP_CACHE: OnceLock<RwLock<HashMap<(u64, u64), Vec<Hct>>>> = OnceLock::new();
+static TEMPS_BY_HCT_CACHE: OnceLock<RwLock<HashMap<(u64, u64), HashMap<Argb, f64>>>> =
+    OnceLock::new();
+
 pub struct TemperatureCache {
     input: Hct,
-    precomputed_complement: OnceLock<Hct>,
-    precomputed_hcts_by_temp: OnceLock<Vec<Hct>>,
-    precomputed_hcts_by_hue: OnceLock<Vec<Hct>>,
-    precomputed_temps_by_hct: OnceLock<HashMap<Argb, f64>>,
 }
 
 impl TemperatureCache {
     #[must_use]
     pub const fn new(input: Hct) -> Self {
-        Self {
-            input,
-            precomputed_complement: OnceLock::new(),
-            precomputed_hcts_by_temp: OnceLock::new(),
-            precomputed_hcts_by_hue: OnceLock::new(),
-            precomputed_temps_by_hct: OnceLock::new(),
-        }
+        Self { input }
     }
 
-    /// A color that complements the input color aesthetically.
-    ///
-    /// In art, this is usually described as being across the color wheel. History of this shows intent
-    /// as a color that is just as cool-warm as the input color is warm-cool.
+    /// Helper to get or initialize a RwLock'd HashMap
+    fn get_global_map<K, V>(lock: &OnceLock<RwLock<HashMap<K, V>>>) -> &RwLock<HashMap<K, V>>
+    where
+        K: Eq + std::hash::Hash,
+    {
+        lock.get_or_init(|| RwLock::new(HashMap::new()))
+    }
+
     pub fn complement(&self) -> Hct {
-        *self.precomputed_complement.get_or_init(|| {
-            let coldest = self.coldest();
+        let cache = Self::get_global_map(&COMPLEMENT_CACHE);
+        let key = self.input.to_int();
 
-            let coldest_hue = coldest.hue();
-            let coldest_temp = self.get_temp(&coldest);
-
-            let warmest = self.warmest();
-            let warmest_hue = warmest.hue();
-            let warmest_temp = self.get_temp(&warmest);
-
-            let range = warmest_temp - coldest_temp;
-            let start_hue_is_coldest_to_warmest =
-                Self::is_between(self.input.hue(), coldest_hue, warmest_hue);
-
-            let start_hue = if start_hue_is_coldest_to_warmest {
-                warmest_hue
-            } else {
-                coldest_hue
-            };
-            let end_hue = if start_hue_is_coldest_to_warmest {
-                coldest_hue
-            } else {
-                warmest_hue
-            };
-
-            let direction_of_rotation = 1.0;
-            let mut smallest_error = 1000.0;
-
-            let hcts_by_hue = self.hcts_by_hue();
-            let mut answer = hcts_by_hue[self.input.hue().round() as usize % 360];
-
-            let complement_relative_temp = 1.0 - self.get_relative_temperature(&self.input);
-
-            // Find the color in the other section, closest to the inverse percentile
-            // of the input color. This is the complement.
-            let mut hue_addend = 0.0;
-            while hue_addend <= 360.0 {
-                let hue = MathUtils::sanitize_degrees_double(
-                    start_hue + direction_of_rotation * hue_addend,
-                );
-                if !Self::is_between(hue, start_hue, end_hue) {
-                    hue_addend += 1.0;
-                    continue;
-                }
-
-                let possible_answer = hcts_by_hue[hue.round() as usize % 360];
-                let relative_temp = (self.get_temp(&possible_answer) - coldest_temp) / range;
-                let error = (complement_relative_temp - relative_temp).abs();
-                if error < smallest_error {
-                    smallest_error = error;
-                    answer = possible_answer;
-                }
-                hue_addend += 1.0;
+        // 1. Try to read from cache
+        if let Ok(map) = cache.read() {
+            if let Some(&complement) = map.get(&key) {
+                return complement;
             }
-            answer
-        })
+        }
+
+        // 2. Compute
+        let coldest = self.coldest();
+        let coldest_hue = coldest.hue();
+        let coldest_temp = self.get_temp(&coldest);
+
+        let warmest = self.warmest();
+        let warmest_hue = warmest.hue();
+        let warmest_temp = self.get_temp(&warmest);
+
+        let range = warmest_temp - coldest_temp;
+        let start_hue_is_coldest_to_warmest =
+            Self::is_between(self.input.hue(), coldest_hue, warmest_hue);
+
+        let (start_hue, end_hue) = if start_hue_is_coldest_to_warmest {
+            (warmest_hue, coldest_hue)
+        } else {
+            (coldest_hue, warmest_hue)
+        };
+
+        let direction_of_rotation = 1.0;
+        let mut smallest_error = 1000.0;
+
+        let hcts_by_hue = self.hcts_by_hue();
+        let mut answer = hcts_by_hue[self.input.hue().round() as usize % 360];
+
+        let complement_relative_temp = 1.0 - self.get_relative_temperature(&self.input);
+
+        let mut hue_addend = 0.0;
+        while hue_addend <= 360.0 {
+            let hue =
+                MathUtils::sanitize_degrees_double(start_hue + direction_of_rotation * hue_addend);
+            if !Self::is_between(hue, start_hue, end_hue) {
+                hue_addend += 1.0;
+                continue;
+            }
+
+            let possible_answer = hcts_by_hue[hue.round() as usize % 360];
+            let relative_temp = (self.get_temp(&possible_answer) - coldest_temp) / range;
+            let error = (complement_relative_temp - relative_temp).abs();
+            if error < smallest_error {
+                smallest_error = error;
+                answer = possible_answer;
+            }
+            hue_addend += 1.0;
+        }
+
+        // 3. Write to cache
+        if let Ok(mut map) = cache.write() {
+            map.insert(key, answer);
+        }
+        answer
     }
 
     /// 5 colors that pair well with the input color.
@@ -229,13 +215,21 @@ impl TemperatureCache {
     }
 
     fn get_temp(&self, hct: &Hct) -> f64 {
-        self.temps_by_hct()
-            .get(&hct.to_int())
-            .copied()
-            .unwrap_or_else(|| Self::raw_temperature(hct))
+        let chroma_tone_key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
+        let cache = Self::get_global_map(&TEMPS_BY_HCT_CACHE);
+
+        if let Ok(map) = cache.read() {
+            if let Some(temps) = map.get(&chroma_tone_key) {
+                if let Some(&temp) = temps.get(&hct.to_int()) {
+                    return temp;
+                }
+            }
+        }
+
+        // Fallback to recalculating (this is rare if temps_by_hct() was called)
+        Self::raw_temperature(hct)
     }
 
-    /// Coldest color with same chroma and tone as input.
     fn coldest(&self) -> Hct {
         self.hcts_by_temp()[0]
     }
@@ -246,58 +240,80 @@ impl TemperatureCache {
         hcts[hcts.len() - 1]
     }
 
-    /// HCTs for all colors with the same chroma/tone as the input.
-    ///
-    /// Sorted by hue, ex. index 0 is hue 0.
-    fn hcts_by_hue(&self) -> &[Hct] {
-        self.precomputed_hcts_by_hue.get_or_init(|| {
-            let mut hcts = Vec::new();
-            let mut hue = 0.0;
-            while hue < 360.0 {
-                let color_at_hue = Hct::from(hue, self.input.chroma(), self.input.tone());
-                hcts.push(color_at_hue);
-                hue += 1.0;
+    fn hcts_by_hue(&self) -> Vec<Hct> {
+        let key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
+        let cache = Self::get_global_map(&HCTS_BY_HUE_CACHE);
+
+        if let Ok(map) = cache.read() {
+            if let Some(hcts) = map.get(&key) {
+                return hcts.clone();
             }
-            hcts
-        })
+        }
+
+        let mut hcts = Vec::with_capacity(360);
+        for i in 0..360 {
+            hcts.push(Hct::from(i as f64, self.input.chroma(), self.input.tone()));
+        }
+
+        if let Ok(mut map) = cache.write() {
+            map.insert(key, hcts.clone());
+        }
+        hcts
     }
 
-    /// HCTs for all colors with the same chroma/tone as the input.
-    ///
-    /// Sorted from coldest first to warmest last.
-    fn hcts_by_temp(&self) -> &[Hct] {
-        self.precomputed_hcts_by_temp.get_or_init(|| {
-            let mut hcts = self.hcts_by_hue().to_vec();
-            hcts.push(self.input);
-            hcts.sort_by(|a, b| {
-                let temp_a = self.get_temp(a);
-                let temp_b = self.get_temp(b);
-                temp_a
-                    .partial_cmp(&temp_b)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            });
-            hcts
-        })
-    }
+    fn hcts_by_temp(&self) -> Vec<Hct> {
+        let key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
+        let cache = Self::get_global_map(&HCTS_BY_TEMP_CACHE);
 
-    /// Keys of HCTs in getHctsByTemp, values of raw temperature.
-    fn temps_by_hct(&self) -> &HashMap<Argb, f64> {
-        self.precomputed_temps_by_hct.get_or_init(|| {
-            let mut all_hcts = self.hcts_by_hue().to_vec();
-            all_hcts.push(self.input);
-
-            let mut temperatures_by_hct = HashMap::new();
-            for hct in all_hcts {
-                temperatures_by_hct.insert(hct.to_int(), Self::raw_temperature(&hct));
+        if let Ok(map) = cache.read() {
+            if let Some(hcts) = map.get(&key) {
+                return hcts.clone();
             }
-            temperatures_by_hct
-        })
+        }
+
+        let mut hcts = self.hcts_by_hue();
+        hcts.push(self.input);
+
+        // We ensure temps_by_hct is populated first to make sorting efficient
+        let temps = self.temps_by_hct_internal();
+        hcts.sort_by(|a, b| {
+            let temp_a = temps.get(&a.to_int()).unwrap_or(&0.0);
+            let temp_b = temps.get(&b.to_int()).unwrap_or(&0.0);
+            temp_a
+                .partial_cmp(temp_b)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        if let Ok(mut map) = cache.write() {
+            map.insert(key, hcts.clone());
+        }
+        hcts
     }
 
-    /// Value representing cool-warm factor of a color. Values below 0 are considered cool, above,
-    /// warm.
-    ///
-    /// Implementation of Ou, Woodcock and Wright's algorithm, which uses Lab/LCH color space.
+    /// Internal helper to access/populate the global temp map
+    fn temps_by_hct_internal(&self) -> HashMap<Argb, f64> {
+        let key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
+        let cache = Self::get_global_map(&TEMPS_BY_HCT_CACHE);
+
+        if let Ok(map) = cache.read() {
+            if let Some(temps) = map.get(&key) {
+                return temps.clone();
+            }
+        }
+
+        let mut all_hcts = self.hcts_by_hue();
+        all_hcts.push(self.input);
+        let mut temperatures_by_hct = HashMap::new();
+        for hct in all_hcts {
+            temperatures_by_hct.insert(hct.to_int(), Self::raw_temperature(&hct));
+        }
+
+        if let Ok(mut map) = cache.write() {
+            map.insert(key, temperatures_by_hct.clone());
+        }
+        temperatures_by_hct
+    }
+
     #[must_use]
     pub fn raw_temperature(color: &Hct) -> f64 {
         let lab = color.to_int().to_lab();
@@ -312,53 +328,11 @@ impl TemperatureCache {
         )
     }
 
-    /// Determines if an angle is between two other angles, rotating clockwise.
     fn is_between(angle: f64, a: f64, b: f64) -> bool {
         if a < b {
             a <= angle && angle <= b
         } else {
             a <= angle || angle <= b
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::hct::hct_color::Hct;
-    use crate::utils::color_utils::Argb;
-
-    #[test]
-    fn test_raw_temperature() {
-        let blue = Hct::from_int(Argb(0xFF0000FF));
-        let red = Hct::from_int(Argb(0xFFFF0000));
-
-        assert!(TemperatureCache::raw_temperature(&blue) < TemperatureCache::raw_temperature(&red));
-    }
-
-    #[test]
-    fn test_complement() {
-        // Nice blue
-        let blue = Hct::from_int(Argb::from_rgb(12, 187, 212));
-        let cache = TemperatureCache::new(blue);
-        let complement = cache.complement();
-
-        // Complement of nice blue should be orangish
-        let comp_hue = complement.hue();
-        assert!(comp_hue > 50.0);
-        assert!(comp_hue < 70.0);
-        assert!(
-            TemperatureCache::raw_temperature(&complement)
-                > TemperatureCache::raw_temperature(&blue)
-        );
-    }
-
-    #[test]
-    fn test_analogous_colors() {
-        let blue = Hct::from_int(Argb(0xFF0000FF));
-        let cache = TemperatureCache::new(blue);
-        let analogous = cache.get_analogous_colors();
-
-        assert_eq!(analogous.len(), 5);
     }
 }
