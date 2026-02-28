@@ -1,33 +1,20 @@
-/*
- * Copyright 2025 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-use std::sync::Arc;
 use crate::dynamic::dynamic_color::DynamicColor;
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::variant::Variant;
 use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
+use std::sync::Arc;
 
 #[macro_export]
 macro_rules! cached_color {
     ($spec:expr, $init:expr) => {{
-        static CACHE_2021: std::sync::OnceLock<std::sync::Arc<DynamicColor>> = std::sync::OnceLock::new();
-        static CACHE_2025: std::sync::OnceLock<std::sync::Arc<DynamicColor>> = std::sync::OnceLock::new();
-        static CACHE_2026: std::sync::OnceLock<std::sync::Arc<DynamicColor>> = std::sync::OnceLock::new();
-        
+        static CACHE_2021: std::sync::OnceLock<std::sync::Arc<DynamicColor>> =
+            std::sync::OnceLock::new();
+        static CACHE_2025: std::sync::OnceLock<std::sync::Arc<DynamicColor>> =
+            std::sync::OnceLock::new();
+        static CACHE_2026: std::sync::OnceLock<std::sync::Arc<DynamicColor>> =
+            std::sync::OnceLock::new();
+
         match $spec {
             SpecVersion::Spec2021 => CACHE_2021.get_or_init(|| $init).clone(),
             SpecVersion::Spec2025 => CACHE_2025.get_or_init(|| $init).clone(),
@@ -39,10 +26,13 @@ macro_rules! cached_color {
 #[macro_export]
 macro_rules! cached_color_opt {
     ($spec:expr, $init:expr) => {{
-        static CACHE_2021: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> = std::sync::OnceLock::new();
-        static CACHE_2025: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> = std::sync::OnceLock::new();
-        static CACHE_2026: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> = std::sync::OnceLock::new();
-        
+        static CACHE_2021: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> =
+            std::sync::OnceLock::new();
+        static CACHE_2025: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> =
+            std::sync::OnceLock::new();
+        static CACHE_2026: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> =
+            std::sync::OnceLock::new();
+
         match $spec {
             SpecVersion::Spec2021 => CACHE_2021.get_or_init(|| $init).clone(),
             SpecVersion::Spec2025 => CACHE_2025.get_or_init(|| $init).clone(),

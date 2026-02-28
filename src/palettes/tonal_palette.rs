@@ -16,8 +16,8 @@
 
 use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 
 /// A convenience class for retrieving colors that are constant in hue and chroma, but vary in tone.
 #[derive(Debug)]

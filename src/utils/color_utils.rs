@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use std::fmt;
 use super::math_utils::MathUtils;
+use std::fmt;
 
 /// A color in the ARGB color space.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -29,11 +29,7 @@ impl fmt::Debug for Argb {
         //     self.green(),
         //     self.blue()
         // )
-        write!(
-            f,
-            "{}",
-            self.0 as i32
-        )
+        write!(f, "{}", self.0 as i32)
     }
 }
 

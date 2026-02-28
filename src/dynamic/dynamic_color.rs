@@ -1,18 +1,3 @@
-/*
- * Copyright 2025 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 use crate::contrast::contrast_utils::Contrast;
 use crate::dynamic::color_spec::SpecVersion;
 use crate::dynamic::color_specs::ColorSpecs;
@@ -48,12 +33,27 @@ impl Debug for DynamicColor {
             .field("name", &self.name)
             .field("is_background", &self.is_background)
             .field("palette", &"<function>")
-            .field("chroma_multiplier", &self.chroma_multiplier.as_ref().map(|_| "<function>"))
-            .field("background", &self.background.as_ref().map(|_| "<function>"))
+            .field(
+                "chroma_multiplier",
+                &self.chroma_multiplier.as_ref().map(|_| "<function>"),
+            )
+            .field(
+                "background",
+                &self.background.as_ref().map(|_| "<function>"),
+            )
             .field("tone", &"<function>")
-            .field("second_background", &self.second_background.as_ref().map(|_| "<function>"))
-            .field("contrast_curve", &self.contrast_curve.as_ref().map(|_| "<function>"))
-            .field("tone_delta_pair", &self.tone_delta_pair.as_ref().map(|_| "<function>"))
+            .field(
+                "second_background",
+                &self.second_background.as_ref().map(|_| "<function>"),
+            )
+            .field(
+                "contrast_curve",
+                &self.contrast_curve.as_ref().map(|_| "<function>"),
+            )
+            .field(
+                "tone_delta_pair",
+                &self.tone_delta_pair.as_ref().map(|_| "<function>"),
+            )
             .field("opacity", &self.opacity.as_ref().map(|_| "<function>"))
             .field("hct_cache", &"<cache>")
             .finish()

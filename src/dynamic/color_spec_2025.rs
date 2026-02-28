@@ -1,19 +1,3 @@
-/*
- * Copyright 2025 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 use std::sync::Arc;
 
 use crate::contrast::contrast_utils::Contrast;
@@ -113,43 +97,37 @@ impl ColorSpec2025 {
 impl ColorSpec for ColorSpec2025 {
     fn primary_palette_key_color(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        self.base.primary_palette_key_color()
-    })
+            self.base.primary_palette_key_color()
+        })
     }
     fn secondary_palette_key_color(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        self.base.secondary_palette_key_color()
-    })
+            self.base.secondary_palette_key_color()
+        })
     }
     fn tertiary_palette_key_color(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        self.base.tertiary_palette_key_color()
-    })
+            self.base.tertiary_palette_key_color()
+        })
     }
     fn neutral_palette_key_color(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        self.base.neutral_palette_key_color()
-    })
+            self.base.neutral_palette_key_color()
+        })
     }
     fn neutral_variant_palette_key_color(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        self.base.neutral_variant_palette_key_color()
-    })
+            self.base.neutral_variant_palette_key_color()
+        })
     }
     fn error_palette_key_color(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        self.base.error_palette_key_color()
-    })
+        crate::cached_color!(self.override_spec, { self.base.error_palette_key_color() })
     }
     fn shadow(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        self.base.shadow()
-    })
+        crate::cached_color!(self.override_spec, { self.base.shadow() })
     }
     fn scrim(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        self.base.scrim()
-    })
+        crate::cached_color!(self.override_spec, { self.base.scrim() })
     }
 
     fn highest_surface(&self, scheme: &DynamicScheme) -> Arc<DynamicColor> {
@@ -163,16 +141,192 @@ impl ColorSpec for ColorSpec2025 {
 
     fn surface(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            None,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
+            let color2025 = DynamicColor::new(
+                "surface".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        if s.is_dark {
+                            4.0
+                        } else if Hct::is_yellow(s.neutral_palette.hue) {
+                            99.0
+                        } else if s.variant == Variant::Vibrant {
+                            97.0
+                        } else {
+                            98.0
+                        }
+                    } else {
+                        0.0
+                    }
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn background(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "background".to_string(),
+                Arc::new(|s| ColorSpecs::get(s.spec_version).surface().palette.clone()(s)),
+                true,
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version).surface().get_tone(s)
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .background()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn on_background(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            // Technically, every use of ColorSpecs::get(s.spec_version) should instead use the override spec,
+            // but I'll just fix it where the issue comes up for now.
+            let override_spec = [self.override_spec; 1];
+            let color2025 = DynamicColor::new(
+                "on_background".to_string(),
+                Arc::new(move |s| {
+                    ColorSpecs::get(override_spec[0])
+                        .on_surface()
+                        .palette
+                        .clone()(s)
+                }),
+                false,
+                // Inheritance workaround: we have to specify chroma_multplier arg here,
+                // because if on_background is called via color_spec_2026,
+                // then it should use the on_surface from 2026, which does have a chroma multiplier.
+                Some(Arc::new(move |s| {
+                    ColorSpecs::get(override_spec[0])
+                        .on_surface()
+                        .chroma_multiplier
+                        .as_ref()
+                        .map_or(1.0, |f| f(s))
+                })),
+                Some(Arc::new(move |s| {
+                    ColorSpecs::get(override_spec[0])
+                        .on_surface()
+                        .background
+                        .as_ref()
+                        .and_then(|f| f(s))
+                })),
+                Some(Arc::new(move |s| {
+                    if s.platform == Platform::Watch {
+                        100.0
+                    } else {
+                        ColorSpecs::get(override_spec[0]).on_surface().get_tone(s)
+                    }
+                })),
+                None,
+                Some(Arc::new(move |s| {
+                    ColorSpecs::get(override_spec[0])
+                        .on_surface()
+                        .contrast_curve
+                        .as_ref()
+                        .and_then(|f| f(s))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_background()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn surface_dim(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "surface_dim".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                Some(Arc::new(|s| {
+                    if s.is_dark {
+                        1.0
+                    } else {
+                        match s.variant {
+                            Variant::Neutral => 2.5,
+                            Variant::TonalSpot => 1.7,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    2.7
+                                } else {
+                                    1.75
+                                }
+                            }
+                            Variant::Vibrant => 1.36,
+                            _ => 1.0,
+                        }
+                    }
+                })),
+                None,
+                Some(Arc::new(|s| {
                     if s.is_dark {
                         4.0
+                    } else if Hct::is_yellow(s.neutral_palette.hue) {
+                        90.0
+                    } else if s.variant == Variant::Vibrant {
+                        85.0
+                    } else {
+                        87.0
+                    }
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_dim()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn surface_bright(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "surface_bright".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                Some(Arc::new(|s| {
+                    if s.is_dark {
+                        match s.variant {
+                            Variant::Neutral => 2.5,
+                            Variant::TonalSpot => 1.7,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    2.7
+                                } else {
+                                    1.75
+                                }
+                            }
+                            Variant::Vibrant => 1.36,
+                            _ => 1.0,
+                        }
+                    } else {
+                        1.0
+                    }
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.is_dark {
+                        18.0
                     } else if Hct::is_yellow(s.neutral_palette.hue) {
                         99.0
                     } else if s.variant == Variant::Vibrant {
@@ -180,2064 +334,1888 @@ impl ColorSpec for ColorSpec2025 {
                     } else {
                         98.0
                     }
-                } else {
-                    0.0
-                }
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn background(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "background".to_string(),
-            Arc::new(|s| ColorSpecs::get(s.spec_version).surface().palette.clone()(s)),
-            true,
-            None,
-            None,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version).surface().get_tone(s)
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .background()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn on_background(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        // Technically, every use of ColorSpecs::get(s.spec_version) should instead use the override spec,
-        // but I'll just fix it where the issue comes up for now.
-        let override_spec = [self.override_spec; 1];
-        let color2025 = DynamicColor::new(
-            "on_background".to_string(),
-            Arc::new(move |s| {
-                ColorSpecs::get(override_spec[0])
-                    .on_surface()
-                    .palette
-                    .clone()(s)
-            }),
-            false,
-            // Inheritance workaround: we have to specify chroma_multplier arg here,
-            // because if on_background is called via color_spec_2026,
-            // then it should use the on_surface from 2026, which does have a chroma multiplier.
-            Some(Arc::new(move |s| {
-                ColorSpecs::get(override_spec[0])
-                    .on_surface()
-                    .chroma_multiplier
-                    .as_ref()
-                    .map_or(1.0, |f| f(s))
-            })),
-            Some(Arc::new(move |s| {
-                ColorSpecs::get(override_spec[0])
-                    .on_surface()
-                    .background
-                    .as_ref()
-                    .and_then(|f| f(s))
-            })),
-            Some(Arc::new(move |s| {
-                if s.platform == Platform::Watch {
-                    100.0
-                } else {
-                    ColorSpecs::get(override_spec[0]).on_surface().get_tone(s)
-                }
-            })),
-            None,
-            Some(Arc::new(move |s| {
-                ColorSpecs::get(override_spec[0])
-                    .on_surface()
-                    .contrast_curve
-                    .as_ref()
-                    .and_then(|f| f(s))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_background()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn surface_dim(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_dim".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            Some(Arc::new(|s| {
-                if s.is_dark {
-                    1.0
-                } else {
-                    match s.variant {
-                        Variant::Neutral => 2.5,
-                        Variant::TonalSpot => 1.7,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                2.7
-                            } else {
-                                1.75
-                            }
-                        }
-                        Variant::Vibrant => 1.36,
-                        _ => 1.0,
-                    }
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.is_dark {
-                    4.0
-                } else if Hct::is_yellow(s.neutral_palette.hue) {
-                    90.0
-                } else if s.variant == Variant::Vibrant {
-                    85.0
-                } else {
-                    87.0
-                }
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_dim()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn surface_bright(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_bright".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            Some(Arc::new(|s| {
-                if s.is_dark {
-                    match s.variant {
-                        Variant::Neutral => 2.5,
-                        Variant::TonalSpot => 1.7,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                2.7
-                            } else {
-                                1.75
-                            }
-                        }
-                        Variant::Vibrant => 1.36,
-                        _ => 1.0,
-                    }
-                } else {
-                    1.0
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.is_dark {
-                    18.0
-                } else if Hct::is_yellow(s.neutral_palette.hue) {
-                    99.0
-                } else if s.variant == Variant::Vibrant {
-                    97.0
-                } else {
-                    98.0
-                }
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_bright()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_bright()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn surface_container_lowest(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_container_lowest".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            None,
-            None,
-            Some(Arc::new(|s| if s.is_dark { 0.0 } else { 100.0 })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_container_lowest()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "surface_container_lowest".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                None,
+                None,
+                Some(Arc::new(|s| if s.is_dark { 0.0 } else { 100.0 })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_container_lowest()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn surface_container_low(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_container_low".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    match s.variant {
-                        Variant::Neutral => 1.3,
-                        Variant::TonalSpot => 1.25,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                1.3
-                            } else {
-                                1.15
+            let color2025 = DynamicColor::new(
+                "surface_container_low".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        match s.variant {
+                            Variant::Neutral => 1.3,
+                            Variant::TonalSpot => 1.25,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    1.3
+                                } else {
+                                    1.15
+                                }
                             }
+                            Variant::Vibrant => 1.08,
+                            _ => 1.0,
                         }
-                        Variant::Vibrant => 1.08,
-                        _ => 1.0,
-                    }
-                } else {
-                    1.0
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    if s.is_dark {
-                        6.0
-                    } else if Hct::is_yellow(s.neutral_palette.hue) {
-                        98.0
-                    } else if s.variant == Variant::Vibrant {
-                        95.0
                     } else {
-                        96.0
+                        1.0
                     }
-                } else {
-                    15.0
-                }
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_container_low()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        if s.is_dark {
+                            6.0
+                        } else if Hct::is_yellow(s.neutral_palette.hue) {
+                            98.0
+                        } else if s.variant == Variant::Vibrant {
+                            95.0
+                        } else {
+                            96.0
+                        }
+                    } else {
+                        15.0
+                    }
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_container_low()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn surface_container(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_container".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    match s.variant {
-                        Variant::Neutral => 1.6,
-                        Variant::TonalSpot => 1.4,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                1.6
-                            } else {
-                                1.3
+            let color2025 = DynamicColor::new(
+                "surface_container".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        match s.variant {
+                            Variant::Neutral => 1.6,
+                            Variant::TonalSpot => 1.4,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    1.6
+                                } else {
+                                    1.3
+                                }
                             }
+                            Variant::Vibrant => 1.15,
+                            _ => 1.0,
                         }
-                        Variant::Vibrant => 1.15,
-                        _ => 1.0,
-                    }
-                } else {
-                    1.0
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    if s.is_dark {
-                        9.0
-                    } else if Hct::is_yellow(s.neutral_palette.hue) {
-                        96.0
-                    } else if s.variant == Variant::Vibrant {
-                        92.0
                     } else {
-                        94.0
+                        1.0
                     }
-                } else {
-                    20.0
-                }
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        if s.is_dark {
+                            9.0
+                        } else if Hct::is_yellow(s.neutral_palette.hue) {
+                            96.0
+                        } else if s.variant == Variant::Vibrant {
+                            92.0
+                        } else {
+                            94.0
+                        }
+                    } else {
+                        20.0
+                    }
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn surface_container_high(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_container_high".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    match s.variant {
-                        Variant::Neutral => 1.9,
-                        Variant::TonalSpot => 1.5,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                1.95
-                            } else {
-                                1.45
+            let color2025 = DynamicColor::new(
+                "surface_container_high".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        match s.variant {
+                            Variant::Neutral => 1.9,
+                            Variant::TonalSpot => 1.5,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    1.95
+                                } else {
+                                    1.45
+                                }
                             }
+                            Variant::Vibrant => 1.22,
+                            _ => 1.0,
                         }
-                        Variant::Vibrant => 1.22,
-                        _ => 1.0,
-                    }
-                } else {
-                    1.0
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    if s.is_dark {
-                        12.0
-                    } else if Hct::is_yellow(s.neutral_palette.hue) {
-                        94.0
-                    } else if s.variant == Variant::Vibrant {
-                        90.0
                     } else {
-                        92.0
+                        1.0
                     }
-                } else {
-                    25.0
-                }
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_container_high()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        if s.is_dark {
+                            12.0
+                        } else if Hct::is_yellow(s.neutral_palette.hue) {
+                            94.0
+                        } else if s.variant == Variant::Vibrant {
+                            90.0
+                        } else {
+                            92.0
+                        }
+                    } else {
+                        25.0
+                    }
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_container_high()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn surface_container_highest(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_container_highest".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            Some(Arc::new(|s| match s.variant {
-                Variant::Neutral => 2.2,
-                Variant::TonalSpot => 1.7,
-                Variant::Expressive => {
-                    if Hct::is_yellow(s.neutral_palette.hue) {
-                        2.3
-                    } else {
-                        1.6
+            let color2025 = DynamicColor::new(
+                "surface_container_highest".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                Some(Arc::new(|s| match s.variant {
+                    Variant::Neutral => 2.2,
+                    Variant::TonalSpot => 1.7,
+                    Variant::Expressive => {
+                        if Hct::is_yellow(s.neutral_palette.hue) {
+                            2.3
+                        } else {
+                            1.6
+                        }
                     }
-                }
-                Variant::Vibrant => 1.29,
-                _ => 1.0,
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.is_dark {
-                    15.0
-                } else if Hct::is_yellow(s.neutral_palette.hue) {
-                    92.0
-                } else if s.variant == Variant::Vibrant {
-                    88.0
-                } else {
-                    90.0
-                }
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_container_highest()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                    Variant::Vibrant => 1.29,
+                    _ => 1.0,
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.is_dark {
+                        15.0
+                    } else if Hct::is_yellow(s.neutral_palette.hue) {
+                        92.0
+                    } else if s.variant == Variant::Vibrant {
+                        88.0
+                    } else {
+                        90.0
+                    }
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_container_highest()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_surface(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_surface".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            false,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    match s.variant {
-                        Variant::Neutral => 2.2,
-                        Variant::TonalSpot => 1.7,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                if s.is_dark { 3.0 } else { 2.3 }
-                            } else {
-                                1.6
+            let color2025 = DynamicColor::new(
+                "on_surface".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                false,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        match s.variant {
+                            Variant::Neutral => 2.2,
+                            Variant::TonalSpot => 1.7,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    if s.is_dark { 3.0 } else { 2.3 }
+                                } else {
+                                    1.6
+                                }
                             }
+                            _ => 1.0,
                         }
-                        _ => 1.0,
-                    }
-                } else {
-                    1.0
-                }
-            })),
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            Some(Arc::new(|s| {
-                if s.variant == Variant::Vibrant {
-                    Self::t_max_c(&s.neutral_palette, 0.0, 100.0, 1.1)
-                } else {
-                    ColorSpecs::get(s.spec_version)
-                        .highest_surface(s)
-                        .get_tone(s)
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(
-                    if s.is_dark && s.platform == Platform::Phone {
-                        11.0
                     } else {
-                        9.0
-                    },
-                ))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_surface()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                        1.0
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                Some(Arc::new(|s| {
+                    if s.variant == Variant::Vibrant {
+                        Self::t_max_c(&s.neutral_palette, 0.0, 100.0, 1.1)
+                    } else {
+                        ColorSpecs::get(s.spec_version)
+                            .highest_surface(s)
+                            .get_tone(s)
+                    }
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(
+                        if s.is_dark && s.platform == Platform::Phone {
+                            11.0
+                        } else {
+                            9.0
+                        },
+                    ))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_surface()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn surface_variant(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_variant".to_string(),
-            Arc::new(|s| {
-                ColorSpecs::get(s.spec_version)
-                    .surface_container_highest()
-                    .palette
-                    .clone()(s)
-            }),
-            true,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version)
-                    .surface_container_highest()
-                    .chroma_multiplier
-                    .as_ref()
-                    .map_or(1.0, |f| f(s))
-            })),
-            None,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version)
-                    .surface_container_highest()
-                    .get_tone(s)
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_variant()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "surface_variant".to_string(),
+                Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version)
+                        .surface_container_highest()
+                        .palette
+                        .clone()(s)
+                }),
+                true,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version)
+                        .surface_container_highest()
+                        .chroma_multiplier
+                        .as_ref()
+                        .map_or(1.0, |f| f(s))
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version)
+                        .surface_container_highest()
+                        .get_tone(s)
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_variant()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_surface_variant(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_surface_variant".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            false,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    match s.variant {
-                        Variant::Neutral => 2.2,
-                        Variant::TonalSpot => 1.7,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                if s.is_dark { 3.0 } else { 2.3 }
-                            } else {
-                                1.6
+            let color2025 = DynamicColor::new(
+                "on_surface_variant".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                false,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        match s.variant {
+                            Variant::Neutral => 2.2,
+                            Variant::TonalSpot => 1.7,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    if s.is_dark { 3.0 } else { 2.3 }
+                                } else {
+                                    1.6
+                                }
                             }
+                            _ => 1.0,
                         }
-                        _ => 1.0,
+                    } else {
+                        1.0
                     }
-                } else {
-                    1.0
-                }
-            })),
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    if s.is_dark { 6.0 } else { 4.5 }
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_surface_variant()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        if s.is_dark { 6.0 } else { 4.5 }
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_surface_variant()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn inverse_surface(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "inverse_surface".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            true,
-            None,
-            None,
-            Some(Arc::new(|s| if s.is_dark { 98.0 } else { 4.0 })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .inverse_surface()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "inverse_surface".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                true,
+                None,
+                None,
+                Some(Arc::new(|s| if s.is_dark { 98.0 } else { 4.0 })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .inverse_surface()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn inverse_on_surface(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "inverse_on_surface".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).inverse_surface())
-            })),
-            None,
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
-            None,
-            None,
-        );
-        self.base
-            .inverse_on_surface()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "inverse_on_surface".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).inverse_surface())
+                })),
+                None,
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
+                None,
+                None,
+            );
+            self.base
+                .inverse_on_surface()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn outline(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "outline".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            false,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    match s.variant {
-                        Variant::Neutral => 2.2,
-                        Variant::TonalSpot => 1.7,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                if s.is_dark { 3.0 } else { 2.3 }
-                            } else {
-                                1.6
+            let color2025 = DynamicColor::new(
+                "outline".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                false,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        match s.variant {
+                            Variant::Neutral => 2.2,
+                            Variant::TonalSpot => 1.7,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    if s.is_dark { 3.0 } else { 2.3 }
+                                } else {
+                                    1.6
+                                }
                             }
+                            _ => 1.0,
                         }
-                        _ => 1.0,
+                    } else {
+                        1.0
                     }
-                } else {
-                    1.0
-                }
-            })),
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    3.0
-                } else {
-                    4.5
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .outline()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        3.0
+                    } else {
+                        4.5
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .outline()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn outline_variant(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "outline_variant".to_string(),
-            Arc::new(|s| s.neutral_palette.clone()),
-            false,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    match s.variant {
-                        Variant::Neutral => 2.2,
-                        Variant::TonalSpot => 1.7,
-                        Variant::Expressive => {
-                            if Hct::is_yellow(s.neutral_palette.hue) {
-                                if s.is_dark { 3.0 } else { 2.3 }
-                            } else {
-                                1.6
+            let color2025 = DynamicColor::new(
+                "outline_variant".to_string(),
+                Arc::new(|s| s.neutral_palette.clone()),
+                false,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        match s.variant {
+                            Variant::Neutral => 2.2,
+                            Variant::TonalSpot => 1.7,
+                            Variant::Expressive => {
+                                if Hct::is_yellow(s.neutral_palette.hue) {
+                                    if s.is_dark { 3.0 } else { 2.3 }
+                                } else {
+                                    1.6
+                                }
                             }
+                            _ => 1.0,
                         }
-                        _ => 1.0,
+                    } else {
+                        1.0
                     }
-                } else {
-                    1.0
-                }
-            })),
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    1.5
-                } else {
-                    3.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .outline_variant()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        1.5
+                    } else {
+                        3.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .outline_variant()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn surface_tint(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "surface_tint".to_string(),
-            Arc::new(|s| ColorSpecs::get(s.spec_version).primary().palette.clone()(s)),
-            true,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version)
-                    .primary()
-                    .chroma_multiplier
-                    .as_ref()
-                    .map_or(1.0, |f| f(s))
-            })),
-            None,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version).primary().get_tone(s)
-            })),
-            None,
-            None,
-            None,
-            None,
-        );
-        self.base
-            .surface_tint()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "surface_tint".to_string(),
+                Arc::new(|s| ColorSpecs::get(s.spec_version).primary().palette.clone()(s)),
+                true,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version)
+                        .primary()
+                        .chroma_multiplier
+                        .as_ref()
+                        .map_or(1.0, |f| f(s))
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version).primary().get_tone(s)
+                })),
+                None,
+                None,
+                None,
+                None,
+            );
+            self.base
+                .surface_tint()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     // --- Primaries ---
 
     fn primary(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "primary".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            Some(Arc::new(|s| match s.variant {
-                Variant::Neutral => {
-                    if s.platform == Platform::Phone {
-                        if s.is_dark { 80.0 } else { 40.0 }
-                    } else {
-                        90.0
+            let color2025 = DynamicColor::new(
+                "primary".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                Some(Arc::new(|s| match s.variant {
+                    Variant::Neutral => {
+                        if s.platform == Platform::Phone {
+                            if s.is_dark { 80.0 } else { 40.0 }
+                        } else {
+                            90.0
+                        }
                     }
-                }
-                Variant::TonalSpot => {
-                    if s.platform == Platform::Phone {
-                        if s.is_dark {
-                            80.0
+                    Variant::TonalSpot => {
+                        if s.platform == Platform::Phone {
+                            if s.is_dark {
+                                80.0
+                            } else {
+                                Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
+                            }
+                        } else {
+                            Self::t_max_c(&s.primary_palette, 0.0, 90.0, 1.0)
+                        }
+                    }
+                    Variant::Expressive => {
+                        if s.platform == Platform::Phone {
+                            let hue = s.primary_palette.hue;
+                            let upper = if Hct::is_yellow(hue) {
+                                25.0
+                            } else if Hct::is_cyan(hue) {
+                                88.0
+                            } else {
+                                98.0
+                            };
+                            Self::t_max_c(&s.primary_palette, 0.0, upper, 1.0)
                         } else {
                             Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
                         }
-                    } else {
-                        Self::t_max_c(&s.primary_palette, 0.0, 90.0, 1.0)
                     }
-                }
-                Variant::Expressive => {
-                    if s.platform == Platform::Phone {
-                        let hue = s.primary_palette.hue;
-                        let upper = if Hct::is_yellow(hue) {
-                            25.0
-                        } else if Hct::is_cyan(hue) {
-                            88.0
+                    _ => {
+                        if s.platform == Platform::Phone {
+                            let upper = if Hct::is_cyan(s.primary_palette.hue) {
+                                88.0
+                            } else {
+                                98.0
+                            };
+                            Self::t_max_c(&s.primary_palette, 0.0, upper, 1.0)
                         } else {
-                            98.0
-                        };
-                        Self::t_max_c(&s.primary_palette, 0.0, upper, 1.0)
-                    } else {
-                        Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
+                            Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
+                        }
                     }
-                }
-                _ => {
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        4.5
+                    } else {
+                        7.0
+                    }))
+                })),
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
                     if s.platform == Platform::Phone {
-                        let upper = if Hct::is_cyan(s.primary_palette.hue) {
-                            88.0
-                        } else {
-                            98.0
-                        };
-                        Self::t_max_c(&s.primary_palette, 0.0, upper, 1.0)
+                        Some(ToneDeltaPair::new(
+                            spec.primary_container(),
+                            spec.primary(),
+                            5.0,
+                            TonePolarity::RelativeLighter,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
                     } else {
-                        Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
+                        None
                     }
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    4.5
-                } else {
-                    7.0
-                }))
-            })),
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Phone {
-                    Some(ToneDeltaPair::new(
-                        spec.primary_container(),
-                        spec.primary(),
-                        5.0,
-                        TonePolarity::RelativeLighter,
-                        true,
-                        DeltaConstraint::Farther,
-                    ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .primary()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+            );
+            self.base
+                .primary()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn primary_dim(&self) -> Option<Arc<DynamicColor>> {
         crate::cached_color_opt!(self.override_spec, {
-        let override_spec = self.override_spec;
-        Some(Arc::new(DynamicColor::new(
-            "primary_dim".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).surface_container_high())
-            })),
-            Some(Arc::new(|s| match s.variant {
-                Variant::Neutral => 85.0,
-                Variant::TonalSpot => Self::t_max_c(&s.primary_palette, 0.0, 90.0, 1.0),
-                _ => Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0),
-            })),
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |_s| {
-                // Workaround because we don't have inheritance:
-                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                let spec = ColorSpecs::get(override_spec);
-                let spec_primary_dim = spec.primary_dim()?;
-                Some(ToneDeltaPair::new(
-                    spec_primary_dim,
-                    spec.primary(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Farther,
-                ))
-            })),
-            None,
-        )))
-    })
-    }
-
-    fn on_primary(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_primary".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Phone {
-                    Some(spec.primary())
-                } else {
-                    spec.primary_dim()
-                }
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_primary()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn primary_container(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "primary_container".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Watch {
-                    30.0
-                } else {
-                    match s.variant {
-                        Variant::Neutral => {
-                            if s.is_dark {
-                                30.0
-                            } else {
-                                90.0
-                            }
-                        }
-                        Variant::TonalSpot => {
-                            if s.is_dark {
-                                Self::t_min_c(&s.primary_palette, 35.0, 93.0)
-                            } else {
-                                Self::t_max_c(&s.primary_palette, 0.0, 90.0, 1.0)
-                            }
-                        }
-                        Variant::Expressive => {
-                            if s.is_dark {
-                                Self::t_max_c(&s.primary_palette, 30.0, 93.0, 1.0)
-                            } else {
-                                let upper = if Hct::is_cyan(s.primary_palette.hue) {
-                                    88.0
-                                } else {
-                                    90.0
-                                };
-                                Self::t_max_c(&s.primary_palette, 78.0, upper, 1.0)
-                            }
-                        }
-                        _ => {
-                            if s.is_dark {
-                                Self::t_min_c(&s.primary_palette, 66.0, 93.0)
-                            } else {
-                                let upper = if Hct::is_cyan(s.primary_palette.hue) {
-                                    88.0
-                                } else {
-                                    93.0
-                                };
-                                Self::t_max_c(&s.primary_palette, 66.0, upper, 1.0)
-                            }
-                        }
-                    }
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone && s.contrast_level > 0.0 {
-                    Some(Self::get_contrast_curve(1.5))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Watch {
+            let override_spec = self.override_spec;
+            Some(Arc::new(DynamicColor::new(
+                "primary_dim".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                })),
+                Some(Arc::new(|s| match s.variant {
+                    Variant::Neutral => 85.0,
+                    Variant::TonalSpot => Self::t_max_c(&s.primary_palette, 0.0, 90.0, 1.0),
+                    _ => Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0),
+                })),
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
+                Some(Arc::new(move |_s| {
+                    // Workaround because we don't have inheritance:
+                    // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                    let spec = ColorSpecs::get(override_spec);
+                    let spec_primary_dim = spec.primary_dim()?;
                     Some(ToneDeltaPair::new(
-                        spec.primary_container(),
-                        spec.primary_dim()?,
-                        10.0,
+                        spec_primary_dim,
+                        spec.primary(),
+                        5.0,
                         TonePolarity::Darker,
                         true,
                         DeltaConstraint::Farther,
                     ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .primary_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+            )))
+        })
+    }
+
+    fn on_primary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "on_primary".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Phone {
+                        Some(spec.primary())
+                    } else {
+                        spec.primary_dim()
+                    }
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_primary()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn primary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "primary_container".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Watch {
+                        30.0
+                    } else {
+                        match s.variant {
+                            Variant::Neutral => {
+                                if s.is_dark {
+                                    30.0
+                                } else {
+                                    90.0
+                                }
+                            }
+                            Variant::TonalSpot => {
+                                if s.is_dark {
+                                    Self::t_min_c(&s.primary_palette, 35.0, 93.0)
+                                } else {
+                                    Self::t_max_c(&s.primary_palette, 0.0, 90.0, 1.0)
+                                }
+                            }
+                            Variant::Expressive => {
+                                if s.is_dark {
+                                    Self::t_max_c(&s.primary_palette, 30.0, 93.0, 1.0)
+                                } else {
+                                    let upper = if Hct::is_cyan(s.primary_palette.hue) {
+                                        88.0
+                                    } else {
+                                        90.0
+                                    };
+                                    Self::t_max_c(&s.primary_palette, 78.0, upper, 1.0)
+                                }
+                            }
+                            _ => {
+                                if s.is_dark {
+                                    Self::t_min_c(&s.primary_palette, 66.0, 93.0)
+                                } else {
+                                    let upper = if Hct::is_cyan(s.primary_palette.hue) {
+                                        88.0
+                                    } else {
+                                        93.0
+                                    };
+                                    Self::t_max_c(&s.primary_palette, 66.0, upper, 1.0)
+                                }
+                            }
+                        }
+                    }
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone && s.contrast_level > 0.0 {
+                        Some(Self::get_contrast_curve(1.5))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Watch {
+                        Some(ToneDeltaPair::new(
+                            spec.primary_container(),
+                            spec.primary_dim()?,
+                            10.0,
+                            TonePolarity::Darker,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+            );
+            self.base
+                .primary_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_primary_container(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_primary_container".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).primary_container())
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_primary_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_primary_container".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).primary_container())
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_primary_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn inverse_primary(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "inverse_primary".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).inverse_surface())
-            })),
-            Some(Arc::new(|s| {
-                Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
-            })),
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .inverse_primary()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "inverse_primary".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).inverse_surface())
+                })),
+                Some(Arc::new(|s| {
+                    Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .inverse_primary()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     // --- Secondaries ---
 
     fn secondary(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "secondary".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Watch {
-                    if s.variant == Variant::Neutral {
-                        90.0
+            let color2025 = DynamicColor::new(
+                "secondary".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Watch {
+                        if s.variant == Variant::Neutral {
+                            90.0
+                        } else {
+                            Self::t_max_c(&s.secondary_palette, 0.0, 90.0, 1.0)
+                        }
                     } else {
-                        Self::t_max_c(&s.secondary_palette, 0.0, 90.0, 1.0)
-                    }
-                } else {
-                    match s.variant {
-                        Variant::Neutral => {
-                            if s.is_dark {
-                                Self::t_min_c(&s.secondary_palette, 0.0, 98.0)
-                            } else {
-                                Self::t_max_c(&s.secondary_palette, 0.0, 100.0, 1.0)
+                        match s.variant {
+                            Variant::Neutral => {
+                                if s.is_dark {
+                                    Self::t_min_c(&s.secondary_palette, 0.0, 98.0)
+                                } else {
+                                    Self::t_max_c(&s.secondary_palette, 0.0, 100.0, 1.0)
+                                }
                             }
-                        }
-                        Variant::Vibrant => Self::t_max_c(
-                            &s.secondary_palette,
-                            0.0,
-                            if s.is_dark { 90.0 } else { 98.0 },
-                            1.0,
-                        ),
-                        _ => {
-                            if s.is_dark {
-                                80.0
-                            } else {
-                                Self::t_max_c(&s.secondary_palette, 0.0, 100.0, 1.0)
+                            Variant::Vibrant => Self::t_max_c(
+                                &s.secondary_palette,
+                                0.0,
+                                if s.is_dark { 90.0 } else { 98.0 },
+                                1.0,
+                            ),
+                            _ => {
+                                if s.is_dark {
+                                    80.0
+                                } else {
+                                    Self::t_max_c(&s.secondary_palette, 0.0, 100.0, 1.0)
+                                }
                             }
                         }
                     }
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    4.5
-                } else {
-                    7.0
-                }))
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    let spec = ColorSpecs::get(s.spec_version);
-                    Some(ToneDeltaPair::new(
-                        spec.secondary_container(),
-                        spec.secondary(),
-                        5.0,
-                        TonePolarity::RelativeLighter,
-                        true,
-                        DeltaConstraint::Farther,
-                    ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .secondary()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        4.5
+                    } else {
+                        7.0
+                    }))
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        let spec = ColorSpecs::get(s.spec_version);
+                        Some(ToneDeltaPair::new(
+                            spec.secondary_container(),
+                            spec.secondary(),
+                            5.0,
+                            TonePolarity::RelativeLighter,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+            );
+            self.base
+                .secondary()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn secondary_dim(&self) -> Option<Arc<DynamicColor>> {
         crate::cached_color_opt!(self.override_spec, {
-        let override_spec = self.override_spec;
-        Some(Arc::new(DynamicColor::new(
-            "secondary_dim".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).surface_container_high())
-            })),
-            Some(Arc::new(|s| {
-                if s.variant == Variant::Neutral {
-                    85.0
-                } else {
-                    Self::t_max_c(&s.secondary_palette, 0.0, 90.0, 1.0)
-                }
-            })),
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |_s| {
-                // Workaround because we don't have inheritance:
-                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                let spec = ColorSpecs::get(override_spec);
-                Some(ToneDeltaPair::new(
-                    spec.secondary_dim()?,
-                    spec.secondary(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Farther,
-                ))
-            })),
-            None,
-        )))
-    })
-    }
-
-    fn on_secondary(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_secondary".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Phone {
-                    Some(spec.secondary())
-                } else {
-                    spec.secondary_dim()
-                }
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_secondary()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn secondary_container(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "secondary_container".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Watch {
-                    30.0
-                } else {
-                    match s.variant {
-                        Variant::Vibrant => {
-                            if s.is_dark {
-                                Self::t_min_c(&s.secondary_palette, 30.0, 40.0)
-                            } else {
-                                Self::t_max_c(&s.secondary_palette, 84.0, 90.0, 1.0)
-                            }
-                        }
-                        Variant::Expressive => {
-                            if s.is_dark {
-                                15.0
-                            } else {
-                                Self::t_max_c(&s.secondary_palette, 90.0, 95.0, 1.0)
-                            }
-                        }
-                        _ => {
-                            if s.is_dark {
-                                25.0
-                            } else {
-                                90.0
-                            }
-                        }
+            let override_spec = self.override_spec;
+            Some(Arc::new(DynamicColor::new(
+                "secondary_dim".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                })),
+                Some(Arc::new(|s| {
+                    if s.variant == Variant::Neutral {
+                        85.0
+                    } else {
+                        Self::t_max_c(&s.secondary_palette, 0.0, 90.0, 1.0)
                     }
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone && s.contrast_level > 0.0 {
-                    Some(Self::get_contrast_curve(1.5))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Watch {
+                })),
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
+                Some(Arc::new(move |_s| {
+                    // Workaround because we don't have inheritance:
+                    // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                    let spec = ColorSpecs::get(override_spec);
                     Some(ToneDeltaPair::new(
-                        spec.secondary_container(),
                         spec.secondary_dim()?,
-                        10.0,
+                        spec.secondary(),
+                        5.0,
                         TonePolarity::Darker,
                         true,
                         DeltaConstraint::Farther,
                     ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .secondary_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+            )))
+        })
+    }
+
+    fn on_secondary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "on_secondary".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Phone {
+                        Some(spec.secondary())
+                    } else {
+                        spec.secondary_dim()
+                    }
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_secondary()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn secondary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "secondary_container".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Watch {
+                        30.0
+                    } else {
+                        match s.variant {
+                            Variant::Vibrant => {
+                                if s.is_dark {
+                                    Self::t_min_c(&s.secondary_palette, 30.0, 40.0)
+                                } else {
+                                    Self::t_max_c(&s.secondary_palette, 84.0, 90.0, 1.0)
+                                }
+                            }
+                            Variant::Expressive => {
+                                if s.is_dark {
+                                    15.0
+                                } else {
+                                    Self::t_max_c(&s.secondary_palette, 90.0, 95.0, 1.0)
+                                }
+                            }
+                            _ => {
+                                if s.is_dark {
+                                    25.0
+                                } else {
+                                    90.0
+                                }
+                            }
+                        }
+                    }
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone && s.contrast_level > 0.0 {
+                        Some(Self::get_contrast_curve(1.5))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Watch {
+                        Some(ToneDeltaPair::new(
+                            spec.secondary_container(),
+                            spec.secondary_dim()?,
+                            10.0,
+                            TonePolarity::Darker,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+            );
+            self.base
+                .secondary_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_secondary_container(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_secondary_container".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).secondary_container())
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_secondary_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_secondary_container".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).secondary_container())
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_secondary_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     // --- Tertiaries ---
 
     fn tertiary(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "tertiary".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Watch {
-                    if s.variant == Variant::TonalSpot {
-                        Self::t_max_c(&s.tertiary_palette, 0.0, 90.0, 1.0)
-                    } else {
-                        Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
-                    }
-                } else {
-                    match s.variant {
-                        Variant::Expressive | Variant::Vibrant => {
-                            let upper = if Hct::is_cyan(s.tertiary_palette.hue) {
-                                88.0
-                            } else if s.is_dark {
-                                98.0
-                            } else {
-                                100.0
-                            };
-                            Self::t_max_c(&s.tertiary_palette, 0.0, upper, 1.0)
+            let color2025 = DynamicColor::new(
+                "tertiary".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Watch {
+                        if s.variant == Variant::TonalSpot {
+                            Self::t_max_c(&s.tertiary_palette, 0.0, 90.0, 1.0)
+                        } else {
+                            Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
                         }
-                        _ => {
-                            if s.is_dark {
-                                Self::t_max_c(&s.tertiary_palette, 0.0, 98.0, 1.0)
-                            } else {
-                                Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
+                    } else {
+                        match s.variant {
+                            Variant::Expressive | Variant::Vibrant => {
+                                let upper = if Hct::is_cyan(s.tertiary_palette.hue) {
+                                    88.0
+                                } else if s.is_dark {
+                                    98.0
+                                } else {
+                                    100.0
+                                };
+                                Self::t_max_c(&s.tertiary_palette, 0.0, upper, 1.0)
+                            }
+                            _ => {
+                                if s.is_dark {
+                                    Self::t_max_c(&s.tertiary_palette, 0.0, 98.0, 1.0)
+                                } else {
+                                    Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
+                                }
                             }
                         }
                     }
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    4.5
-                } else {
-                    7.0
-                }))
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    let spec = ColorSpecs::get(s.spec_version);
-                    Some(ToneDeltaPair::new(
-                        spec.tertiary_container(),
-                        spec.tertiary(),
-                        5.0,
-                        TonePolarity::RelativeLighter,
-                        true,
-                        DeltaConstraint::Farther,
-                    ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .tertiary()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        4.5
+                    } else {
+                        7.0
+                    }))
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        let spec = ColorSpecs::get(s.spec_version);
+                        Some(ToneDeltaPair::new(
+                            spec.tertiary_container(),
+                            spec.tertiary(),
+                            5.0,
+                            TonePolarity::RelativeLighter,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+            );
+            self.base
+                .tertiary()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn tertiary_dim(&self) -> Option<Arc<DynamicColor>> {
         crate::cached_color_opt!(self.override_spec, {
-        let override_spec = self.override_spec;
-        Some(Arc::new(DynamicColor::new(
-            "tertiary_dim".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).surface_container_high())
-            })),
-            Some(Arc::new(|s| {
-                if s.variant == Variant::TonalSpot {
-                    Self::t_max_c(&s.tertiary_palette, 0.0, 90.0, 1.0)
-                } else {
-                    Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
-                }
-            })),
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |_s| {
-                // Workaround because we don't have inheritance:
-                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                let spec = ColorSpecs::get(override_spec);
-                Some(ToneDeltaPair::new(
-                    spec.tertiary_dim()?,
-                    spec.tertiary(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Farther,
-                ))
-            })),
-            None,
-        )))
-    })
-    }
-
-    fn on_tertiary(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_tertiary".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Phone {
-                    Some(spec.tertiary())
-                } else {
-                    spec.tertiary_dim()
-                }
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_tertiary()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn tertiary_container(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "tertiary_container".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Watch {
+            let override_spec = self.override_spec;
+            Some(Arc::new(DynamicColor::new(
+                "tertiary_dim".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                })),
+                Some(Arc::new(|s| {
                     if s.variant == Variant::TonalSpot {
                         Self::t_max_c(&s.tertiary_palette, 0.0, 90.0, 1.0)
                     } else {
                         Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
                     }
-                } else {
-                    match s.variant {
-                        Variant::Neutral => {
-                            if s.is_dark {
-                                Self::t_max_c(&s.tertiary_palette, 0.0, 93.0, 1.0)
-                            } else {
-                                Self::t_max_c(&s.tertiary_palette, 0.0, 96.0, 1.0)
-                            }
-                        }
-                        Variant::TonalSpot => Self::t_max_c(
-                            &s.tertiary_palette,
-                            0.0,
-                            if s.is_dark { 93.0 } else { 100.0 },
-                            1.0,
-                        ),
-                        Variant::Expressive => {
-                            let upper = if Hct::is_cyan(s.tertiary_palette.hue) {
-                                88.0
-                            } else if s.is_dark {
-                                93.0
-                            } else {
-                                100.0
-                            };
-                            Self::t_max_c(&s.tertiary_palette, 75.0, upper, 1.0)
-                        }
-                        _ => {
-                            if s.is_dark {
-                                Self::t_max_c(&s.tertiary_palette, 0.0, 93.0, 1.0)
-                            } else {
-                                Self::t_max_c(&s.tertiary_palette, 72.0, 100.0, 1.0)
-                            }
-                        }
-                    }
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone && s.contrast_level > 0.0 {
-                    Some(Self::get_contrast_curve(1.5))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Watch {
+                })),
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
+                Some(Arc::new(move |_s| {
+                    // Workaround because we don't have inheritance:
+                    // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                    let spec = ColorSpecs::get(override_spec);
                     Some(ToneDeltaPair::new(
-                        spec.tertiary_container(),
                         spec.tertiary_dim()?,
-                        10.0,
+                        spec.tertiary(),
+                        5.0,
                         TonePolarity::Darker,
                         true,
                         DeltaConstraint::Farther,
                     ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .tertiary_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+            )))
+        })
+    }
+
+    fn on_tertiary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "on_tertiary".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Phone {
+                        Some(spec.tertiary())
+                    } else {
+                        spec.tertiary_dim()
+                    }
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_tertiary()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn tertiary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "tertiary_container".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Watch {
+                        if s.variant == Variant::TonalSpot {
+                            Self::t_max_c(&s.tertiary_palette, 0.0, 90.0, 1.0)
+                        } else {
+                            Self::t_max_c(&s.tertiary_palette, 0.0, 100.0, 1.0)
+                        }
+                    } else {
+                        match s.variant {
+                            Variant::Neutral => {
+                                if s.is_dark {
+                                    Self::t_max_c(&s.tertiary_palette, 0.0, 93.0, 1.0)
+                                } else {
+                                    Self::t_max_c(&s.tertiary_palette, 0.0, 96.0, 1.0)
+                                }
+                            }
+                            Variant::TonalSpot => Self::t_max_c(
+                                &s.tertiary_palette,
+                                0.0,
+                                if s.is_dark { 93.0 } else { 100.0 },
+                                1.0,
+                            ),
+                            Variant::Expressive => {
+                                let upper = if Hct::is_cyan(s.tertiary_palette.hue) {
+                                    88.0
+                                } else if s.is_dark {
+                                    93.0
+                                } else {
+                                    100.0
+                                };
+                                Self::t_max_c(&s.tertiary_palette, 75.0, upper, 1.0)
+                            }
+                            _ => {
+                                if s.is_dark {
+                                    Self::t_max_c(&s.tertiary_palette, 0.0, 93.0, 1.0)
+                                } else {
+                                    Self::t_max_c(&s.tertiary_palette, 72.0, 100.0, 1.0)
+                                }
+                            }
+                        }
+                    }
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone && s.contrast_level > 0.0 {
+                        Some(Self::get_contrast_curve(1.5))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Watch {
+                        Some(ToneDeltaPair::new(
+                            spec.tertiary_container(),
+                            spec.tertiary_dim()?,
+                            10.0,
+                            TonePolarity::Darker,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+            );
+            self.base
+                .tertiary_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_tertiary_container(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_tertiary_container".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).tertiary_container())
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_tertiary_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_tertiary_container".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).tertiary_container())
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_tertiary_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     // --- Error Colors ---
 
     fn error(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "error".to_string(),
-            Arc::new(|s| s.error_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    if s.is_dark {
-                        Self::t_min_c(&s.error_palette, 0.0, 98.0)
+            let color2025 = DynamicColor::new(
+                "error".to_string(),
+                Arc::new(|s| s.error_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        if s.is_dark {
+                            Self::t_min_c(&s.error_palette, 0.0, 98.0)
+                        } else {
+                            Self::t_max_c(&s.error_palette, 0.0, 100.0, 1.0)
+                        }
                     } else {
-                        Self::t_max_c(&s.error_palette, 0.0, 100.0, 1.0)
+                        Self::t_min_c(&s.error_palette, 0.0, 100.0)
                     }
-                } else {
-                    Self::t_min_c(&s.error_palette, 0.0, 100.0)
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    4.5
-                } else {
-                    7.0
-                }))
-            })),
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Phone {
-                    Some(ToneDeltaPair::new(
-                        spec.error_container(),
-                        spec.error(),
-                        5.0,
-                        TonePolarity::RelativeLighter,
-                        true,
-                        DeltaConstraint::Farther,
-                    ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .error()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        4.5
+                    } else {
+                        7.0
+                    }))
+                })),
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Phone {
+                        Some(ToneDeltaPair::new(
+                            spec.error_container(),
+                            spec.error(),
+                            5.0,
+                            TonePolarity::RelativeLighter,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+            );
+            self.base
+                .error()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn error_dim(&self) -> Option<Arc<DynamicColor>> {
         crate::cached_color_opt!(self.override_spec, {
-        let override_spec = self.override_spec;
-        Some(Arc::new(DynamicColor::new(
-            "error_dim".to_string(),
-            Arc::new(|s| s.error_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).surface_container_high())
-            })),
-            Some(Arc::new(|s| Self::t_min_c(&s.error_palette, 0.0, 100.0))),
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            Some(Arc::new(move |_s| {
-                // Workaround because we don't have inheritance:
-                // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                let spec = ColorSpecs::get(override_spec);
-                Some(ToneDeltaPair::new(
-                    spec.error_dim()?,
-                    spec.error(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Farther,
-                ))
-            })),
-            None,
-        )))
-    })
-    }
-
-    fn on_error(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_error".to_string(),
-            Arc::new(|s| s.error_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Phone {
-                    Some(spec.error())
-                } else {
-                    spec.error_dim()
-                }
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    6.0
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_error()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
-    }
-
-    fn error_container(&self) -> Arc<DynamicColor> {
-        crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "error_container".to_string(),
-            Arc::new(|s| s.error_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Watch {
-                    30.0
-                } else if s.is_dark {
-                    Self::t_min_c(&s.error_palette, 30.0, 93.0)
-                } else {
-                    Self::t_max_c(&s.error_palette, 0.0, 90.0, 1.0)
-                }
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone && s.contrast_level > 0.0 {
-                    Some(Self::get_contrast_curve(1.5))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                if s.platform == Platform::Watch {
+            let override_spec = self.override_spec;
+            Some(Arc::new(DynamicColor::new(
+                "error_dim".to_string(),
+                Arc::new(|s| s.error_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                })),
+                Some(Arc::new(|s| Self::t_min_c(&s.error_palette, 0.0, 100.0))),
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
+                Some(Arc::new(move |_s| {
+                    // Workaround because we don't have inheritance:
+                    // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
+                    let spec = ColorSpecs::get(override_spec);
                     Some(ToneDeltaPair::new(
-                        spec.error_container(),
                         spec.error_dim()?,
-                        10.0,
+                        spec.error(),
+                        5.0,
                         TonePolarity::Darker,
                         true,
                         DeltaConstraint::Farther,
                     ))
-                } else {
-                    None
-                }
-            })),
-            None,
-        );
-        self.base
-            .error_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+                })),
+                None,
+            )))
+        })
+    }
+
+    fn on_error(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "on_error".to_string(),
+                Arc::new(|s| s.error_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Phone {
+                        Some(spec.error())
+                    } else {
+                        spec.error_dim()
+                    }
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        6.0
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_error()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
+    }
+
+    fn error_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
+            let color2025 = DynamicColor::new(
+                "error_container".to_string(),
+                Arc::new(|s| s.error_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Watch {
+                        30.0
+                    } else if s.is_dark {
+                        Self::t_min_c(&s.error_palette, 30.0, 93.0)
+                    } else {
+                        Self::t_max_c(&s.error_palette, 0.0, 90.0, 1.0)
+                    }
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone && s.contrast_level > 0.0 {
+                        Some(Self::get_contrast_curve(1.5))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    if s.platform == Platform::Watch {
+                        Some(ToneDeltaPair::new(
+                            spec.error_container(),
+                            spec.error_dim()?,
+                            10.0,
+                            TonePolarity::Darker,
+                            true,
+                            DeltaConstraint::Farther,
+                        ))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+            );
+            self.base
+                .error_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_error_container(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_error_container".to_string(),
-            Arc::new(|s| s.error_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).error_container())
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
-                    4.5
-                } else {
-                    7.0
-                }))
-            })),
-            None,
-            None,
-        );
-        self.base
-            .on_error_container()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_error_container".to_string(),
+                Arc::new(|s| s.error_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).error_container())
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    Some(Self::get_contrast_curve(if s.platform == Platform::Phone {
+                        4.5
+                    } else {
+                        7.0
+                    }))
+                })),
+                None,
+                None,
+            );
+            self.base
+                .on_error_container()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     // --- Fixed Colors ---
 
     fn primary_fixed(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "primary_fixed".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                ColorSpecs::get(s.spec_version)
-                    .primary_container()
-                    .get_tone(&temp_s)
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone && s.contrast_level > 0.0 {
-                    Some(Self::get_contrast_curve(1.5))
-                } else {
-                    None
-                }
-            })),
-            None,
-            None,
-        );
-        self.base
-            .primary_fixed()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "primary_fixed".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
+                    ColorSpecs::get(s.spec_version)
+                        .primary_container()
+                        .get_tone(&temp_s)
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone && s.contrast_level > 0.0 {
+                        Some(Self::get_contrast_curve(1.5))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+                None,
+            );
+            self.base
+                .primary_fixed()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn primary_fixed_dim(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "primary_fixed_dim".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            true,
-            None,
-            None,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version).primary_fixed().get_tone(s)
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                Some(ToneDeltaPair::new(
-                    spec.primary_fixed_dim(),
-                    spec.primary_fixed(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Exact,
-                ))
-            })),
-            None,
-        );
-        self.base
-            .primary_fixed_dim()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "primary_fixed_dim".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                true,
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version).primary_fixed().get_tone(s)
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    Some(ToneDeltaPair::new(
+                        spec.primary_fixed_dim(),
+                        spec.primary_fixed(),
+                        5.0,
+                        TonePolarity::Darker,
+                        true,
+                        DeltaConstraint::Exact,
+                    ))
+                })),
+                None,
+            );
+            self.base
+                .primary_fixed_dim()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_primary_fixed(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_primary_fixed".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
-            })),
-            None,
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
-            None,
-            None,
-        );
-        self.base
-            .on_primary_fixed()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_primary_fixed".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                })),
+                None,
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
+                None,
+                None,
+            );
+            self.base
+                .on_primary_fixed()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_primary_fixed_variant(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_primary_fixed_variant".to_string(),
-            Arc::new(|s| s.primary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
-            })),
-            None,
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            None,
-            None,
-        );
-        self.base
-            .on_primary_fixed_variant()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_primary_fixed_variant".to_string(),
+                Arc::new(|s| s.primary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                })),
+                None,
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
+                None,
+                None,
+            );
+            self.base
+                .on_primary_fixed_variant()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn secondary_fixed(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "secondary_fixed".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                ColorSpecs::get(s.spec_version)
-                    .secondary_container()
-                    .get_tone(&temp_s)
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone && s.contrast_level > 0.0 {
-                    Some(Self::get_contrast_curve(1.5))
-                } else {
-                    None
-                }
-            })),
-            None,
-            None,
-        );
-        self.base
-            .secondary_fixed()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "secondary_fixed".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
+                    ColorSpecs::get(s.spec_version)
+                        .secondary_container()
+                        .get_tone(&temp_s)
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone && s.contrast_level > 0.0 {
+                        Some(Self::get_contrast_curve(1.5))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+                None,
+            );
+            self.base
+                .secondary_fixed()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn secondary_fixed_dim(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "secondary_fixed_dim".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            true,
-            None,
-            None,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version)
-                    .secondary_fixed()
-                    .get_tone(s)
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                Some(ToneDeltaPair::new(
-                    spec.secondary_fixed_dim(),
-                    spec.secondary_fixed(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Exact,
-                ))
-            })),
-            None,
-        );
-        self.base
-            .secondary_fixed_dim()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "secondary_fixed_dim".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                true,
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version)
+                        .secondary_fixed()
+                        .get_tone(s)
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    Some(ToneDeltaPair::new(
+                        spec.secondary_fixed_dim(),
+                        spec.secondary_fixed(),
+                        5.0,
+                        TonePolarity::Darker,
+                        true,
+                        DeltaConstraint::Exact,
+                    ))
+                })),
+                None,
+            );
+            self.base
+                .secondary_fixed_dim()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_secondary_fixed(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_secondary_fixed".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
-            })),
-            None,
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
-            None,
-            None,
-        );
-        self.base
-            .on_secondary_fixed()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_secondary_fixed".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                })),
+                None,
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
+                None,
+                None,
+            );
+            self.base
+                .on_secondary_fixed()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_secondary_fixed_variant(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_secondary_fixed_variant".to_string(),
-            Arc::new(|s| s.secondary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
-            })),
-            None,
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            None,
-            None,
-        );
-        self.base
-            .on_secondary_fixed_variant()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_secondary_fixed_variant".to_string(),
+                Arc::new(|s| s.secondary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                })),
+                None,
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
+                None,
+                None,
+            );
+            self.base
+                .on_secondary_fixed_variant()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn tertiary_fixed(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "tertiary_fixed".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
-                } else {
-                    None
-                }
-            })),
-            Some(Arc::new(|s| {
-                let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                ColorSpecs::get(s.spec_version)
-                    .tertiary_container()
-                    .get_tone(&temp_s)
-            })),
-            None,
-            Some(Arc::new(|s| {
-                if s.platform == Platform::Phone && s.contrast_level > 0.0 {
-                    Some(Self::get_contrast_curve(1.5))
-                } else {
-                    None
-                }
-            })),
-            None,
-            None,
-        );
-        self.base
-            .tertiary_fixed()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "tertiary_fixed".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                true,
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone {
+                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    } else {
+                        None
+                    }
+                })),
+                Some(Arc::new(|s| {
+                    let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
+                    ColorSpecs::get(s.spec_version)
+                        .tertiary_container()
+                        .get_tone(&temp_s)
+                })),
+                None,
+                Some(Arc::new(|s| {
+                    if s.platform == Platform::Phone && s.contrast_level > 0.0 {
+                        Some(Self::get_contrast_curve(1.5))
+                    } else {
+                        None
+                    }
+                })),
+                None,
+                None,
+            );
+            self.base
+                .tertiary_fixed()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn tertiary_fixed_dim(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "tertiary_fixed_dim".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            true,
-            None,
-            None,
-            Some(Arc::new(|s| {
-                ColorSpecs::get(s.spec_version).tertiary_fixed().get_tone(s)
-            })),
-            None,
-            None,
-            Some(Arc::new(|s| {
-                let spec = ColorSpecs::get(s.spec_version);
-                Some(ToneDeltaPair::new(
-                    spec.tertiary_fixed_dim(),
-                    spec.tertiary_fixed(),
-                    5.0,
-                    TonePolarity::Darker,
-                    true,
-                    DeltaConstraint::Exact,
-                ))
-            })),
-            None,
-        );
-        self.base
-            .tertiary_fixed_dim()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "tertiary_fixed_dim".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                true,
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version).tertiary_fixed().get_tone(s)
+                })),
+                None,
+                None,
+                Some(Arc::new(|s| {
+                    let spec = ColorSpecs::get(s.spec_version);
+                    Some(ToneDeltaPair::new(
+                        spec.tertiary_fixed_dim(),
+                        spec.tertiary_fixed(),
+                        5.0,
+                        TonePolarity::Darker,
+                        true,
+                        DeltaConstraint::Exact,
+                    ))
+                })),
+                None,
+            );
+            self.base
+                .tertiary_fixed_dim()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_tertiary_fixed(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_tertiary_fixed".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
-            })),
-            None,
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
-            None,
-            None,
-        );
-        self.base
-            .on_tertiary_fixed()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_tertiary_fixed".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                })),
+                None,
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
+                None,
+                None,
+            );
+            self.base
+                .on_tertiary_fixed()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn on_tertiary_fixed_variant(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-        let color2025 = DynamicColor::new(
-            "on_tertiary_fixed_variant".to_string(),
-            Arc::new(|s| s.tertiary_palette.clone()),
-            false,
-            None,
-            Some(Arc::new(|s| {
-                Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
-            })),
-            None,
-            None,
-            Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
-            None,
-            None,
-        );
-        self.base
-            .on_tertiary_fixed_variant()
-            .extend_spec_version(SpecVersion::Spec2025, &color2025)
-    })
+            let color2025 = DynamicColor::new(
+                "on_tertiary_fixed_variant".to_string(),
+                Arc::new(|s| s.tertiary_palette.clone()),
+                false,
+                None,
+                Some(Arc::new(|s| {
+                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                })),
+                None,
+                None,
+                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
+                None,
+                None,
+            );
+            self.base
+                .on_tertiary_fixed_variant()
+                .extend_spec_version(SpecVersion::Spec2025, &color2025)
+        })
     }
 
     fn get_hct(&self, scheme: &DynamicScheme, color: &DynamicColor) -> Hct {

@@ -72,7 +72,12 @@ impl ValidationTracker {
 
         let fmt_hct = |argb: Argb| {
             let hct = Hct::from_int(argb);
-            format!("HCT: ({:.1}, {:.1}, {:.1})", hct.hue(), hct.chroma(), hct.tone())
+            format!(
+                "HCT: ({:.1}, {:.1}, {:.1})",
+                hct.hue(),
+                hct.chroma(),
+                hct.tone()
+            )
         };
 
         self.mismatches.push(format!(
@@ -173,7 +178,10 @@ fn test_material_schemes_against_reference() -> Result<()> {
         SpecVersion::Spec2026,
         None,
     );
-    println!("test_material_schemes_against_reference took: {:?}", start.elapsed());
+    println!(
+        "test_material_schemes_against_reference took: {:?}",
+        start.elapsed()
+    );
     res
 }
 
