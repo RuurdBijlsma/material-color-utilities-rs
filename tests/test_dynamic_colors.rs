@@ -186,7 +186,7 @@ fn test_material_schemes_against_reference() -> Result<()> {
 }
 
 #[test]
-fn test_single_failing_color() -> Result<()> {
+fn test_single_color() -> Result<()> {
     run_reference_test(
         "tests/assets/json/reference_schemes_single.json",
         SpecVersion::Spec2026,

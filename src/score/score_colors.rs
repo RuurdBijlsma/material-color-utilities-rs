@@ -17,6 +17,7 @@
 use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
+use bon::bon;
 use indexmap::IndexMap;
 
 struct ScoredHct {
@@ -31,6 +32,7 @@ struct ScoredHct {
 /// while curating the high cluster count to a much smaller number of appropriate choices.
 pub struct Score;
 
+#[bon]
 impl Score {
     const TARGET_CHROMA: f64 = 48.0; // A1 Chroma
     const WEIGHT_PROPORTION: f64 = 0.7;
@@ -39,26 +41,6 @@ impl Score {
     const CUTOFF_CHROMA: f64 = 5.0;
     const CUTOFF_EXCITED_PROPORTION: f64 = 0.01;
 
-    #[must_use]
-    pub fn score(colors_to_population: &IndexMap<Argb, u32>) -> Vec<Argb> {
-        // Fallback color is Google Blue.
-        Self::score_with_options(colors_to_population, 4, Argb(0xff4285f4), true)
-    }
-
-    #[must_use]
-    pub fn score_desired(colors_to_population: &IndexMap<Argb, u32>, desired: usize) -> Vec<Argb> {
-        Self::score_with_options(colors_to_population, desired, Argb(0xff4285f4), true)
-    }
-
-    #[must_use]
-    pub fn score_fallback(
-        colors_to_population: &IndexMap<Argb, u32>,
-        desired: usize,
-        fallback_color_argb: Argb,
-    ) -> Vec<Argb> {
-        Self::score_with_options(colors_to_population, desired, fallback_color_argb, true)
-    }
-
     /// Given a map with keys of colors and values of how often the color appears, rank the colors
     /// based on suitability for being used for a UI theme.
     ///
@@ -66,20 +48,31 @@ impl Score {
     ///
     /// * `colors_to_population`: map with keys of colors and values of how often the color appears,
     ///   usually from a source image.
-    /// * `desired`: max count of colors to be returned in the list.
+    /// * `desired`: max count of colors to be returned in the list. Defaults to `4`.
     /// * `fallback_color_argb`: color to be returned if no other options available.
-    /// * `filter`: whether to filter out undesireable combinations.
+    ///   Defaults to Google Blue (`0xff4285f4`).
+    /// * `filter`: whether to filter out undesirable combinations. Defaults to `true`.
     ///
     /// # Returns
     ///
     /// Colors sorted by suitability for a UI theme. The most suitable color is the first item,
     /// the least suitable is the last. There will always be at least one color returned. If all the
     /// input colors were not suitable for a theme, a default fallback color will be provided.
+    #[builder(start_fn = score)]
     #[must_use]
-    pub fn score_with_options(
+    pub fn score_impl(
+        /// Map with keys of colors and values of how often the color appears (usually from a
+        /// source image). This is a required positional argument passed to `Score::score(map)`.
+        #[builder(start_fn)]
         colors_to_population: &IndexMap<Argb, u32>,
-        desired: usize,
+        /// Max count of colors to be returned. Defaults to `4`.
+        #[builder(default = 4)]
+        desired_count: usize,
+        /// Color to return if no suitable colors are found. Defaults to Google Blue.
+        #[builder(default = Argb(0xff4285f4))]
         fallback_color_argb: Argb,
+        /// Whether to filter out undesirable combinations. Defaults to `true`.
+        #[builder(default = true)]
         filter: bool,
     ) -> Vec<Argb> {
         // Get the HCT color for each Argb value, while finding the per hue count and
@@ -160,11 +153,11 @@ impl Score {
                 if !has_duplicate_hue {
                     chosen_colors.push(hct);
                 }
-                if chosen_colors.len() >= desired {
+                if chosen_colors.len() >= desired_count {
                     break;
                 }
             }
-            if chosen_colors.len() >= desired {
+            if chosen_colors.len() >= desired_count {
                 break;
             }
         }
@@ -186,7 +179,7 @@ mod tests {
     fn test_score_default() {
         let colors = IndexMap::new();
         let fallback = Argb(0xff4285f4);
-        let result = Score::score(&colors);
+        let result = Score::score(&colors).call();
         assert_eq!(result, vec![fallback]);
     }
 
@@ -194,7 +187,11 @@ mod tests {
     fn test_score_empty() {
         let colors = IndexMap::new();
         let fallback = Argb(0xff4285f4);
-        let result = Score::score_with_options(&colors, 4, fallback, true);
+        let result = Score::score(&colors)
+            .desired_count(4)
+            .fallback_color_argb(fallback)
+            .filter(true)
+            .call();
         assert_eq!(result, vec![fallback]);
     }
 
@@ -203,7 +200,11 @@ mod tests {
         let mut colors = IndexMap::new();
         colors.insert(Argb(0xffff0000), 100);
         let fallback = Argb(0xff4285f4);
-        let result = Score::score_with_options(&colors, 4, fallback, true);
+        let result = Score::score(&colors)
+            .desired_count(4)
+            .fallback_color_argb(fallback)
+            .filter(true)
+            .call();
         // Pure red has enough chroma and proportion
         assert_eq!(result[0], Argb(0xffff0000));
     }
@@ -215,7 +216,11 @@ mod tests {
         colors.insert(Argb(0xff00DD88), 50);
         colors.insert(Argb(0xFFCCDDEE), 50);
         let fallback = Argb(0xff4285f4);
-        let result = Score::score_with_options(&colors, 4, fallback, true);
+        let result = Score::score(&colors)
+            .desired_count(4)
+            .fallback_color_argb(fallback)
+            .filter(true)
+            .call();
         assert_eq!(result[0], Argb(0xff00DD88));
     }
 
@@ -225,7 +230,11 @@ mod tests {
         // Low chroma color
         colors.insert(Argb(0xff111111), 100);
         let fallback = Argb(0xff4285f4);
-        let result = Score::score_with_options(&colors, 4, fallback, true);
+        let result = Score::score(&colors)
+            .desired_count(4)
+            .fallback_color_argb(fallback)
+            .filter(true)
+            .call();
         // Should be filtered out, returning fallback
         assert_eq!(result, vec![fallback]);
     }

@@ -215,7 +215,9 @@ fn test_color_extraction() -> Result<()> {
         let quantizer_count = result.color_to_count.len();
 
         // 2. Score
-        let seeds = Score::score_desired(&result.color_to_count, case.settings.desired_count);
+        let seeds = Score::score(&result.color_to_count)
+            .desired_count(case.settings.desired_count)
+            .call();
 
         // 3. Parse Expected
         let expected_seeds: Vec<Argb> = case
