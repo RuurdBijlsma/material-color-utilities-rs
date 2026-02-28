@@ -130,16 +130,19 @@ Used internally for the HCT Solver.
 
 ## Conversions between color spaces
 
+All conversions also implement the standard `From`/`Into` traits, so you can
+use either the explicit method form or the idiomatic Rust trait form.
+
 *   sRGB ⇌ HCT
-    -   `Hct::from_int(argb)`
-    -   `hct.to_int()`
-    -   `Hct::from(h, c, t)` then `hct.to_int()`
+    -   `Hct::from_int(argb)` · `Hct::from(argb)` · `argb.into()`
+    -   `hct.to_int()` · `Argb::from(hct)` · `hct.into()`
+    -   Construct from components: `Hct::from(h, c, t)` then `hct.to_int()`
 *   sRGB ⇌ XYZ
-    -   `argb.to_xyz()` → `Xyz`
-    -   `Argb::from_xyz(xyz)`
+    -   `argb.to_xyz()` → `Xyz` · `Xyz::from(argb)` · `argb.into()`
+    -   `Argb::from_xyz(xyz)` · `Argb::from(xyz)` · `xyz.into()`
 *   sRGB ⇌ Cam16
-    -   `Cam16::from_int(argb)`
-    -   `cam16.to_argb()`
+    -   `Cam16::from_int(argb)` · `Cam16::from(argb)` · `argb.into()`
+    -   `cam16.to_int()` · `Argb::from(cam16)` · `cam16.into()`
     -   Constructing a Cam16 from JCH or UCS:
         -   `Cam16::from_jch(j, c, h)`
         -   `Cam16::from_ucs(jstar, astar, bstar)`
@@ -147,10 +150,10 @@ Used internally for the HCT Solver.
     -   `Cam16::from_xyz_in_viewing_conditions(x, y, z, &vc)`
     -   `cam16.xyz_in_viewing_conditions(&vc)`
 *   sRGB ⇌ L\*a\*b\*
-    -   `argb.to_lab()` → `Lab`
-    -   `Argb::from_lab(lab)`
+    -   `argb.to_lab()` → `Lab` · `Lab::from(argb)` · `argb.into()`
+    -   `Argb::from_lab(lab)` · `Argb::from(lab)` · `lab.into()`
 *   linRGB → sRGB
-    -   `Argb::from_linrgb(linrgb)`
+    -   `Argb::from_linrgb(linrgb)` · `Argb::from([r, g, b])` · `[r, g, b].into()`
 *   L\* ⇌ Y (XYZ luminance)
     -   `ColorUtils::y_from_lstar(lstar)`
     -   `ColorUtils::lstar_from_y(y)`

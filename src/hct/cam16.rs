@@ -304,6 +304,21 @@ impl Cam16 {
     }
 }
 
+// ── Standard conversion traits ──────────────────────────────────────────────
+
+/// sRGB ⇌ CAM16 (default viewing conditions)
+impl From<Argb> for Cam16 {
+    fn from(argb: Argb) -> Self {
+        Self::from_int(argb)
+    }
+}
+
+impl From<Cam16> for Argb {
+    fn from(cam16: Cam16) -> Self {
+        cam16.to_int()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

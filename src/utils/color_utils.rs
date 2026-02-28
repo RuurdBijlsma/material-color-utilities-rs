@@ -271,6 +271,43 @@ impl ColorUtils {
     }
 }
 
+// ── Standard conversion traits ──────────────────────────────────────────────
+
+/// sRGB ⇌ XYZ
+impl From<Argb> for Xyz {
+    fn from(argb: Argb) -> Self {
+        argb.to_xyz()
+    }
+}
+
+impl From<Xyz> for Argb {
+    fn from(xyz: Xyz) -> Self {
+        Self::from_xyz(xyz)
+    }
+}
+
+/// sRGB ⇌ L*a*b*
+impl From<Argb> for Lab {
+    fn from(argb: Argb) -> Self {
+        argb.to_lab()
+    }
+}
+
+impl From<Lab> for Argb {
+    fn from(lab: Lab) -> Self {
+        Argb::from_lab(lab)
+    }
+}
+
+/// linRGB → sRGB
+///
+/// Converts a linear-RGB triple `[r, g, b]` (values in 0–100) to `Argb`.
+impl From<[f64; 3]> for Argb {
+    fn from(linrgb: [f64; 3]) -> Self {
+        Argb::from_linrgb(linrgb)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

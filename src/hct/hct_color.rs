@@ -215,6 +215,21 @@ impl fmt::Display for Hct {
     }
 }
 
+// ── Standard conversion traits ──────────────────────────────────────────────
+
+/// sRGB ⇌ HCT
+impl From<Argb> for Hct {
+    fn from(argb: Argb) -> Self {
+        Hct::from_int(argb)
+    }
+}
+
+impl From<Hct> for Argb {
+    fn from(hct: Hct) -> Self {
+        hct.to_int()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
