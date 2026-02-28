@@ -17,5 +17,3 @@
         * Hct(...
 * code improvements
 * ✅ papaya cache (geen improvement)
-* ✅ maak dit workspace & geef de "pure" port zijn eigen crate, zet abstracties in andere crate om het apart te houden (
-  dan moet ik 2 crates publishen dat vind ik stom)
