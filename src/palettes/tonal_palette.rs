@@ -46,6 +46,20 @@ impl Clone for TonalPalette {
     }
 }
 
+impl PartialEq for TonalPalette {
+    fn eq(&self, other: &Self) -> bool {
+        self.key_color == other.key_color
+    }
+}
+
+impl Eq for TonalPalette {}
+
+impl std::hash::Hash for TonalPalette {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.key_color.hash(state);
+    }
+}
+
 impl TonalPalette {
     fn new(hue: f64, chroma: f64, key_color: Hct) -> Self {
         Self {

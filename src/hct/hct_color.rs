@@ -43,6 +43,14 @@ pub struct Hct {
     argb: Argb,
 }
 
+impl Eq for Hct {}
+
+impl std::hash::Hash for Hct {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.argb.hash(state);
+    }
+}
+
 impl Hct {
     fn new_internal(argb: Argb) -> Self {
         let cam = Cam16::from_int(argb);

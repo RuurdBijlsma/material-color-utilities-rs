@@ -24,8 +24,8 @@ use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
 use std::sync::OnceLock;
 
-/// Provides important settings for creating colors dynamically, and 6 color palettes.
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
 pub struct DynamicScheme {
     pub source_color_hct_list: Vec<Hct>,
     pub variant: Variant,
@@ -39,6 +39,42 @@ pub struct DynamicScheme {
     pub neutral_palette: TonalPalette,
     pub neutral_variant_palette: TonalPalette,
     pub error_palette: TonalPalette,
+}
+
+impl PartialEq for DynamicScheme {
+    fn eq(&self, other: &Self) -> bool {
+        self.source_color_hct_list == other.source_color_hct_list
+            && self.variant == other.variant
+            && self.is_dark == other.is_dark
+            && self.contrast_level.to_bits() == other.contrast_level.to_bits()
+            && self.platform == other.platform
+            && self.spec_version == other.spec_version
+            && self.primary_palette == other.primary_palette
+            && self.secondary_palette == other.secondary_palette
+            && self.tertiary_palette == other.tertiary_palette
+            && self.neutral_palette == other.neutral_palette
+            && self.neutral_variant_palette == other.neutral_variant_palette
+            && self.error_palette == other.error_palette
+    }
+}
+
+impl Eq for DynamicScheme {}
+
+impl std::hash::Hash for DynamicScheme {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.source_color_hct_list.hash(state);
+        self.variant.hash(state);
+        self.is_dark.hash(state);
+        self.contrast_level.to_bits().hash(state);
+        self.platform.hash(state);
+        self.spec_version.hash(state);
+        self.primary_palette.hash(state);
+        self.secondary_palette.hash(state);
+        self.tertiary_palette.hash(state);
+        self.neutral_palette.hash(state);
+        self.neutral_variant_palette.hash(state);
+        self.error_palette.hash(state);
+    }
 }
 
 impl DynamicScheme {

@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use std::fmt;
-use std::fmt::Debug;
 use crate::contrast::contrast_utils::Contrast;
 use crate::dynamic::color_spec::SpecVersion;
 use crate::dynamic::color_specs::ColorSpecs;
@@ -24,6 +22,8 @@ use crate::dynamic::tone_delta_pair::ToneDeltaPair;
 use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
+use std::fmt;
+use std::fmt::Debug;
 use std::sync::Arc;
 
 pub type DynamicColorFunction<T> = Arc<dyn Fn(&DynamicScheme) -> T + Send + Sync>;
@@ -55,6 +55,7 @@ impl Debug for DynamicColor {
             .field("contrast_curve", &self.contrast_curve.as_ref().map(|_| "<function>"))
             .field("tone_delta_pair", &self.tone_delta_pair.as_ref().map(|_| "<function>"))
             .field("opacity", &self.opacity.as_ref().map(|_| "<function>"))
+            .field("hct_cache", &"<cache>")
             .finish()
     }
 }
@@ -125,7 +126,6 @@ impl DynamicColor {
     }
 
     pub fn get_hct(&self, scheme: &DynamicScheme) -> Hct {
-        // TODO: cache here same as DynamicColor.kt
         ColorSpecs::get(scheme.spec_version).get_hct(scheme, self)
     }
 

@@ -167,11 +167,14 @@ fn run_reference_test(path: &str, spec: SpecVersion, filter_role: Option<&str>) 
 
 #[test]
 fn test_material_schemes_against_reference() -> Result<()> {
-    run_reference_test(
+    let start = std::time::Instant::now();
+    let res = run_reference_test(
         "tests/assets/json/reference_schemes_large.json",
         SpecVersion::Spec2026,
         None,
-    )
+    );
+    println!("test_material_schemes_against_reference took: {:?}", start.elapsed());
+    res
 }
 
 #[test]
