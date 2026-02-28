@@ -1,0 +1,290 @@
+[
+{
+    "image": "cake.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 4
+    },
+    "seeds": ["0xFFDD8439", "0xFFBDC8DF", "0xFFF9BCD5", "0xFFCCCDB5"]
+},
+{
+    "image": "cake.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 1
+    },
+    "seeds": ["0xFFDD8439"]
+},
+{
+    "image": "cake.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF9D5B27", "0xFFB8C3D9", "0xFFEA9CAA", "0xFFCBB66D"]
+},
+{
+    "image": "cake.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF9D5B27"]
+},
+{
+    "image": "cake.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF5C381E", "0xFFB6BFD2", "0xFFE5C2C8", "0xFFECE3BF"]
+},
+{
+    "image": "cake.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF5C381E"]
+},
+{
+    "image": "desk.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 4
+    },
+    "seeds": ["0xFFCF8D18", "0xFFBADA39", "0xFFEB5D7E", "0xFF1E272F"]
+},
+{
+    "image": "desk.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 1
+    },
+    "seeds": ["0xFFCF8D18"]
+},
+{
+    "image": "desk.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF75450D", "0xFFEA5D7D", "0xFFA89652", "0xFF22282F"]
+},
+{
+    "image": "desk.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF75450D"]
+},
+{
+    "image": "desk.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 4
+    },
+    "seeds": ["0xFFF5E0C9", "0xFF7F380D", "0xFFA39053"]
+},
+{
+    "image": "desk.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 1
+    },
+    "seeds": ["0xFFF5E0C9"]
+},
+{
+    "image": "island.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF4C6171", "0xFFA87269", "0xFFA4AAA5", "0xFFA39D8C"]
+},
+{
+    "image": "island.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF4C6171"]
+},
+{
+    "image": "island.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF7C8C98", "0xFFBC9971", "0xFF6F5B5D", "0xFFA1A7A4"]
+},
+{
+    "image": "island.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF7C8C98"]
+},
+{
+    "image": "island.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF282C2F", "0xFFB9966E", "0xFF8C6764", "0xFF9EA6A3"]
+},
+{
+    "image": "island.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF282C2F"]
+},
+{
+    "image": "river.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF5FA017", "0xFFE1F54B", "0xFF6B966E"]
+},
+{
+    "image": "river.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF5FA017"]
+},
+{
+    "image": "river.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 4
+    },
+    "seeds": ["0xFFAACD3D", "0xFF698F65", "0xFF938931", "0xFF85A595"]
+},
+{
+    "image": "river.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 1
+    },
+    "seeds": ["0xFFAACD3D"]
+},
+{
+    "image": "river.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF93BD2C", "0xFFECF6E5", "0xFF94B6BB"]
+},
+{
+    "image": "river.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF93BD2C"]
+},
+{
+    "image": "santorini.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF193255", "0xFF93804B", "0xFFCD9B77", "0xFFB1B3A9"]
+},
+{
+    "image": "santorini.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF193255"]
+},
+{
+    "image": "santorini.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF465067", "0xFFDFD0B5", "0xFF42301E"]
+},
+{
+    "image": "santorini.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF465067"]
+},
+{
+    "image": "santorini.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 4
+    },
+    "seeds": ["0xFF6D8EB4", "0xFFF0E4CB", "0xFFDEDDE4"]
+},
+{
+    "image": "santorini.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF6D8EB4"]
+},
+{
+    "image": "tree.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 4
+    },
+    "seeds": ["0xFFD3DE27", "0xFF5E97E9", "0xFF221816", "0xFFB6C6C1"]
+},
+{
+    "image": "tree.jpg",
+    "settings": {
+        "max_colors": 128,
+        "desired_count": 1
+    },
+    "seeds": ["0xFFD3DE27"]
+},
+{
+    "image": "tree.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 4
+    },
+    "seeds": ["0xFFF2F62A", "0xFF6E97E5", "0xFF484036", "0xFF271E1F"]
+},
+{
+    "image": "tree.jpg",
+    "settings": {
+        "max_colors": 32,
+        "desired_count": 1
+    },
+    "seeds": ["0xFFF2F62A"]
+},
+{
+    "image": "tree.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 4
+    },
+    "seeds": ["0xFFF0F529", "0xFF6B94CC", "0xFF959E8E"]
+},
+{
+    "image": "tree.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 1
+    },
+    "seeds": ["0xFFF0F529"]
+}
+]

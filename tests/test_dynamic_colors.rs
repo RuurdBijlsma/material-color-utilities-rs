@@ -168,7 +168,7 @@ fn run_reference_test(path: &str, spec: SpecVersion, filter_role: Option<&str>) 
 #[test]
 fn test_material_schemes_against_reference() -> Result<()> {
     run_reference_test(
-        "tests/reference_schemes_large.json",
+        "tests/assets/json/reference_schemes_large.json",
         SpecVersion::Spec2026,
         None,
     )
@@ -177,7 +177,7 @@ fn test_material_schemes_against_reference() -> Result<()> {
 #[test]
 fn test_single_failing_color() -> Result<()> {
     run_reference_test(
-        "tests/reference_schemes_single.json",
+        "tests/assets/json/reference_schemes_single.json",
         SpecVersion::Spec2026,
         Some("on_primary_container"),
     )
