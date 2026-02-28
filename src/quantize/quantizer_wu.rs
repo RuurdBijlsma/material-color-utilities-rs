@@ -18,6 +18,7 @@ use crate::quantize::quantizer::{Quantizer, QuantizerResult};
 use crate::quantize::quantizer_map::QuantizerMap;
 use crate::utils::color_utils::Argb;
 use std::collections::HashMap;
+use indexmap::IndexMap;
 
 // A histogram of all the input colors is constructed. It has the shape of a cube. The cube
 // would be too large if it contained all 16 million colors: historical best practice is to use
@@ -58,7 +59,7 @@ impl QuantizerWu {
         Self::default()
     }
 
-    fn construct_histogram(&mut self, pixels: &HashMap<Argb, u32>) {
+    fn construct_histogram(&mut self, pixels: &IndexMap<Argb, u32>) {
         self.weights.fill(0);
         self.moments_r.fill(0);
         self.moments_g.fill(0);
@@ -491,7 +492,7 @@ impl Quantizer for QuantizerWu {
         let create_boxes_result = self.create_boxes(max_colors);
         let colors = self.create_result(create_boxes_result.result_count as usize);
 
-        let mut result_map = HashMap::new();
+        let mut result_map = IndexMap::new();
         for color in colors {
             result_map.insert(color, 0);
         }

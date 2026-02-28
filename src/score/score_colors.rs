@@ -18,6 +18,7 @@ use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
 use std::collections::HashMap;
+use indexmap::IndexMap;
 
 struct ScoredHct {
     hct: Hct,
@@ -40,19 +41,19 @@ impl Score {
     const CUTOFF_EXCITED_PROPORTION: f64 = 0.01;
 
     #[must_use]
-    pub fn score(colors_to_population: &HashMap<Argb, u32>) -> Vec<Argb> {
+    pub fn score(colors_to_population: &IndexMap<Argb, u32>) -> Vec<Argb> {
         // Fallback color is Google Blue.
         Self::score_with_options(colors_to_population, 4, Argb(0xff4285f4), true)
     }
 
     #[must_use]
-    pub fn score_desired(colors_to_population: &HashMap<Argb, u32>, desired: usize) -> Vec<Argb> {
+    pub fn score_desired(colors_to_population: &IndexMap<Argb, u32>, desired: usize) -> Vec<Argb> {
         Self::score_with_options(colors_to_population, desired, Argb(0xff4285f4), true)
     }
 
     #[must_use]
     pub fn score_fallback(
-        colors_to_population: &HashMap<Argb, u32>,
+        colors_to_population: &IndexMap<Argb, u32>,
         desired: usize,
         fallback_color_argb: Argb,
     ) -> Vec<Argb> {
@@ -77,7 +78,7 @@ impl Score {
     /// input colors were not suitable for a theme, a default fallback color will be provided.
     #[must_use]
     pub fn score_with_options(
-        colors_to_population: &HashMap<Argb, u32>,
+        colors_to_population: &IndexMap<Argb, u32>,
         desired: usize,
         fallback_color_argb: Argb,
         filter: bool,
@@ -184,7 +185,7 @@ mod tests {
 
     #[test]
     fn test_score_default() {
-        let colors = HashMap::new();
+        let colors = IndexMap::new();
         let fallback = Argb(0xff4285f4);
         let result = Score::score(&colors);
         assert_eq!(result, vec![fallback]);
@@ -192,7 +193,7 @@ mod tests {
 
     #[test]
     fn test_score_empty() {
-        let colors = HashMap::new();
+        let colors = IndexMap::new();
         let fallback = Argb(0xff4285f4);
         let result = Score::score_with_options(&colors, 4, fallback, true);
         assert_eq!(result, vec![fallback]);
@@ -200,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_score_red() {
-        let mut colors = HashMap::new();
+        let mut colors = IndexMap::new();
         colors.insert(Argb(0xffff0000), 100);
         let fallback = Argb(0xff4285f4);
         let result = Score::score_with_options(&colors, 4, fallback, true);
@@ -210,7 +211,7 @@ mod tests {
 
     #[test]
     fn test_score_ranked() {
-        let mut colors = HashMap::new();
+        let mut colors = IndexMap::new();
         colors.insert(Argb(0xFFCCDDCC), 50);
         colors.insert(Argb(0xff00DD88), 50);
         colors.insert(Argb(0xFFCCDDEE), 50);
@@ -221,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_score_filtering() {
-        let mut colors = HashMap::new();
+        let mut colors = IndexMap::new();
         // Low chroma color
         colors.insert(Argb(0xff111111), 100);
         let fallback = Argb(0xff4285f4);

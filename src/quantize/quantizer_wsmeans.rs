@@ -18,6 +18,7 @@ use crate::quantize::point_provider::PointProvider;
 use crate::quantize::point_provider_lab::PointProviderLab;
 use crate::utils::color_utils::Argb;
 use std::collections::HashMap;
+use indexmap::IndexMap;
 
 #[derive(Clone, Copy)]
 struct Distance {
@@ -64,9 +65,9 @@ impl QuantizerWsmeans {
         input_pixels: &[Argb],
         starting_clusters: &[Argb],
         max_colors: usize,
-    ) -> HashMap<Argb, u32> {
+    ) -> IndexMap<Argb, u32> {
         let mut random = Random::new(0x42688);
-        let mut pixel_to_count = HashMap::new();
+        let mut pixel_to_count = IndexMap::new();
         let mut points = Vec::with_capacity(input_pixels.len());
         let mut pixels = Vec::with_capacity(input_pixels.len());
         let point_provider = PointProviderLab;
@@ -209,7 +210,7 @@ impl QuantizerWsmeans {
             }
         }
 
-        let mut argb_to_population = HashMap::new();
+        let mut argb_to_population = IndexMap::new();
         for i in 0..cluster_count {
             let count = pixel_count_sums[i];
             if count == 0 {

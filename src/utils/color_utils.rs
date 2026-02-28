@@ -13,12 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+use std::fmt;
 use super::math_utils::MathUtils;
 
 /// A color in the ARGB color space.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Argb(pub u32);
+
+impl fmt::Debug for Argb {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // write!(
+        //     f,
+        //     "Argb(#{:02X}{:02X}{:02X})",
+        //     self.red(),
+        //     self.green(),
+        //     self.blue()
+        // )
+        write!(
+            f,
+            "{}",
+            self.0 as i32
+        )
+    }
+}
 
 /// A color in the L*a*b* color space.
 #[derive(Debug, Clone, Copy, PartialEq)]

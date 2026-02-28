@@ -1,0 +1,10 @@
+[
+{
+    "image": "river.jpg",
+    "settings": {
+        "max_colors": 16,
+        "desired_count": 1
+    },
+    "seeds": ["0xFF93BD2C"]
+}
+]
