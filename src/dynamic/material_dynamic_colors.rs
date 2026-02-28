@@ -21,7 +21,7 @@ impl MaterialDynamicColors {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            color_spec: ColorSpecs::get(SpecVersion::Spec2026),
+            color_spec: ColorSpecs::get(SpecVersion::Spec2026).call(),
         }
     }
 
@@ -29,7 +29,7 @@ impl MaterialDynamicColors {
     #[must_use]
     pub fn new_with_spec(spec_version: SpecVersion) -> Self {
         Self {
-            color_spec: ColorSpecs::get(spec_version),
+            color_spec: ColorSpecs::get(spec_version).call(),
         }
     }
 
@@ -450,7 +450,7 @@ mod tests {
         use crate::dynamic::color_specs::ColorSpecs;
 
         let mdc = MaterialDynamicColors {
-            color_spec: ColorSpecs::get(SpecVersion::Spec2021),
+            color_spec: ColorSpecs::get(SpecVersion::Spec2021).call(),
         };
 
         // Ensure all colors resolve to correct count, including options that might be None.

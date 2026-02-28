@@ -213,7 +213,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(move |_s| {
-                    Some(ColorSpecs::get(override_spec).background())
+                    Some(ColorSpecs::get(override_spec).call().background())
                 })),
                 Some(Arc::new(|s| if s.is_dark { 90.0 } else { 10.0 })),
                 None,
@@ -410,7 +410,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| if s.is_dark { 90.0 } else { 10.0 })),
                 None,
@@ -446,7 +446,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| if s.is_dark { 80.0 } else { 30.0 })),
                 None,
@@ -482,7 +482,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).inverse_surface())
+                    Some(ColorSpecs::get(s.spec_version).call().inverse_surface())
                 })),
                 Some(Arc::new(|s| if s.is_dark { 20.0 } else { 95.0 })),
                 None,
@@ -501,7 +501,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| if s.is_dark { 60.0 } else { 50.0 })),
                 None,
@@ -520,7 +520,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| if s.is_dark { 30.0 } else { 80.0 })),
                 None,
@@ -594,7 +594,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_monochrome(s) {
@@ -608,7 +608,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.primary_container(),
                         spec.primary(),
@@ -635,7 +635,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary())
+                    Some(ColorSpecs::get(s.spec_version).call().primary())
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_monochrome(s) {
@@ -662,7 +662,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_fidelity(s) {
@@ -678,7 +678,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.primary_container(),
                         spec.primary(),
@@ -702,12 +702,12 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(move |_s| {
-                    Some(ColorSpecs::get(override_spec[0]).primary_container())
+                    Some(ColorSpecs::get(override_spec[0]).call().primary_container())
                 })),
                 Some(Arc::new(move |s| {
                     if Self::is_fidelity(s) {
                         // make sure it uses the tone getter from DynamicColor, not the get_tone function on ColorSpec
-                        let pc = ColorSpecs::get(override_spec[0]).primary_container();
+                        let pc = ColorSpecs::get(override_spec[0]).call().primary_container();
                         let pc_raw_tone = (pc.tone)(s);
                         DynamicColor::foreground_tone(pc_raw_tone, 4.5)
                     } else if Self::is_monochrome(s) {
@@ -734,7 +734,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).inverse_surface())
+                    Some(ColorSpecs::get(s.spec_version).call().inverse_surface())
                 })),
                 Some(Arc::new(|s| if s.is_dark { 40.0 } else { 80.0 })),
                 None,
@@ -757,13 +757,13 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.secondary_container(),
                         spec.secondary(),
@@ -790,7 +790,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary())
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_monochrome(s) {
@@ -817,7 +817,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     let initial = if s.is_dark { 30.0 } else { 90.0 };
@@ -837,7 +837,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.secondary_container(),
                         spec.secondary(),
@@ -861,7 +861,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_container())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_container())
                 })),
                 Some(Arc::new(move |s| {
                     if Self::is_monochrome(s) {
@@ -869,7 +869,7 @@ impl ColorSpec for ColorSpec2021 {
                     } else if !Self::is_fidelity(s) {
                         if s.is_dark { 90.0 } else { 30.0 }
                     } else {
-                        let sc = ColorSpecs::get(override_spec[0]).secondary_container();
+                        let sc = ColorSpecs::get(override_spec[0]).call().secondary_container();
                         let sc_raw_tone = (sc.tone)(s);
                         DynamicColor::foreground_tone(sc_raw_tone, 4.5)
                     }
@@ -894,7 +894,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_monochrome(s) {
@@ -908,7 +908,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.tertiary_container(),
                         spec.tertiary(),
@@ -935,7 +935,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary())
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_monochrome(s) {
@@ -962,7 +962,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_monochrome(s) {
@@ -977,7 +977,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.tertiary_container(),
                         spec.tertiary(),
@@ -1001,7 +1001,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_container())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_container())
                 })),
                 Some(Arc::new(move |s| {
                     if Self::is_monochrome(s) {
@@ -1009,7 +1009,7 @@ impl ColorSpec for ColorSpec2021 {
                     } else if !Self::is_fidelity(s) {
                         if s.is_dark { 90.0 } else { 30.0 }
                     } else {
-                        let tc = ColorSpecs::get(override_spec[0]).tertiary_container();
+                        let tc = ColorSpecs::get(override_spec[0]).call().tertiary_container();
                         let tc_raw_tone = (tc.tone)(s);
                         DynamicColor::foreground_tone(tc_raw_tone, 4.5)
                     }
@@ -1034,13 +1034,13 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| if s.is_dark { 80.0 } else { 40.0 })),
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 7.0)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.error_container(),
                         spec.error(),
@@ -1066,7 +1066,7 @@ impl ColorSpec for ColorSpec2021 {
                 Arc::new(|s| s.error_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).error()))),
+                Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).call().error()))),
                 Some(Arc::new(|s| if s.is_dark { 20.0 } else { 100.0 })),
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
@@ -1084,13 +1084,13 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| if s.is_dark { 30.0 } else { 90.0 })),
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.error_container(),
                         spec.error(),
@@ -1113,7 +1113,7 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).error_container())
+                    Some(ColorSpecs::get(s.spec_version).call().error_container())
                 })),
                 Some(Arc::new(|s| {
                     if Self::is_monochrome(s) {
@@ -1144,7 +1144,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 40.0 } else { 90.0 },
@@ -1152,7 +1152,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.primary_fixed(),
                         spec.primary_fixed_dim(),
@@ -1175,7 +1175,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 30.0 } else { 80.0 },
@@ -1183,7 +1183,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.primary_fixed(),
                         spec.primary_fixed_dim(),
@@ -1206,13 +1206,13 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 100.0 } else { 10.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed())
                 })),
                 Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
                 None,
@@ -1229,13 +1229,13 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 90.0 } else { 30.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed())
                 })),
                 Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
                 None,
@@ -1252,7 +1252,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 80.0 } else { 90.0 },
@@ -1260,7 +1260,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.secondary_fixed(),
                         spec.secondary_fixed_dim(),
@@ -1283,7 +1283,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 70.0 } else { 80.0 },
@@ -1291,7 +1291,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.secondary_fixed(),
                         spec.secondary_fixed_dim(),
@@ -1314,11 +1314,11 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
                 })),
                 Some(Arc::new(|_| 10.0)),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed())
                 })),
                 Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
                 None,
@@ -1335,13 +1335,13 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 25.0 } else { 30.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed())
                 })),
                 Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
                 None,
@@ -1358,7 +1358,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 40.0 } else { 90.0 },
@@ -1366,7 +1366,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.tertiary_fixed(),
                         spec.tertiary_fixed_dim(),
@@ -1389,7 +1389,7 @@ impl ColorSpec for ColorSpec2021 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 30.0 } else { 80.0 },
@@ -1397,7 +1397,7 @@ impl ColorSpec for ColorSpec2021 {
                 None,
                 Some(Arc::new(|_| Some(ContrastCurve::new(1.0, 1.0, 3.0, 4.5)))),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.tertiary_fixed(),
                         spec.tertiary_fixed_dim(),
@@ -1420,13 +1420,13 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 100.0 } else { 10.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed())
                 })),
                 Some(Arc::new(|_| Some(ContrastCurve::new(4.5, 7.0, 11.0, 21.0)))),
                 None,
@@ -1443,13 +1443,13 @@ impl ColorSpec for ColorSpec2021 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
                 })),
                 Some(Arc::new(
                     |s| if Self::is_monochrome(s) { 90.0 } else { 30.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed())
                 })),
                 Some(Arc::new(|_| Some(ContrastCurve::new(3.0, 4.5, 7.0, 11.0)))),
                 None,

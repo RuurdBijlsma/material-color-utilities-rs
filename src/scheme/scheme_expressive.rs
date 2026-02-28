@@ -44,7 +44,7 @@ impl SchemeExpressive {
         spec_version: SpecVersion,
         platform: Platform,
     ) -> DynamicScheme {
-        let spec = ColorSpecs::get(spec_version);
+        let spec = ColorSpecs::get(spec_version).call();
         let source_color_hct = &source_color_hct_list[0];
         let mut scheme = DynamicScheme::new_with_platform_and_spec(
             *source_color_hct,

@@ -131,7 +131,7 @@ impl ColorSpec for ColorSpec2025 {
     }
 
     fn highest_surface(&self, scheme: &DynamicScheme) -> Arc<DynamicColor> {
-        let spec = ColorSpecs::get(scheme.spec_version);
+        let spec = ColorSpecs::get(scheme.spec_version).call();
         if scheme.is_dark {
             spec.surface_bright()
         } else {
@@ -177,12 +177,12 @@ impl ColorSpec for ColorSpec2025 {
         crate::cached_color!(self.override_spec, {
             let color2025 = DynamicColor::new(
                 "background".to_string(),
-                Arc::new(|s| ColorSpecs::get(s.spec_version).surface().palette.clone()(s)),
+                Arc::new(|s| ColorSpecs::get(s.spec_version).call().surface().palette.clone()(s)),
                 true,
                 None,
                 None,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).surface().get_tone(s)
+                    ColorSpecs::get(s.spec_version).call().surface().get_tone(s)
                 })),
                 None,
                 None,
@@ -197,13 +197,13 @@ impl ColorSpec for ColorSpec2025 {
 
     fn on_background(&self) -> Arc<DynamicColor> {
         crate::cached_color!(self.override_spec, {
-            // Technically, every use of ColorSpecs::get(s.spec_version) should instead use the override spec,
+            // Technically, every use of ColorSpecs::get(s.spec_version).call() should instead use the override spec,
             // but I'll just fix it where the issue comes up for now.
             let override_spec = [self.override_spec; 1];
             let color2025 = DynamicColor::new(
                 "on_background".to_string(),
                 Arc::new(move |s| {
-                    ColorSpecs::get(override_spec[0])
+                    ColorSpecs::get(override_spec[0]).call()
                         .on_surface()
                         .palette
                         .clone()(s)
@@ -213,14 +213,14 @@ impl ColorSpec for ColorSpec2025 {
                 // because if on_background is called via color_spec_2026,
                 // then it should use the on_surface from 2026, which does have a chroma multiplier.
                 Some(Arc::new(move |s| {
-                    ColorSpecs::get(override_spec[0])
+                    ColorSpecs::get(override_spec[0]).call()
                         .on_surface()
                         .chroma_multiplier
                         .as_ref()
                         .map_or(1.0, |f| f(s))
                 })),
                 Some(Arc::new(move |s| {
-                    ColorSpecs::get(override_spec[0])
+                    ColorSpecs::get(override_spec[0]).call()
                         .on_surface()
                         .background
                         .as_ref()
@@ -230,12 +230,12 @@ impl ColorSpec for ColorSpec2025 {
                     if s.platform == Platform::Watch {
                         100.0
                     } else {
-                        ColorSpecs::get(override_spec[0]).on_surface().get_tone(s)
+                        ColorSpecs::get(override_spec[0]).call().on_surface().get_tone(s)
                     }
                 })),
                 None,
                 Some(Arc::new(move |s| {
-                    ColorSpecs::get(override_spec[0])
+                    ColorSpecs::get(override_spec[0]).call()
                         .on_surface()
                         .contrast_curve
                         .as_ref()
@@ -589,13 +589,13 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Vibrant {
                         Self::t_max_c(&s.neutral_palette, 0.0, 100.0, 1.1)
                     } else {
-                        ColorSpecs::get(s.spec_version)
+                        ColorSpecs::get(s.spec_version).call()
                             .highest_surface(s)
                             .get_tone(s)
                     }
@@ -624,14 +624,14 @@ impl ColorSpec for ColorSpec2025 {
             let color2025 = DynamicColor::new(
                 "surface_variant".to_string(),
                 Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .surface_container_highest()
                         .palette
                         .clone()(s)
                 }),
                 true,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .surface_container_highest()
                         .chroma_multiplier
                         .as_ref()
@@ -639,7 +639,7 @@ impl ColorSpec for ColorSpec2025 {
                 })),
                 None,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .surface_container_highest()
                         .get_tone(s)
                 })),
@@ -679,7 +679,7 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 None,
                 None,
@@ -727,7 +727,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).inverse_surface())
+                    Some(ColorSpecs::get(s.spec_version).call().inverse_surface())
                 })),
                 None,
                 None,
@@ -766,7 +766,7 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 None,
                 None,
@@ -811,7 +811,7 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 None,
                 None,
@@ -835,10 +835,10 @@ impl ColorSpec for ColorSpec2025 {
         crate::cached_color!(self.override_spec, {
             let color2025 = DynamicColor::new(
                 "surface_tint".to_string(),
-                Arc::new(|s| ColorSpecs::get(s.spec_version).primary().palette.clone()(s)),
+                Arc::new(|s| ColorSpecs::get(s.spec_version).call().primary().palette.clone()(s)),
                 true,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .primary()
                         .chroma_multiplier
                         .as_ref()
@@ -846,7 +846,7 @@ impl ColorSpec for ColorSpec2025 {
                 })),
                 None,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).primary().get_tone(s)
+                    ColorSpecs::get(s.spec_version).call().primary().get_tone(s)
                 })),
                 None,
                 None,
@@ -869,7 +869,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| match s.variant {
                     Variant::Neutral => {
@@ -927,7 +927,7 @@ impl ColorSpec for ColorSpec2025 {
                     }))
                 })),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Phone {
                         Some(ToneDeltaPair::new(
                             spec.primary_container(),
@@ -958,7 +958,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                    Some(ColorSpecs::get(s.spec_version).call().surface_container_high())
                 })),
                 Some(Arc::new(|s| match s.variant {
                     Variant::Neutral => 85.0,
@@ -970,7 +970,7 @@ impl ColorSpec for ColorSpec2025 {
                 Some(Arc::new(move |_s| {
                     // Workaround because we don't have inheritance:
                     // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                    let spec = ColorSpecs::get(override_spec);
+                    let spec = ColorSpecs::get(override_spec).call();
                     let spec_primary_dim = spec.primary_dim()?;
                     Some(ToneDeltaPair::new(
                         spec_primary_dim,
@@ -994,7 +994,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Phone {
                         Some(spec.primary())
                     } else {
@@ -1028,7 +1028,7 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                     } else {
                         None
                     }
@@ -1088,7 +1088,7 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Watch {
                         Some(ToneDeltaPair::new(
                             spec.primary_container(),
@@ -1118,7 +1118,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_container())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_container())
                 })),
                 None,
                 None,
@@ -1146,7 +1146,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).inverse_surface())
+                    Some(ColorSpecs::get(s.spec_version).call().inverse_surface())
                 })),
                 Some(Arc::new(|s| {
                     Self::t_max_c(&s.primary_palette, 0.0, 100.0, 1.0)
@@ -1178,7 +1178,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Watch {
@@ -1222,7 +1222,7 @@ impl ColorSpec for ColorSpec2025 {
                 })),
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        let spec = ColorSpecs::get(s.spec_version);
+                        let spec = ColorSpecs::get(s.spec_version).call();
                         Some(ToneDeltaPair::new(
                             spec.secondary_container(),
                             spec.secondary(),
@@ -1252,7 +1252,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                    Some(ColorSpecs::get(s.spec_version).call().surface_container_high())
                 })),
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Neutral {
@@ -1266,7 +1266,7 @@ impl ColorSpec for ColorSpec2025 {
                 Some(Arc::new(move |_s| {
                     // Workaround because we don't have inheritance:
                     // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                    let spec = ColorSpecs::get(override_spec);
+                    let spec = ColorSpecs::get(override_spec).call();
                     Some(ToneDeltaPair::new(
                         spec.secondary_dim()?,
                         spec.secondary(),
@@ -1289,7 +1289,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Phone {
                         Some(spec.secondary())
                     } else {
@@ -1323,7 +1323,7 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                     } else {
                         None
                     }
@@ -1366,7 +1366,7 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Watch {
                         Some(ToneDeltaPair::new(
                             spec.secondary_container(),
@@ -1396,7 +1396,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_container())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_container())
                 })),
                 None,
                 None,
@@ -1426,7 +1426,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Watch {
@@ -1467,7 +1467,7 @@ impl ColorSpec for ColorSpec2025 {
                 })),
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        let spec = ColorSpecs::get(s.spec_version);
+                        let spec = ColorSpecs::get(s.spec_version).call();
                         Some(ToneDeltaPair::new(
                             spec.tertiary_container(),
                             spec.tertiary(),
@@ -1497,7 +1497,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                    Some(ColorSpecs::get(s.spec_version).call().surface_container_high())
                 })),
                 Some(Arc::new(|s| {
                     if s.variant == Variant::TonalSpot {
@@ -1511,7 +1511,7 @@ impl ColorSpec for ColorSpec2025 {
                 Some(Arc::new(move |_s| {
                     // Workaround because we don't have inheritance:
                     // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                    let spec = ColorSpecs::get(override_spec);
+                    let spec = ColorSpecs::get(override_spec).call();
                     Some(ToneDeltaPair::new(
                         spec.tertiary_dim()?,
                         spec.tertiary(),
@@ -1534,7 +1534,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Phone {
                         Some(spec.tertiary())
                     } else {
@@ -1568,7 +1568,7 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                     } else {
                         None
                     }
@@ -1624,7 +1624,7 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Watch {
                         Some(ToneDeltaPair::new(
                             spec.tertiary_container(),
@@ -1654,7 +1654,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_container())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_container())
                 })),
                 None,
                 None,
@@ -1684,7 +1684,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
@@ -1706,7 +1706,7 @@ impl ColorSpec for ColorSpec2025 {
                     }))
                 })),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Phone {
                         Some(ToneDeltaPair::new(
                             spec.error_container(),
@@ -1737,7 +1737,7 @@ impl ColorSpec for ColorSpec2025 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).surface_container_high())
+                    Some(ColorSpecs::get(s.spec_version).call().surface_container_high())
                 })),
                 Some(Arc::new(|s| Self::t_min_c(&s.error_palette, 0.0, 100.0))),
                 None,
@@ -1745,7 +1745,7 @@ impl ColorSpec for ColorSpec2025 {
                 Some(Arc::new(move |_s| {
                     // Workaround because we don't have inheritance:
                     // Set the spec to override_spec, so we mimic inheritance behaviour where it uses the field of the correct ColorSpec version (if called from 2026 spec, it uses 2026 fields)
-                    let spec = ColorSpecs::get(override_spec);
+                    let spec = ColorSpecs::get(override_spec).call();
                     Some(ToneDeltaPair::new(
                         spec.error_dim()?,
                         spec.error(),
@@ -1768,7 +1768,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Phone {
                         Some(spec.error())
                     } else {
@@ -1802,7 +1802,7 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                     } else {
                         None
                     }
@@ -1825,7 +1825,7 @@ impl ColorSpec for ColorSpec2025 {
                     }
                 })),
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     if s.platform == Platform::Watch {
                         Some(ToneDeltaPair::new(
                             spec.error_container(),
@@ -1855,7 +1855,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).error_container())
+                    Some(ColorSpecs::get(s.spec_version).call().error_container())
                 })),
                 None,
                 None,
@@ -1886,14 +1886,14 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                     } else {
                         None
                     }
                 })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .primary_container()
                         .get_tone(&temp_s)
                 })),
@@ -1923,12 +1923,12 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 None,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).primary_fixed().get_tone(s)
+                    ColorSpecs::get(s.spec_version).call().primary_fixed().get_tone(s)
                 })),
                 None,
                 None,
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.primary_fixed_dim(),
                         spec.primary_fixed(),
@@ -1954,7 +1954,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
                 })),
                 None,
                 None,
@@ -1976,7 +1976,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
                 })),
                 None,
                 None,
@@ -1999,14 +1999,14 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                     } else {
                         None
                     }
                 })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .secondary_container()
                         .get_tone(&temp_s)
                 })),
@@ -2036,14 +2036,14 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 None,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .secondary_fixed()
                         .get_tone(s)
                 })),
                 None,
                 None,
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.secondary_fixed_dim(),
                         spec.secondary_fixed(),
@@ -2069,7 +2069,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
                 })),
                 None,
                 None,
@@ -2091,7 +2091,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
                 })),
                 None,
                 None,
@@ -2114,14 +2114,14 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 Some(Arc::new(|s| {
                     if s.platform == Platform::Phone {
-                        Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                     } else {
                         None
                     }
                 })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .tertiary_container()
                         .get_tone(&temp_s)
                 })),
@@ -2151,12 +2151,12 @@ impl ColorSpec for ColorSpec2025 {
                 None,
                 None,
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).tertiary_fixed().get_tone(s)
+                    ColorSpecs::get(s.spec_version).call().tertiary_fixed().get_tone(s)
                 })),
                 None,
                 None,
                 Some(Arc::new(|s| {
-                    let spec = ColorSpecs::get(s.spec_version);
+                    let spec = ColorSpecs::get(s.spec_version).call();
                     Some(ToneDeltaPair::new(
                         spec.tertiary_fixed_dim(),
                         spec.tertiary_fixed(),
@@ -2182,7 +2182,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
                 })),
                 None,
                 None,
@@ -2204,7 +2204,7 @@ impl ColorSpec for ColorSpec2025 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
                 })),
                 None,
                 None,

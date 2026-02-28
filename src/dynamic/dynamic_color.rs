@@ -126,11 +126,11 @@ impl DynamicColor {
     }
 
     pub fn get_hct(&self, scheme: &DynamicScheme) -> Hct {
-        ColorSpecs::get(scheme.spec_version).get_hct(scheme, self)
+        ColorSpecs::get(scheme.spec_version).call().get_hct(scheme, self)
     }
 
     pub fn get_tone(&self, scheme: &DynamicScheme) -> f64 {
-        ColorSpecs::get(scheme.spec_version).get_tone(scheme, self)
+        ColorSpecs::get(scheme.spec_version).call().get_tone(scheme, self)
     }
 
     /// Create a `DynamicColor` from an ARGB hex code.

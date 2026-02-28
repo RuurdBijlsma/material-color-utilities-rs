@@ -383,7 +383,7 @@ impl ColorSpec for ColorSpec2026 {
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 None,
                 None,
@@ -413,7 +413,7 @@ impl ColorSpec for ColorSpec2026 {
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 None,
                 None,
@@ -459,7 +459,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).inverse_surface())
+                    Some(ColorSpecs::get(s.spec_version).call().inverse_surface())
                 })),
                 None,
                 None,
@@ -483,7 +483,7 @@ impl ColorSpec for ColorSpec2026 {
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 None,
                 None,
@@ -507,7 +507,7 @@ impl ColorSpec for ColorSpec2026 {
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 None,
                 None,
@@ -541,7 +541,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.source_color_hct().chroma() <= 12.0 {
@@ -573,7 +573,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary())
+                    Some(ColorSpecs::get(s.spec_version).call().primary())
                 })),
                 None,
                 None,
@@ -596,7 +596,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(move |s| {
-                    Some(ColorSpecs::get(override_spec[0]).highest_surface(s))
+                    Some(ColorSpecs::get(override_spec[0]).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if !s.is_dark && s.source_color_hct().chroma() <= 12.0 {
@@ -617,8 +617,8 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 Some(Arc::new(move |_s| {
                     Some(ToneDeltaPair::new(
-                        ColorSpecs::get(override_spec[0]).primary_container(),
-                        ColorSpecs::get(override_spec[0]).primary(),
+                        ColorSpecs::get(override_spec[0]).call().primary_container(),
+                        ColorSpecs::get(override_spec[0]).call().primary(),
                         5.0,
                         TonePolarity::RelativeLighter,
                         true,
@@ -642,7 +642,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(move |_s| {
-                    Some(ColorSpecs::get(override_spec[0]).primary_container())
+                    Some(ColorSpecs::get(override_spec[0]).call().primary_container())
                 })),
                 None,
                 None,
@@ -670,11 +670,11 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .primary_container()
                         .get_tone(&temp_s)
                 })),
@@ -703,10 +703,10 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).primary_fixed().get_tone(s)
+                    ColorSpecs::get(s.spec_version).call().primary_fixed().get_tone(s)
                 })),
                 None,
                 Some(Arc::new(|s| {
@@ -718,8 +718,8 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
-                        ColorSpecs::get(s.spec_version).primary_fixed_dim(),
-                        ColorSpecs::get(s.spec_version).primary_fixed(),
+                        ColorSpecs::get(s.spec_version).call().primary_fixed_dim(),
+                        ColorSpecs::get(s.spec_version).call().primary_fixed(),
                         5.0,
                         TonePolarity::Darker,
                         true,
@@ -742,7 +742,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
                 })),
                 None,
                 None,
@@ -764,7 +764,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).primary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
                 })),
                 None,
                 None,
@@ -788,7 +788,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.is_dark {
@@ -820,7 +820,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary())
                 })),
                 None,
                 None,
@@ -842,7 +842,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.is_dark {
@@ -861,8 +861,8 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
-                        ColorSpecs::get(s.spec_version).secondary_container(),
-                        ColorSpecs::get(s.spec_version).secondary(),
+                        ColorSpecs::get(s.spec_version).call().secondary_container(),
+                        ColorSpecs::get(s.spec_version).call().secondary(),
                         5.0,
                         TonePolarity::RelativeLighter,
                         true,
@@ -885,7 +885,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_container())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_container())
                 })),
                 None,
                 None,
@@ -907,11 +907,11 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .secondary_container()
                         .get_tone(&temp_s)
                 })),
@@ -940,10 +940,10 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .secondary_fixed()
                         .get_tone(s)
                 })),
@@ -957,8 +957,8 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
-                        ColorSpecs::get(s.spec_version).secondary_fixed_dim(),
-                        ColorSpecs::get(s.spec_version).secondary_fixed(),
+                        ColorSpecs::get(s.spec_version).call().secondary_fixed_dim(),
+                        ColorSpecs::get(s.spec_version).call().secondary_fixed(),
                         5.0,
                         TonePolarity::Darker,
                         true,
@@ -981,7 +981,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
                 })),
                 None,
                 None,
@@ -1003,7 +1003,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).secondary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
                 })),
                 None,
                 None,
@@ -1027,7 +1027,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     s.source_color_hct_list
@@ -1053,7 +1053,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary())
                 })),
                 None,
                 None,
@@ -1075,7 +1075,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     let sec_hct = s
@@ -1098,8 +1098,8 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
-                        ColorSpecs::get(s.spec_version).tertiary_container(),
-                        ColorSpecs::get(s.spec_version).tertiary(),
+                        ColorSpecs::get(s.spec_version).call().tertiary_container(),
+                        ColorSpecs::get(s.spec_version).call().tertiary(),
                         5.0,
                         TonePolarity::RelativeLighter,
                         true,
@@ -1122,7 +1122,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_container())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_container())
                 })),
                 None,
                 None,
@@ -1144,11 +1144,11 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version)
+                    ColorSpecs::get(s.spec_version).call()
                         .tertiary_container()
                         .get_tone(&temp_s)
                 })),
@@ -1177,10 +1177,10 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).tertiary_fixed().get_tone(s)
+                    ColorSpecs::get(s.spec_version).call().tertiary_fixed().get_tone(s)
                 })),
                 None,
                 Some(Arc::new(|s| {
@@ -1192,8 +1192,8 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
-                        ColorSpecs::get(s.spec_version).tertiary_fixed_dim(),
-                        ColorSpecs::get(s.spec_version).tertiary_fixed(),
+                        ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim(),
+                        ColorSpecs::get(s.spec_version).call().tertiary_fixed(),
                         5.0,
                         TonePolarity::Darker,
                         true,
@@ -1216,7 +1216,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
                 })),
                 None,
                 None,
@@ -1238,7 +1238,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).tertiary_fixed_dim())
+                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
                 })),
                 None,
                 None,
@@ -1262,7 +1262,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     Self::t_max_c(&s.error_palette, 0.0, 100.0, 1.0)
@@ -1285,7 +1285,7 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.error_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).error()))),
+                Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).call().error()))),
                 None,
                 None,
                 Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
@@ -1306,7 +1306,7 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).highest_surface(s))
+                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
                 })),
                 Some(Arc::new(|s| {
                     if s.is_dark {
@@ -1325,8 +1325,8 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
-                        ColorSpecs::get(s.spec_version).error_container(),
-                        ColorSpecs::get(s.spec_version).error(),
+                        ColorSpecs::get(s.spec_version).call().error_container(),
+                        ColorSpecs::get(s.spec_version).call().error(),
                         5.0,
                         TonePolarity::RelativeLighter,
                         true,
@@ -1349,7 +1349,7 @@ impl ColorSpec for ColorSpec2026 {
                 false,
                 None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).error_container())
+                    Some(ColorSpecs::get(s.spec_version).call().error_container())
                 })),
                 None,
                 None,
@@ -1444,7 +1444,7 @@ impl ColorSpec for ColorSpec2026 {
     }
 
     fn highest_surface(&self, scheme: &DynamicScheme) -> Arc<DynamicColor> {
-        let spec = ColorSpecs::get(scheme.spec_version);
+        let spec = ColorSpecs::get(scheme.spec_version).call();
         if scheme.is_dark {
             spec.surface_bright()
         } else {
