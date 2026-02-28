@@ -22,14 +22,13 @@ pub struct Argb(pub u32);
 
 impl fmt::Debug for Argb {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // write!(
-        //     f,
-        //     "Argb(#{:02X}{:02X}{:02X})",
-        //     self.red(),
-        //     self.green(),
-        //     self.blue()
-        // )
-        write!(f, "{}", self.0 as i32)
+        write!(
+            f,
+            "Argb(#{:02X}{:02X}{:02X})",
+            self.red(),
+            self.green(),
+            self.blue()
+        )
     }
 }
 

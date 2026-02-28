@@ -10,10 +10,26 @@
     * theme_from_image(&img, Variant..., 1.0)
     * colors_from_image(...
     * check_contrast(colorA, colorB)
-    * misschien voor alles wat een kleur accepteert een into trait accepteren ofzo (into Argb) zodat je het volgende kan
+    * misschien voor alles wat een kleur accepteert een kleur trait maken ofzo? accepteren ofzo (into Argb) zodat je het volgende kan
       sturen
         * "#ff0000"
         * Argb(0xFFFF0000)
         * Hct(...
-* code improvements
 * ✅ papaya cache (geen improvement)
+* ✅ impl display for Argb & debug
+* Score::score kan beter met bon builder, vind defaults in Score.kt
+* rename to_int to to_argb?
+* from impls maken voor kleur conversions?
+* unwrap/expect/panic/assert weghalen
+* quantize function in wsmeans neemt Argb vec als image input, misschien is dit niet efficient
+* contrast_curve get functie met match statement doen
+* bon builder voor tone_delta_pair? defaults moet je nu maar gokken
+* get_rotated_hue kotlin implementation is maybe wrong: https://aistudio.google.com/prompts/1hr5dRkSvnbzbX9zS9_F73MxclFlM4jZM
+* waarom is color_specs.rs get( met een Box?
+* Heleboel clones in color_spec_2021, kan vast beter
+* zie of ik de anonymous functies in dynamiccolor kan vervangen met een hashmap ofzo idk
+* test of de gekke COLOR_GETTERS in material_dynamic_colors.rs wel beter is dan gewoon alle kleuren teruggeven in die functie (is het sneller? hoeveel sneller?)
+* into trait voor u32->argb maken en reverseo
+* in quantizer_wsmeans: // Simple LCG to match java.util.Random behavior for reproducibility <- wtf
+* benchmark en vergelijken met kotlin code
+* tonalpallette cache bug
