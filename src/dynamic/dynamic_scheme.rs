@@ -68,12 +68,6 @@ impl std::hash::Hash for DynamicScheme {
         self.contrast_level.to_bits().hash(state);
         self.platform.hash(state);
         self.spec_version.hash(state);
-        self.primary_palette.hash(state);
-        self.secondary_palette.hash(state);
-        self.tertiary_palette.hash(state);
-        self.neutral_palette.hash(state);
-        self.neutral_variant_palette.hash(state);
-        self.error_palette.hash(state);
     }
 }
 

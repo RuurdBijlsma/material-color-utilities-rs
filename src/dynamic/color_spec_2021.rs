@@ -98,6 +98,7 @@ impl ColorSpec for ColorSpec2021 {
     // ————————————————————————————————————————————————————————————————
 
     fn primary_palette_key_color(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "primary_palette_key_color".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -110,9 +111,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn secondary_palette_key_color(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "secondary_palette_key_color".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -125,9 +128,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn tertiary_palette_key_color(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "tertiary_palette_key_color".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -140,9 +145,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn neutral_palette_key_color(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "neutral_palette_key_color".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -155,9 +162,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn neutral_variant_palette_key_color(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "neutral_variant_palette_key_color".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
@@ -170,9 +179,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn error_palette_key_color(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "error_palette_key_color".into(),
             Arc::new(|s| s.error_palette.clone()),
@@ -185,6 +196,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -192,6 +204,7 @@ impl ColorSpec for ColorSpec2021 {
     // ————————————————————————————————————————————————————————————————
 
     fn background(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "background".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -204,9 +217,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn on_background(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         let override_spec = self.override_spec;
         Arc::new(DynamicColor::new(
             "on_background".into(),
@@ -222,9 +237,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -237,9 +254,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_dim(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_dim".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -258,9 +277,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_bright(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_bright".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -279,9 +300,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_container_lowest(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_container_lowest".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -300,9 +323,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_container_low(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_container_low".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -321,9 +346,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_container".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -342,9 +369,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_container_high(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_container_high".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -363,9 +392,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_container_highest(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_container_highest".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -384,9 +415,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn on_surface(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_surface".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -401,9 +434,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_variant(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_variant".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
@@ -416,9 +451,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn on_surface_variant(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_surface_variant".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
@@ -433,9 +470,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn inverse_surface(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "inverse_surface".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -448,9 +487,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn inverse_on_surface(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "inverse_on_surface".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -465,9 +506,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn outline(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "outline".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
@@ -482,9 +525,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn outline_variant(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "outline_variant".into(),
             Arc::new(|s| s.neutral_variant_palette.clone()),
@@ -499,9 +544,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn shadow(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "shadow".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -514,9 +561,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn scrim(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "scrim".into(),
             Arc::new(|s| s.neutral_palette.clone()),
@@ -529,9 +578,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn surface_tint(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "surface_tint".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -544,6 +595,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -551,6 +603,7 @@ impl ColorSpec for ColorSpec2021 {
     // ————————————————————————————————————————————————————————————————
 
     fn primary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "primary".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -583,13 +636,17 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn primary_dim(&self) -> Option<Arc<DynamicColor>> {
+        crate::cached_color_opt!(self.override_spec, {
         None
+    })
     }
 
     fn on_primary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_primary".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -612,9 +669,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn primary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "primary_container".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -649,9 +708,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn on_primary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         let override_spec = [self.override_spec; 1];
         Arc::new(DynamicColor::new(
             "on_primary_container".into(),
@@ -680,9 +741,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn inverse_primary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "inverse_primary".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -697,6 +760,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -704,6 +768,7 @@ impl ColorSpec for ColorSpec2021 {
     // ————————————————————————————————————————————————————————————————
 
     fn secondary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "secondary".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -728,13 +793,17 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn secondary_dim(&self) -> Option<Arc<DynamicColor>> {
+        crate::cached_color_opt!(self.override_spec, {
         None
+    })
     }
 
     fn on_secondary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_secondary".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -757,9 +826,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn secondary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "secondary_container".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -798,9 +869,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn on_secondary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         let override_spec = [self.override_spec; 1];
         Arc::new(DynamicColor::new(
             "on_secondary_container".into(),
@@ -826,6 +899,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -833,6 +907,7 @@ impl ColorSpec for ColorSpec2021 {
     // ————————————————————————————————————————————————————————————————
 
     fn tertiary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "tertiary".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -865,13 +940,17 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn tertiary_dim(&self) -> Option<Arc<DynamicColor>> {
+        crate::cached_color_opt!(self.override_spec, {
         None
+    })
     }
 
     fn on_tertiary(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_tertiary".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -894,9 +973,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn tertiary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "tertiary_container".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -930,9 +1011,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn on_tertiary_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         let override_spec = [self.override_spec; 1];
         Arc::new(DynamicColor::new(
             "on_tertiary_container".into(),
@@ -958,6 +1041,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -965,6 +1049,7 @@ impl ColorSpec for ColorSpec2021 {
     // ————————————————————————————————————————————————————————————————
 
     fn error(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "error".into(),
             Arc::new(|s| s.error_palette.clone()),
@@ -989,13 +1074,17 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn error_dim(&self) -> Option<Arc<DynamicColor>> {
+        crate::cached_color_opt!(self.override_spec, {
         None
+    })
     }
 
     fn on_error(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_error".into(),
             Arc::new(|s| s.error_palette.clone()),
@@ -1008,9 +1097,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn error_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "error_container".into(),
             Arc::new(|s| s.error_palette.clone()),
@@ -1035,9 +1126,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn on_error_container(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_error_container".into(),
             Arc::new(|s| s.error_palette.clone()),
@@ -1060,6 +1153,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -1067,6 +1161,7 @@ impl ColorSpec for ColorSpec2021 {
     // ————————————————————————————————————————————————————————————————
 
     fn primary_fixed(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "primary_fixed".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -1093,9 +1188,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn primary_fixed_dim(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "primary_fixed_dim".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -1122,9 +1219,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn on_primary_fixed(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_primary_fixed".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -1143,9 +1242,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn on_primary_fixed_variant(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_primary_fixed_variant".into(),
             Arc::new(|s| s.primary_palette.clone()),
@@ -1164,9 +1265,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn secondary_fixed(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "secondary_fixed".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -1193,9 +1296,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn secondary_fixed_dim(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "secondary_fixed_dim".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -1222,9 +1327,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn on_secondary_fixed(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_secondary_fixed".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -1241,9 +1348,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn on_secondary_fixed_variant(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_secondary_fixed_variant".into(),
             Arc::new(|s| s.secondary_palette.clone()),
@@ -1262,9 +1371,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn tertiary_fixed(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "tertiary_fixed".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -1291,9 +1402,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn tertiary_fixed_dim(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "tertiary_fixed_dim".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -1320,9 +1433,11 @@ impl ColorSpec for ColorSpec2021 {
             })),
             None,
         ))
+    })
     }
 
     fn on_tertiary_fixed(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_tertiary_fixed".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -1341,9 +1456,11 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     fn on_tertiary_fixed_variant(&self) -> Arc<DynamicColor> {
+        crate::cached_color!(self.override_spec, {
         Arc::new(DynamicColor::new(
             "on_tertiary_fixed_variant".into(),
             Arc::new(|s| s.tertiary_palette.clone()),
@@ -1362,6 +1479,7 @@ impl ColorSpec for ColorSpec2021 {
             None,
             None,
         ))
+    })
     }
 
     // ————————————————————————————————————————————————————————————————

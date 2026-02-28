@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 indexmap = "2.13.0"
+papaya = "0.2.3"
 
 [dev-dependencies]
 color-eyre = "0.6.5"

@@ -17,6 +17,7 @@
 use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 
 /// A convenience class for retrieving colors that are constant in hue and chroma, but vary in tone.
 #[derive(Debug)]
@@ -28,20 +29,16 @@ pub struct TonalPalette {
     /// The key color is the first tone, starting from T50, that matches the palette's chroma.
     pub key_color: Hct,
     /// Cache that maps tone to ARGB color to avoid duplicated HCT calculation.
-    cache: [AtomicU32; 101],
+    cache: Arc<[AtomicU32; 101]>,
 }
 
 impl Clone for TonalPalette {
     fn clone(&self) -> Self {
-        let new_cache: [AtomicU32; 101] = std::array::from_fn(|_| AtomicU32::new(0));
-        for (i, item) in new_cache.iter().enumerate() {
-            new_cache[i].store(item.load(Ordering::Relaxed), Ordering::Relaxed);
-        }
         Self {
             hue: self.hue,
             chroma: self.chroma,
-            key_color: self.key_color,
-            cache: new_cache,
+            key_color: self.key_color.clone(),
+            cache: self.cache.clone(),
         }
     }
 }
@@ -66,7 +63,7 @@ impl TonalPalette {
             hue,
             chroma,
             key_color,
-            cache: std::array::from_fn(|_| AtomicU32::new(0)),
+            cache: Arc::new(std::array::from_fn(|_| AtomicU32::new(0))),
         }
     }
 

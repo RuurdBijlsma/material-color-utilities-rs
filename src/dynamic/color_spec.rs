@@ -15,12 +15,41 @@
  */
 
 use std::sync::Arc;
-
 use crate::dynamic::dynamic_color::DynamicColor;
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::variant::Variant;
 use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
+
+#[macro_export]
+macro_rules! cached_color {
+    ($spec:expr, $init:expr) => {{
+        static CACHE_2021: std::sync::OnceLock<std::sync::Arc<DynamicColor>> = std::sync::OnceLock::new();
+        static CACHE_2025: std::sync::OnceLock<std::sync::Arc<DynamicColor>> = std::sync::OnceLock::new();
+        static CACHE_2026: std::sync::OnceLock<std::sync::Arc<DynamicColor>> = std::sync::OnceLock::new();
+        
+        match $spec {
+            SpecVersion::Spec2021 => CACHE_2021.get_or_init(|| $init).clone(),
+            SpecVersion::Spec2025 => CACHE_2025.get_or_init(|| $init).clone(),
+            SpecVersion::Spec2026 => CACHE_2026.get_or_init(|| $init).clone(),
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! cached_color_opt {
+    ($spec:expr, $init:expr) => {{
+        static CACHE_2021: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> = std::sync::OnceLock::new();
+        static CACHE_2025: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> = std::sync::OnceLock::new();
+        static CACHE_2026: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> = std::sync::OnceLock::new();
+        
+        match $spec {
+            SpecVersion::Spec2021 => CACHE_2021.get_or_init(|| $init).clone(),
+            SpecVersion::Spec2025 => CACHE_2025.get_or_init(|| $init).clone(),
+            SpecVersion::Spec2026 => CACHE_2026.get_or_init(|| $init).clone(),
+        }
+    }};
+}
 
 /// All available spec versions, ordered oldest → newest.
 ///
