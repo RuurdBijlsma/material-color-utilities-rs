@@ -82,7 +82,7 @@ impl Score {
         let mut population_sum = 0.0;
 
         for (&argb, &population) in colors_to_population {
-            let hct = Hct::from_int(argb);
+            let hct = Hct::from_argb(argb);
             colors_hct.push(hct);
             let hue = hct.hue().floor() as i32;
             let sanitized_hue = MathUtils::sanitize_degrees_int(hue) as usize;
@@ -166,7 +166,7 @@ impl Score {
             return vec![fallback_color_argb];
         }
 
-        chosen_colors.into_iter().map(|h| h.to_int()).collect()
+        chosen_colors.into_iter().map(|h| h.to_argb()).collect()
     }
 }
 

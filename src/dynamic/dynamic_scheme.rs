@@ -140,7 +140,7 @@ impl DynamicScheme {
     }
 
     pub fn source_color_argb(&self) -> Argb {
-        self.source_color_hct().to_int()
+        self.source_color_hct().to_argb()
     }
 
     pub fn get_hct(&self, dynamic_color: &DynamicColor) -> Hct {
@@ -431,7 +431,7 @@ mod tests {
 
     #[test]
     fn test_get_piecewise_value() {
-        let hct = Hct::from_int(Argb(0xff0000ff)); // Blue, hue ~265
+        let hct = Hct::from_argb(Argb(0xff0000ff)); // Blue, hue ~265
         let hue_breakpoints = [0.0, 100.0, 200.0, 300.0, 360.0];
         let values = [10.0, 20.0, 30.0, 40.0];
 
@@ -444,7 +444,7 @@ mod tests {
 
     #[test]
     fn test_get_rotated_hue() {
-        let hct = Hct::from_int(Argb(0xff0000ff)); // Blue, hue ~265.8
+        let hct = Hct::from_argb(Argb(0xff0000ff)); // Blue, hue ~265.8
         let hue_breakpoints = [0.0, 100.0, 200.0, 300.0, 360.0];
         let rotations = [10.0, 20.0, -30.0, 40.0];
 

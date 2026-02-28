@@ -12,7 +12,7 @@ use std::hint::black_box;
 /// Benchmark Scheme Generation
 fn bench_scheme_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Scheme Generation");
-    let hct = Hct::from_int(Argb(0xFF4285F4));
+    let hct = Hct::from_argb(Argb(0xFF4285F4));
 
     for variant in [Variant::TonalSpot, Variant::Vibrant, Variant::Cmf] {
         group.bench_with_input(
@@ -33,7 +33,7 @@ fn bench_scheme_generation(c: &mut Criterion) {
 fn bench_color_resolution(c: &mut Criterion) {
     let mut group = c.benchmark_group("Color Resolution");
 
-    let hct = Hct::from_int(Argb(0xFF4285F4));
+    let hct = Hct::from_argb(Argb(0xFF4285F4));
 
     // Create manual schemes to test specific spec versions
     let create_scheme = |spec: SpecVersion| {
@@ -77,7 +77,7 @@ fn bench_color_resolution(c: &mut Criterion) {
 
 /// Benchmark Bulk Palette Resolution
 fn bench_bulk_resolution(c: &mut Criterion) {
-    let hct = Hct::from_int(Argb(0xFF4285F4));
+    let hct = Hct::from_argb(Argb(0xFF4285F4));
     let scheme = SchemeTonalSpot::new(hct, false, 0.0);
     let mdc = MaterialDynamicColors::new();
     let all_colors = mdc.all_dynamic_colors();

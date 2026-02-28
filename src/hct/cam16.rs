@@ -118,7 +118,7 @@ impl Cam16 {
     /// ARGB representation of the color. Assumes the color was viewed in default viewing conditions,
     /// which are near-identical to the default viewing conditions for sRGB.
     #[must_use]
-    pub fn to_int(&self) -> Argb {
+    pub fn to_argb(&self) -> Argb {
         self.viewed(&ViewingConditions::default())
     }
 
@@ -171,13 +171,13 @@ impl Cam16 {
     /// Create a CAM16 color from a color, assuming the color was viewed in default viewing
     /// conditions.
     #[must_use]
-    pub fn from_int(argb: Argb) -> Self {
-        Self::from_int_in_viewing_conditions(argb, &ViewingConditions::default())
+    pub fn from_argb(argb: Argb) -> Self {
+        Self::from_argb_in_viewing_conditions(argb, &ViewingConditions::default())
     }
 
     /// Create a CAM16 color from a color in defined viewing conditions.
     #[must_use]
-    pub fn from_int_in_viewing_conditions(
+    pub fn from_argb_in_viewing_conditions(
         argb: Argb,
         viewing_conditions: &ViewingConditions,
     ) -> Self {
@@ -309,13 +309,13 @@ impl Cam16 {
 /// sRGB ⇌ CAM16 (default viewing conditions)
 impl From<Argb> for Cam16 {
     fn from(argb: Argb) -> Self {
-        Self::from_int(argb)
+        Self::from_argb(argb)
     }
 }
 
 impl From<Cam16> for Argb {
     fn from(cam16: Cam16) -> Self {
-        cam16.to_int()
+        cam16.to_argb()
     }
 }
 
@@ -326,8 +326,8 @@ mod tests {
     #[test]
     fn test_cam16_round_trip() {
         let argb = Argb::from_rgb(255, 0, 0); // Red
-        let cam = Cam16::from_int(argb);
-        let argb_back = cam.to_int();
+        let cam = Cam16::from_argb(argb);
+        let argb_back = cam.to_argb();
 
         // Assert components are close
         assert!((i16::from(argb.red()) - i16::from(argb_back.red())).abs() <= 1);
@@ -338,15 +338,15 @@ mod tests {
     #[test]
     fn test_cam16_blue() {
         let argb = Argb::from_rgb(0, 0, 255); // Blue
-        let cam = Cam16::from_int(argb);
+        let cam = Cam16::from_argb(argb);
         // Blue should have a hue around 282 degrees in CAM16
         assert!((cam.hue - 282.78).abs() < 0.1);
     }
 
     #[test]
     fn test_cam16_ucs_distance() {
-        let red = Cam16::from_int(Argb::from_rgb(255, 0, 0));
-        let blue = Cam16::from_int(Argb::from_rgb(0, 0, 255));
+        let red = Cam16::from_argb(Argb::from_rgb(255, 0, 0));
+        let blue = Cam16::from_argb(Argb::from_rgb(0, 0, 255));
         let dist = red.distance(&blue);
         assert!(dist > 0.0);
         // Distance between Red and Blue in CAM16-UCS is around 21.42

@@ -38,7 +38,7 @@ use material_color_utilities::scheme::SchemeTonalSpot;
 use material_color_utilities::utils::color_utils::Argb;
 
 let source_argb = Argb(0xFF6750A4); // a purple
-let hct = Hct::from_int(source_argb);
+let hct = Hct::from_argb(source_argb);
 let scheme = SchemeTonalSpot::new(hct, false, 0.0); // light mode, default contrast
 ```
 
@@ -72,19 +72,19 @@ use material_color_utilities::hct::Hct;
 use material_color_utilities::palettes::tonal_palette::TonalPalette;
 use material_color_utilities::utils::color_utils::Argb;
 
-let source_hct = Hct::from_int(Argb(0xFFEB0057));
+let source_hct = Hct::from_argb(Argb(0xFFEB0057));
 
 let scheme = DynamicScheme::new(
     source_hct,
     Variant::Vibrant,
     /*is_dark=*/ false,
     /*contrast_level=*/ 0.0,
-    TonalPalette::from_hct(Hct::from_int(Argb(0xFFEB0057))), // primary_palette
-    TonalPalette::from_hct(Hct::from_int(Argb(0xFFF46B00))), // secondary_palette
-    TonalPalette::from_hct(Hct::from_int(Argb(0xFF00AB46))), // tertiary_palette
-    TonalPalette::from_hct(Hct::from_int(Argb(0xFF949494))), // neutral_palette
-    TonalPalette::from_hct(Hct::from_int(Argb(0xFFBC8877))), // neutral_variant_palette
-    TonalPalette::from_hct(Hct::from_int(Argb(0xFFFF0000))), // error palette
+    TonalPalette::from_hct(Hct::from_argb(Argb(0xFFEB0057))), // primary_palette
+    TonalPalette::from_hct(Hct::from_argb(Argb(0xFFF46B00))), // secondary_palette
+    TonalPalette::from_hct(Hct::from_argb(Argb(0xFF00AB46))), // tertiary_palette
+    TonalPalette::from_hct(Hct::from_argb(Argb(0xFF949494))), // neutral_palette
+    TonalPalette::from_hct(Hct::from_argb(Argb(0xFFBC8877))), // neutral_variant_palette
+    TonalPalette::from_hct(Hct::from_argb(Argb(0xFFFF0000))), // error palette
 );
 ```
 

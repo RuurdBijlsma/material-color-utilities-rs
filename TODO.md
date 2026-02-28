@@ -17,9 +17,14 @@
         * Hct(...
 * ✅ papaya cache (geen improvement)
 * ✅ impl display for Argb & debug
-* Score::score kan beter met bon builder, vind defaults in Score.kt
-* rename to_int to to_argb?
+* ✅ Score::score kan beter met bon builder, vind defaults in Score.kt
+* ✅ rename to_int to to_argb?
+* alle scheme_*.rs files omzetten om bon builder te gebruiken
 * from impls maken voor kleur conversions?
+  * from/to "#ffcc00" en "rgb(255,0,0)" mogelijk maken
+  * from/to_hex_string
+  * from/to_rgb_string
+  * publieke functies die een kleur nemen zorgen dat ze Into argb accepteren 
 * unwrap/expect/panic/assert weghalen
 * quantize function in wsmeans neemt Argb vec als image input, misschien is dit niet efficient
 * contrast_curve get functie met match statement doen

@@ -37,15 +37,15 @@ impl Blend {
     /// warmer/cooler variant of the design color's hue.
     #[must_use]
     pub fn harmonize(design_color: Argb, source_color: Argb) -> Argb {
-        let from_hct = Hct::from_int(design_color);
-        let to_hct = Hct::from_int(source_color);
+        let from_hct = Hct::from_argb(design_color);
+        let to_hct = Hct::from_argb(source_color);
         let difference_degrees = MathUtils::difference_degrees(from_hct.hue(), to_hct.hue());
         let rotation_degrees = (difference_degrees * 0.5).min(15.0);
         let output_hue = MathUtils::sanitize_degrees_double(
             from_hct.hue()
                 + rotation_degrees * MathUtils::rotation_direction(from_hct.hue(), to_hct.hue()),
         );
-        Hct::from(output_hue, from_hct.chroma(), from_hct.tone()).to_int()
+        Hct::from(output_hue, from_hct.chroma(), from_hct.tone()).to_argb()
     }
 
     /// Blends hue from one color into another. The chroma and tone of the original color are
@@ -63,10 +63,10 @@ impl Blend {
     #[must_use]
     pub fn hct_hue(from: Argb, to: Argb, amount: f64) -> Argb {
         let ucs = Self::cam16_ucs(from, to, amount);
-        let ucs_cam = Cam16::from_int(ucs);
-        let from_cam = Cam16::from_int(from);
+        let ucs_cam = Cam16::from_argb(ucs);
+        let from_cam = Cam16::from_argb(from);
         let blended = Hct::from(ucs_cam.hue, from_cam.chroma, from.lstar());
-        blended.to_int()
+        blended.to_argb()
     }
 
     /// Blend in CAM16-UCS space.
@@ -82,12 +82,12 @@ impl Blend {
     /// from, blended towards to. Hue, chroma, and tone will change.
     #[must_use]
     pub fn cam16_ucs(from: Argb, to: Argb, amount: f64) -> Argb {
-        let from_cam = Cam16::from_int(from);
-        let to_cam = Cam16::from_int(to);
+        let from_cam = Cam16::from_argb(from);
+        let to_cam = Cam16::from_argb(to);
         let jstar = MathUtils::lerp(from_cam.jstar, to_cam.jstar, amount);
         let astar = MathUtils::lerp(from_cam.astar, to_cam.astar, amount);
         let bstar = MathUtils::lerp(from_cam.bstar, to_cam.bstar, amount);
-        Cam16::from_ucs(jstar, astar, bstar).to_int()
+        Cam16::from_ucs(jstar, astar, bstar).to_argb()
     }
 }
 
@@ -101,8 +101,8 @@ mod tests {
         let source_color = Argb(0xFF0000FF); // Blue
         let harmonized = Blend::harmonize(design_color, source_color);
 
-        let from_hct = Hct::from_int(design_color);
-        let result_hct = Hct::from_int(harmonized);
+        let from_hct = Hct::from_argb(design_color);
+        let result_hct = Hct::from_argb(harmonized);
 
         // Red hue is 27.4, Blue hue is 282.7 in HCT (approx)
         // Rotation should be 15 degrees towards blue.
@@ -118,8 +118,8 @@ mod tests {
         let to = Argb(0xFF00FF00); // Green
         let blended = Blend::hct_hue(from, to, 0.5);
 
-        let from_hct = Hct::from_int(from);
-        let result_hct = Hct::from_int(blended);
+        let from_hct = Hct::from_argb(from);
+        let result_hct = Hct::from_argb(blended);
 
         assert!((result_hct.hue() - from_hct.hue()).abs() > 0.0);
         // Chroma and tone should be preserved as much as possible,
@@ -133,9 +133,9 @@ mod tests {
         let to = Argb(0xFF00FF00); // Green
         let blended = Blend::cam16_ucs(from, to, 0.5);
 
-        let from_cam = Cam16::from_int(from);
-        let to_cam = Cam16::from_int(to);
-        let result_cam = Cam16::from_int(blended);
+        let from_cam = Cam16::from_argb(from);
+        let to_cam = Cam16::from_argb(to);
+        let result_cam = Cam16::from_argb(blended);
 
         // UCS blending should result in something between the two
         assert!(result_cam.jstar > from_cam.jstar.min(to_cam.jstar));

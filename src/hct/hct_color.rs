@@ -53,7 +53,7 @@ impl std::hash::Hash for Hct {
 
 impl Hct {
     fn new_internal(argb: Argb) -> Self {
-        let cam = Cam16::from_int(argb);
+        let cam = Cam16::from_argb(argb);
         Self {
             hue: cam.hue,
             chroma: cam.chroma,
@@ -76,7 +76,7 @@ impl Hct {
     /// HCT representation of a color in default viewing conditions.
     #[must_use]
     pub fn from(hue: f64, chroma: f64, tone: f64) -> Self {
-        let argb = HctSolver::solve_to_int(hue, chroma, tone);
+        let argb = HctSolver::solve_to_argb(hue, chroma, tone);
         Self::new_internal(argb)
     }
 
@@ -90,7 +90,7 @@ impl Hct {
     ///
     /// HCT representation of a color in default viewing conditions.
     #[must_use]
-    pub fn from_int(argb: Argb) -> Self {
+    pub fn from_argb(argb: Argb) -> Self {
         Self::new_internal(argb)
     }
 
@@ -110,7 +110,7 @@ impl Hct {
     }
 
     #[must_use]
-    pub const fn to_int(&self) -> Argb {
+    pub const fn to_argb(&self) -> Argb {
         self.argb
     }
 
@@ -121,7 +121,7 @@ impl Hct {
     ///
     /// * `new_hue`: 0 <= `new_hue` < 360; invalid values are corrected.
     pub fn set_hue(&mut self, new_hue: f64) {
-        self.set_internal_state(HctSolver::solve_to_int(new_hue, self.chroma, self.tone));
+        self.set_internal_state(HctSolver::solve_to_argb(new_hue, self.chroma, self.tone));
     }
 
     /// Set the chroma of this color. Chroma may decrease because chroma has a different maximum for
@@ -131,7 +131,7 @@ impl Hct {
     ///
     /// * `new_chroma`: 0 <= `new_chroma` < ?
     pub fn set_chroma(&mut self, new_chroma: f64) {
-        self.set_internal_state(HctSolver::solve_to_int(self.hue, new_chroma, self.tone));
+        self.set_internal_state(HctSolver::solve_to_argb(self.hue, new_chroma, self.tone));
     }
 
     /// Set the tone of this color. Chroma may decrease because chroma has a different maximum for any
@@ -141,12 +141,12 @@ impl Hct {
     ///
     /// * `new_tone`: 0 <= `new_tone` <= 100; invalid values are corrected.
     pub fn set_tone(&mut self, new_tone: f64) {
-        self.set_internal_state(HctSolver::solve_to_int(self.hue, self.chroma, new_tone));
+        self.set_internal_state(HctSolver::solve_to_argb(self.hue, self.chroma, new_tone));
     }
 
     fn set_internal_state(&mut self, argb: Argb) {
         self.argb = argb;
-        let cam = Cam16::from_int(argb);
+        let cam = Cam16::from_argb(argb);
         self.hue = cam.hue;
         self.chroma = cam.chroma;
         self.tone = argb.lstar();
@@ -166,7 +166,7 @@ impl Hct {
     #[must_use]
     pub fn in_viewing_conditions(&self, vc: &ViewingConditions) -> Self {
         // 1. Use CAM16 to find XYZ coordinates of color in specified VC.
-        let cam16 = Cam16::from_int(self.argb);
+        let cam16 = Cam16::from_argb(self.argb);
         let viewed_in_vc = cam16.xyz_in_viewing_conditions(vc);
 
         // 2. Create CAM16 of those XYZ coordinates in default VC.
@@ -220,13 +220,13 @@ impl fmt::Display for Hct {
 /// sRGB ⇌ HCT
 impl From<Argb> for Hct {
     fn from(argb: Argb) -> Self {
-        Hct::from_int(argb)
+        Hct::from_argb(argb)
     }
 }
 
 impl From<Hct> for Argb {
     fn from(hct: Hct) -> Self {
-        hct.to_int()
+        hct.to_argb()
     }
 }
 
@@ -245,10 +245,10 @@ mod tests {
     }
 
     #[test]
-    fn test_hct_from_int() {
+    fn test_hct_from_argb() {
         let argb = Argb(0xFF00FF00); // Green
-        let hct = Hct::from_int(argb);
-        assert_eq!(hct.to_int(), argb);
+        let hct = Hct::from_argb(argb);
+        assert_eq!(hct.to_argb(), argb);
         assert!(hct.chroma() > 0.0);
     }
 
@@ -292,10 +292,10 @@ mod tests {
         let hct = Hct::from(hue, chroma, tone);
 
         // HCT -> RGB -> HCT should be stable for in-gamut colors
-        let argb = hct.to_int();
+        let argb = hct.to_argb();
         let argb_string = format!("{:X}", argb.0);
         assert_eq!(argb_string, "FF967655");
-        let back_convert = Hct::from_int(argb);
+        let back_convert = Hct::from_argb(argb);
 
         assert!((back_convert.hue - hue).abs() < 0.5);
         assert!((back_convert.chroma - chroma).abs() < 0.5);
@@ -313,6 +313,6 @@ mod tests {
         assert!((hct.tone() - 52.0).abs() < 1.0);
 
         // The resulting ARGB should be #B26C00
-        assert_eq!(format!("{:X}", hct.to_int().0), "FFB26C00");
+        assert_eq!(format!("{:X}", hct.to_argb().0), "FFB26C00");
     }
 }

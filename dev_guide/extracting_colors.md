@@ -74,7 +74,7 @@ let mut quantizer = QuantizerCelebi::new();
 let result = quantizer.quantize(&pixels, 128);
 
 let source_colors = Score::score(&result.color_to_count);
-let source_hct = Hct::from_int(source_colors[0]);
+let source_hct = Hct::from_argb(source_colors[0]);
 
 let scheme = SchemeTonalSpot::new(source_hct, /*is_dark=*/ false, /*contrast_level=*/ 0.0);
 println!("Primary: {:?}", scheme.primary());

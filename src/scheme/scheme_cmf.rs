@@ -93,7 +93,7 @@ impl SchemeCmf {
         let source_color_hct = &source_color_hct_list[0];
         let secondary_source_color_hct = source_color_hct_list.get(1).unwrap_or(source_color_hct);
 
-        if source_color_hct.to_int() == secondary_source_color_hct.to_int() {
+        if source_color_hct.to_argb() == secondary_source_color_hct.to_argb() {
             TonalPalette::from_hue_and_chroma(
                 source_color_hct.hue(),
                 source_color_hct.chroma() * 0.75,

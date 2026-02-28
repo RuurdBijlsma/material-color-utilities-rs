@@ -31,7 +31,7 @@ impl TemperatureCache {
 
     pub fn complement(&self) -> Hct {
         let cache = Self::get_global_map(&COMPLEMENT_CACHE);
-        let key = self.input.to_int();
+        let key = self.input.to_argb();
 
         // 1. Try to read from cache
         if let Ok(map) = cache.read() {
@@ -220,7 +220,7 @@ impl TemperatureCache {
 
         if let Ok(map) = cache.read() {
             if let Some(temps) = map.get(&chroma_tone_key) {
-                if let Some(&temp) = temps.get(&hct.to_int()) {
+                if let Some(&temp) = temps.get(&hct.to_argb()) {
                     return temp;
                 }
             }
@@ -277,8 +277,8 @@ impl TemperatureCache {
         // We ensure temps_by_hct is populated first to make sorting efficient
         let temps = self.temps_by_hct_internal();
         hcts.sort_by(|a, b| {
-            let temp_a = temps.get(&a.to_int()).unwrap_or(&0.0);
-            let temp_b = temps.get(&b.to_int()).unwrap_or(&0.0);
+            let temp_a = temps.get(&a.to_argb()).unwrap_or(&0.0);
+            let temp_b = temps.get(&b.to_argb()).unwrap_or(&0.0);
             temp_a
                 .partial_cmp(temp_b)
                 .unwrap_or(std::cmp::Ordering::Equal)
@@ -305,7 +305,7 @@ impl TemperatureCache {
         all_hcts.push(self.input);
         let mut temperatures_by_hct = HashMap::new();
         for hct in all_hcts {
-            temperatures_by_hct.insert(hct.to_int(), Self::raw_temperature(&hct));
+            temperatures_by_hct.insert(hct.to_argb(), Self::raw_temperature(&hct));
         }
 
         if let Ok(mut map) = cache.write() {
@@ -316,7 +316,7 @@ impl TemperatureCache {
 
     #[must_use]
     pub fn raw_temperature(color: &Hct) -> f64 {
-        let lab = color.to_int().to_lab();
+        let lab = color.to_argb().to_lab();
         let hue = MathUtils::sanitize_degrees_double(lab.b.atan2(lab.a).to_degrees());
         let chroma = lab.a.hypot(lab.b);
 

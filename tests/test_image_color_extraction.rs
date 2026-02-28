@@ -149,8 +149,8 @@ impl ExtractionTracker {
             println!("{:-<115}", "");
 
             for m in ms {
-                let exp_hct = Hct::from_int(m.expected);
-                let act_hct = Hct::from_int(m.actual);
+                let exp_hct = Hct::from_argb(m.expected);
+                let act_hct = Hct::from_argb(m.actual);
                 let exp_hct_str = format!(
                     "{:.1}, {:.1}, {:.1}",
                     exp_hct.hue(),
@@ -243,7 +243,7 @@ fn test_color_extraction() -> Result<()> {
             let dist = if actual_argb == Argb(0) {
                 999.0
             } else {
-                Cam16::from_int(expected).distance(&Cam16::from_int(actual_argb))
+                Cam16::from_argb(expected).distance(&Cam16::from_argb(actual_argb))
             };
 
             tracker

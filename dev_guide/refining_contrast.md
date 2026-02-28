@@ -70,4 +70,4 @@ let lighter_unsafe = Contrast::lighter_unsafe(original, 7.0);  // 100.0
 ```
 
 To convert a tone back to an `Argb` grayscale or apply it to a hue+chroma,
-use `Argb::from_lstar(tone)` or `Hct::from(hue, chroma, tone).to_int()`.
+use `Argb::from_lstar(tone)` or `Hct::from(hue, chroma, tone).to_argb()`.

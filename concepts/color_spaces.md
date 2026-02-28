@@ -134,15 +134,15 @@ All conversions also implement the standard `From`/`Into` traits, so you can
 use either the explicit method form or the idiomatic Rust trait form.
 
 *   sRGB ⇌ HCT
-    -   `Hct::from_int(argb)` · `Hct::from(argb)` · `argb.into()`
-    -   `hct.to_int()` · `Argb::from(hct)` · `hct.into()`
-    -   Construct from components: `Hct::from(h, c, t)` then `hct.to_int()`
+    -   `Hct::from_argb(argb)` · `Hct::from(argb)` · `argb.into()`
+    -   `hct.to_argb()` · `Argb::from(hct)` · `hct.into()`
+    -   Construct from components: `Hct::from(h, c, t)` then `hct.to_argb()`
 *   sRGB ⇌ XYZ
     -   `argb.to_xyz()` → `Xyz` · `Xyz::from(argb)` · `argb.into()`
     -   `Argb::from_xyz(xyz)` · `Argb::from(xyz)` · `xyz.into()`
 *   sRGB ⇌ Cam16
-    -   `Cam16::from_int(argb)` · `Cam16::from(argb)` · `argb.into()`
-    -   `cam16.to_int()` · `Argb::from(cam16)` · `cam16.into()`
+    -   `Cam16::from_argb(argb)` · `Cam16::from(argb)` · `argb.into()`
+    -   `cam16.to_argb()` · `Argb::from(cam16)` · `cam16.into()`
     -   Constructing a Cam16 from JCH or UCS:
         -   `Cam16::from_jch(j, c, h)`
         -   `Cam16::from_ucs(jstar, astar, bstar)`

@@ -77,8 +77,8 @@ impl TonalPalette {
     ///
     /// `TonalPalette` matching that color's hue and chroma.
     #[must_use]
-    pub fn from_int(argb: Argb) -> Self {
-        Self::from_hct(Hct::from_int(argb))
+    pub fn from_argb(argb: Argb) -> Self {
+        Self::from_hct(Hct::from_argb(argb))
     }
 
     /// Create tones using a HCT color.
@@ -122,7 +122,7 @@ impl TonalPalette {
     /// ARGB representation of a color with that tone.
     pub fn tone(&self, tone: i32) -> Argb {
         if !(0..=100).contains(&tone) {
-            return Hct::from(self.hue, self.chroma, f64::from(tone)).to_int();
+            return Hct::from(self.hue, self.chroma, f64::from(tone)).to_argb();
         }
 
         let index = tone as usize;
@@ -134,7 +134,7 @@ impl TonalPalette {
         let color = if tone == 99 && Hct::is_yellow(self.hue) {
             Self::average_argb(self.tone(98), self.tone(100))
         } else {
-            Hct::from(self.hue, self.chroma, f64::from(tone)).to_int()
+            Hct::from(self.hue, self.chroma, f64::from(tone)).to_argb()
         };
 
         self.cache[index].store(color.0, Ordering::Relaxed);
@@ -235,9 +235,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_tonal_palette_from_int() {
+    fn test_tonal_palette_from_argb() {
         let argb = Argb(0xFF0000FF); // Blue
-        let palette = TonalPalette::from_int(argb);
+        let palette = TonalPalette::from_argb(argb);
         assert!((palette.hue - 282.12).abs() < 1.0); // Approximate hue for pure blue
         assert!(palette.chroma > 80.0);
     }

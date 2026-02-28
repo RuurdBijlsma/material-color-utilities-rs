@@ -114,7 +114,7 @@ impl DynamicColor {
     }
 
     pub fn get_argb(&self, scheme: &DynamicScheme) -> Argb {
-        let argb = self.get_hct(scheme).to_int();
+        let argb = self.get_hct(scheme).to_argb();
         if let Some(ref opacity_func) = self.opacity
             && let Some(opacity_percentage) = opacity_func(scheme)
         {
@@ -136,8 +136,8 @@ impl DynamicColor {
     /// Create a `DynamicColor` from an ARGB hex code.
     #[must_use]
     pub fn from_argb(name: &str, argb: Argb) -> Self {
-        let hct = Hct::from_int(argb);
-        let palette = TonalPalette::from_int(argb);
+        let hct = Hct::from_argb(argb);
+        let palette = TonalPalette::from_argb(argb);
         Self::new(
             name.to_string(),
             Arc::new(move |_| palette.clone()),
@@ -340,7 +340,7 @@ mod tests {
         let color = DynamicColor::from_argb("test", Argb(0xff00ff00));
         assert_eq!(color.name, "test");
         // HCT for 0xff00ff00 (pure green) is roughly hue 142, chroma 107, tone 88
-        let _hct = Hct::from_int(Argb(0xff00ff00));
+        let _hct = Hct::from_argb(Argb(0xff00ff00));
         // We can't easily test the closures without a scheme, but we can check initial tone logic
     }
 

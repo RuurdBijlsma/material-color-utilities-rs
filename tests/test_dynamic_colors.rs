@@ -36,7 +36,7 @@ impl ReferenceEntry {
     }
 
     fn to_dynamic_scheme(&self) -> Result<DynamicScheme> {
-        let hct = Hct::from_int(self.parse_color(&self.color)?);
+        let hct = Hct::from_argb(self.parse_color(&self.color)?);
         let d = self.is_dark;
         let c = self.contrast;
 
@@ -67,11 +67,11 @@ struct ValidationTracker {
 
 impl ValidationTracker {
     fn record_mismatch(&mut self, role: &str, scheme: &str, expected: Argb, actual: Argb) {
-        let d = Cam16::from_int(expected).distance(&Cam16::from_int(actual));
+        let d = Cam16::from_argb(expected).distance(&Cam16::from_argb(actual));
         self.distances.push(d);
 
         let fmt_hct = |argb: Argb| {
-            let hct = Hct::from_int(argb);
+            let hct = Hct::from_argb(argb);
             format!(
                 "HCT: ({:.1}, {:.1}, {:.1})",
                 hct.hue(),

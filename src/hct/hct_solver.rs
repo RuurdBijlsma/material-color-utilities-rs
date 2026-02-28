@@ -589,7 +589,7 @@ impl HctSolver {
 
     /// Finds an sRGB color with the given hue, chroma, and L*, if possible.
     #[must_use]
-    pub fn solve_to_int(hue_degrees: f64, chroma: f64, lstar: f64) -> Argb {
+    pub fn solve_to_argb(hue_degrees: f64, chroma: f64, lstar: f64) -> Argb {
         if chroma < 0.0001 || !(0.0001..=99.9999).contains(&lstar) {
             return Argb::from_lstar(lstar);
         }
@@ -606,7 +606,7 @@ impl HctSolver {
     /// Finds an sRGB color with the given hue, chroma, and L*, if possible.
     #[must_use]
     pub fn solve_to_cam(hue_degrees: f64, chroma: f64, lstar: f64) -> Cam16 {
-        Cam16::from_int(Self::solve_to_int(hue_degrees, chroma, lstar))
+        Cam16::from_argb(Self::solve_to_argb(hue_degrees, chroma, lstar))
     }
 }
 
@@ -615,9 +615,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_to_int_red() {
+    fn test_solve_to_argb_red() {
         // Red: H=25, C=80, T=50
-        let hct_red = HctSolver::solve_to_int(25.0, 80.0, 50.0);
+        let hct_red = HctSolver::solve_to_argb(25.0, 80.0, 50.0);
         // Should be some kind of red
         assert!(hct_red.red() > 200);
         assert!(hct_red.green() < 100);
@@ -625,9 +625,9 @@ mod tests {
     }
 
     #[test]
-    fn test_solve_to_int_blue() {
+    fn test_solve_to_argb_blue() {
         // Blue: H=280, C=80, T=50
-        let hct_blue = HctSolver::solve_to_int(280.0, 80.0, 50.0);
+        let hct_blue = HctSolver::solve_to_argb(280.0, 80.0, 50.0);
         // Should be some kind of blue
         assert!(hct_blue.blue() > 200);
         assert!(hct_blue.red() < 200);
@@ -635,7 +635,7 @@ mod tests {
 
     #[test]
     fn test_gray() {
-        let gray = HctSolver::solve_to_int(123.0, 0.0, 50.0);
+        let gray = HctSolver::solve_to_argb(123.0, 0.0, 50.0);
         assert_eq!(gray.red(), gray.green());
         assert_eq!(gray.green(), gray.blue());
         assert!((i32::from(gray.red()) - 119).abs() <= 1);
