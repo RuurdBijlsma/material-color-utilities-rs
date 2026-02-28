@@ -51,8 +51,10 @@ impl Quantizer for QuantizerCelebi {
     fn quantize(&mut self, pixels: &[Argb], max_colors: usize) -> QuantizerResult {
         let mut wu = QuantizerWu::new();
         let wu_result = wu.quantize(pixels, max_colors);
+        dbg!(&wu_result);
 
         let starting_clusters: Vec<Argb> = wu_result.color_to_count.keys().copied().collect();
+        // dbg!(&starting_clusters);
 
         let clusters = QuantizerWsmeans::quantize(pixels, &starting_clusters, max_colors);
         QuantizerResult::new(clusters)

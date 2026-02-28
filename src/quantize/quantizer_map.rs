@@ -16,7 +16,6 @@
 
 use crate::quantize::quantizer::{Quantizer, QuantizerResult};
 use crate::utils::color_utils::Argb;
-use std::collections::HashMap;
 use indexmap::IndexMap;
 
 /// Creates a dictionary with keys of colors, and values of count of the color.
@@ -39,6 +38,7 @@ impl QuantizerMap {
 
 impl Quantizer for QuantizerMap {
     fn quantize(&mut self, pixels: &[Argb], _max_colors: usize) -> QuantizerResult {
+        dbg!(pixels.len());
         let mut pixel_by_count = IndexMap::new();
         for &pixel in pixels {
             *pixel_by_count.entry(pixel).or_insert(0) += 1;

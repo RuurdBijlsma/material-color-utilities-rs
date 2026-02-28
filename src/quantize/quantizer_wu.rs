@@ -17,7 +17,6 @@
 use crate::quantize::quantizer::{Quantizer, QuantizerResult};
 use crate::quantize::quantizer_map::QuantizerMap;
 use crate::utils::color_utils::Argb;
-use std::collections::HashMap;
 use indexmap::IndexMap;
 
 // A histogram of all the input colors is constructed. It has the shape of a cube. The cube
@@ -131,6 +130,8 @@ impl QuantizerWu {
         self.cubes = vec![Box::default(); max_color_count];
         let mut volume_variance = vec![0.0; max_color_count];
 
+        dbg!(&volume_variance.len());
+
         let first_box = &mut self.cubes[0];
         first_box.r1 = (INDEX_COUNT - 1) as i32;
         first_box.g1 = (INDEX_COUNT - 1) as i32;
@@ -208,10 +209,13 @@ impl QuantizerWu {
     }
 
     fn create_result(&self, color_count: usize) -> Vec<Argb> {
+        dbg!(&color_count);
         let mut colors = Vec::new();
         for i in 0..color_count {
             let cube = &self.cubes[i];
+            dbg!(&cube);
             let weight = Self::volume(cube, &self.weights);
+            dbg!(&weight);
             if weight > 0 {
                 let r = Self::volume(cube, &self.moments_r) / weight;
                 let g = Self::volume(cube, &self.moments_g) / weight;
@@ -487,10 +491,16 @@ impl Quantizer for QuantizerWu {
         let mut map_quantizer = QuantizerMap::new();
         let map_result = map_quantizer.quantize(pixels, max_colors);
 
+        // dbg!(&map_result);
+        dbg!(&map_result.color_to_count.len());
+
         self.construct_histogram(&map_result.color_to_count);
         self.create_moments();
         let create_boxes_result = self.create_boxes(max_colors);
+
         let colors = self.create_result(create_boxes_result.result_count as usize);
+
+        dbg!(&colors);
 
         let mut result_map = IndexMap::new();
         for color in colors {
@@ -542,18 +552,20 @@ enum Direction {
     Blue,
 }
 
+#[derive(Clone, Copy, Debug)]
 struct MaximizeResult {
     cut_location: i32,
     maximum: f64,
 }
 
+#[derive(Clone, Copy, Debug)]
 struct CreateBoxesResult {
     #[allow(dead_code)]
     requested_count: i32,
     result_count: i32,
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug)]
 struct Box {
     r0: i32,
     r1: i32,

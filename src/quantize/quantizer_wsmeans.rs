@@ -17,7 +17,6 @@
 use crate::quantize::point_provider::PointProvider;
 use crate::quantize::point_provider_lab::PointProviderLab;
 use crate::utils::color_utils::Argb;
-use std::collections::HashMap;
 use indexmap::IndexMap;
 
 #[derive(Clone, Copy)]

@@ -1,5 +1,5 @@
 /target
 .idea
-*.png
+plot.png
 *_large.json
 *_schemes_*.json
