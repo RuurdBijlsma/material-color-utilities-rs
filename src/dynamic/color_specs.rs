@@ -2,8 +2,8 @@ use crate::dynamic::color_spec::{ColorSpec, SpecVersion};
 use crate::dynamic::color_spec_2021::ColorSpec2021;
 use crate::dynamic::color_spec_2025::ColorSpec2025;
 use crate::dynamic::color_spec_2026::ColorSpec2026;
-use std::sync::OnceLock;
 use bon::bon;
+use std::sync::OnceLock;
 
 /// A utility struct to get the correct color spec for a given spec version.
 pub struct ColorSpecs;
@@ -27,8 +27,7 @@ impl ColorSpecs {
     #[builder(start_fn = get)]
     #[must_use]
     pub fn get_impl(
-        #[builder(start_fn)]
-        spec_version: SpecVersion,
+        #[builder(start_fn)] spec_version: SpecVersion,
         /// Whether to use extended fidelity settings. Defaults to `false`.
         #[builder(default = false)]
         _is_extended_fidelity: bool,

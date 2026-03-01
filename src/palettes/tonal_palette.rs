@@ -120,7 +120,7 @@ impl TonalPalette {
     /// # Returns
     ///
     /// ARGB representation of a color with that tone.
-    #[must_use] 
+    #[must_use]
     pub fn tone(&self, tone: i32) -> Argb {
         if !(0..=100).contains(&tone) {
             return Hct::from(self.hue, self.chroma, f64::from(tone)).to_argb();
@@ -143,7 +143,7 @@ impl TonalPalette {
     }
 
     /// Given a tone, use hue and chroma of palette to create a color, and return it as HCT.
-    #[must_use] 
+    #[must_use]
     pub fn get_hct(&self, tone: f64) -> Hct {
         Hct::from(self.hue, self.chroma, tone)
     }

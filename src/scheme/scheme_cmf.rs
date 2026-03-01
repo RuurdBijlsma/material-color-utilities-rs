@@ -10,46 +10,26 @@ pub struct SchemeCmf;
 impl SchemeCmf {
     #[must_use]
     pub fn new(source_color_hct: Hct, is_dark: bool, contrast_level: f64) -> DynamicScheme {
-        Self::new_with_platform_and_spec(
-            source_color_hct,
-            is_dark,
-            contrast_level,
-            SpecVersion::Spec2026,
-            Platform::Phone,
-        )
+        Self::new_with_platform(source_color_hct, is_dark, contrast_level, Platform::Phone)
     }
 
     #[must_use]
-    pub fn new_with_platform_and_spec(
+    pub fn new_with_platform(
         source_color_hct: Hct,
         is_dark: bool,
         contrast_level: f64,
-        spec_version: SpecVersion,
         platform: Platform,
     ) -> DynamicScheme {
-        Self::new_with_list_and_platform_and_spec(
-            vec![source_color_hct],
-            is_dark,
-            contrast_level,
-            spec_version,
-            platform,
-        )
+        Self::new_with_list_and_platform(vec![source_color_hct], is_dark, contrast_level, platform)
     }
 
     #[must_use]
-    pub fn new_with_list_and_platform_and_spec(
+    pub fn new_with_list_and_platform(
         source_color_hct_list: Vec<Hct>,
         is_dark: bool,
         contrast_level: f64,
-        spec_version: SpecVersion,
         platform: Platform,
     ) -> DynamicScheme {
-        assert_eq!(
-            spec_version,
-            SpecVersion::Spec2026,
-            "SchemeCmf can only be used with spec version 2026."
-        );
-
         let source_color_hct = source_color_hct_list[0];
 
         let primary_palette =
@@ -76,7 +56,7 @@ impl SchemeCmf {
             is_dark,
             contrast_level,
             platform,
-            spec_version,
+            SpecVersion::Spec2026,
             primary_palette,
             secondary_palette,
             tertiary_palette,

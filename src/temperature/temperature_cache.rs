@@ -34,9 +34,10 @@ impl TemperatureCache {
 
         // 1. Try to read from cache
         if let Ok(map) = cache.read()
-            && let Some(&complement) = map.get(&key) {
-                return complement;
-            }
+            && let Some(&complement) = map.get(&key)
+        {
+            return complement;
+        }
 
         // 2. Compute
         let coldest = self.coldest();
@@ -221,9 +222,10 @@ impl TemperatureCache {
 
         if let Ok(map) = cache.read()
             && let Some(temps) = map.get(&chroma_tone_key)
-                && let Some(&temp) = temps.get(&hct.to_argb()) {
-                    return temp;
-                }
+            && let Some(&temp) = temps.get(&hct.to_argb())
+        {
+            return temp;
+        }
 
         // Fallback to recalculating (this is rare if temps_by_hct() was called)
         Self::raw_temperature(hct)
@@ -244,13 +246,18 @@ impl TemperatureCache {
         let cache = Self::get_global_map(&HCTS_BY_HUE_CACHE);
 
         if let Ok(map) = cache.read()
-            && let Some(hcts) = map.get(&key) {
-                return hcts.clone();
-            }
+            && let Some(hcts) = map.get(&key)
+        {
+            return hcts.clone();
+        }
 
         let mut hcts = Vec::with_capacity(360);
         for i in 0..360 {
-            hcts.push(Hct::from(f64::from(i), self.input.chroma(), self.input.tone()));
+            hcts.push(Hct::from(
+                f64::from(i),
+                self.input.chroma(),
+                self.input.tone(),
+            ));
         }
 
         if let Ok(mut map) = cache.write() {
@@ -264,9 +271,10 @@ impl TemperatureCache {
         let cache = Self::get_global_map(&HCTS_BY_TEMP_CACHE);
 
         if let Ok(map) = cache.read()
-            && let Some(hcts) = map.get(&key) {
-                return hcts.clone();
-            }
+            && let Some(hcts) = map.get(&key)
+        {
+            return hcts.clone();
+        }
 
         let mut hcts = self.hcts_by_hue();
         hcts.push(self.input);
@@ -293,9 +301,10 @@ impl TemperatureCache {
         let cache = Self::get_global_map(&TEMPS_BY_HCT_CACHE);
 
         if let Ok(map) = cache.read()
-            && let Some(temps) = map.get(&key) {
-                return temps.clone();
-            }
+            && let Some(temps) = map.get(&key)
+        {
+            return temps.clone();
+        }
 
         let mut all_hcts = self.hcts_by_hue();
         all_hcts.push(self.input);

@@ -20,7 +20,7 @@ use crate::dynamic::color_spec::{ColorSpec, Platform, SpecVersion};
 use crate::dynamic::color_spec_2025::ColorSpec2025;
 use crate::dynamic::color_specs::ColorSpecs;
 use crate::dynamic::contrast_curve::ContrastCurve;
-use crate::dynamic::dynamic_color::DynamicColor;
+use crate::dynamic::dynamic_color::{ContrastConstraints, DynamicColor};
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::tone_delta_pair::{DeltaConstraint, ToneDeltaPair, TonePolarity};
 use crate::dynamic::variant::Variant;
@@ -151,8 +151,6 @@ impl ColorSpec for ColorSpec2026 {
                 "surface".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 true,
-                None,
-                None,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
                         if s.is_dark { 4.0 } else { 98.0 }
@@ -179,20 +177,18 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
-                        if s.is_dark { 1.0 } else { 1.7 }
-                    } else {
-                        0.0
-                    }
-                })),
-                None,
-                Some(Arc::new(|s| {
-                    if s.variant == Variant::Cmf {
                         if s.is_dark { 4.0 } else { 87.0 }
                     } else {
                         0.0
                     }
                 })),
-                None,
+                Some(Arc::new(|s| {
+                    if s.variant == Variant::Cmf {
+                        if s.is_dark { 1.0 } else { 1.7 }
+                    } else {
+                        0.0
+                    }
+                })),
                 None,
                 None,
                 None,
@@ -211,20 +207,18 @@ impl ColorSpec for ColorSpec2026 {
                 true,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
-                        if s.is_dark { 1.7 } else { 1.0 }
-                    } else {
-                        0.0
-                    }
-                })),
-                None,
-                Some(Arc::new(|s| {
-                    if s.variant == Variant::Cmf {
                         if s.is_dark { 18.0 } else { 98.0 }
                     } else {
                         0.0
                     }
                 })),
-                None,
+                Some(Arc::new(|s| {
+                    if s.variant == Variant::Cmf {
+                        if s.is_dark { 1.7 } else { 1.0 }
+                    } else {
+                        0.0
+                    }
+                })),
                 None,
                 None,
                 None,
@@ -241,8 +235,6 @@ impl ColorSpec for ColorSpec2026 {
                 "surface_container_lowest".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 true,
-                None,
-                None,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
                         if s.is_dark { 0.0 } else { 100.0 }
@@ -267,10 +259,6 @@ impl ColorSpec for ColorSpec2026 {
                 "surface_container_low".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 true,
-                Some(Arc::new(
-                    |s| if s.variant == Variant::Cmf { 1.25 } else { 0.0 },
-                )),
-                None,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
                         if s.is_dark { 6.0 } else { 96.0 }
@@ -278,7 +266,9 @@ impl ColorSpec for ColorSpec2026 {
                         0.0
                     }
                 })),
-                None,
+                Some(Arc::new(
+                    |s| if s.variant == Variant::Cmf { 1.25 } else { 0.0 },
+                )),
                 None,
                 None,
                 None,
@@ -295,10 +285,6 @@ impl ColorSpec for ColorSpec2026 {
                 "surface_container".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 true,
-                Some(Arc::new(
-                    |s| if s.variant == Variant::Cmf { 1.4 } else { 0.0 },
-                )),
-                None,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
                         if s.is_dark { 9.0 } else { 94.0 }
@@ -306,7 +292,9 @@ impl ColorSpec for ColorSpec2026 {
                         0.0
                     }
                 })),
-                None,
+                Some(Arc::new(
+                    |s| if s.variant == Variant::Cmf { 1.4 } else { 0.0 },
+                )),
                 None,
                 None,
                 None,
@@ -323,10 +311,6 @@ impl ColorSpec for ColorSpec2026 {
                 "surface_container_high".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 true,
-                Some(Arc::new(
-                    |s| if s.variant == Variant::Cmf { 1.5 } else { 0.0 },
-                )),
-                None,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
                         if s.is_dark { 12.0 } else { 92.0 }
@@ -334,7 +318,9 @@ impl ColorSpec for ColorSpec2026 {
                         0.0
                     }
                 })),
-                None,
+                Some(Arc::new(
+                    |s| if s.variant == Variant::Cmf { 1.5 } else { 0.0 },
+                )),
                 None,
                 None,
                 None,
@@ -351,10 +337,6 @@ impl ColorSpec for ColorSpec2026 {
                 "surface_container_highest".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 true,
-                Some(Arc::new(
-                    |s| if s.variant == Variant::Cmf { 1.7 } else { 0.0 },
-                )),
-                None,
                 Some(Arc::new(|s| {
                     if s.variant == Variant::Cmf {
                         if s.is_dark { 15.0 } else { 90.0 }
@@ -362,7 +344,9 @@ impl ColorSpec for ColorSpec2026 {
                         0.0
                     }
                 })),
-                None,
+                Some(Arc::new(
+                    |s| if s.variant == Variant::Cmf { 1.7 } else { 0.0 },
+                )),
                 None,
                 None,
                 None,
@@ -379,19 +363,21 @@ impl ColorSpec for ColorSpec2026 {
                 "on_surface".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 false,
+                None,
                 Some(Arc::new(
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 None,
                 None,
-                Some(Arc::new(|s| {
-                    Some(Self::get_contrast_curve(if s.is_dark { 11.0 } else { 9.0 }))
-                })),
-                None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        Some(Self::get_contrast_curve(if s.is_dark { 11.0 } else { 9.0 }))
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_surface()
@@ -409,19 +395,21 @@ impl ColorSpec for ColorSpec2026 {
                 "on_surface_variant".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 false,
+                None,
                 Some(Arc::new(
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 None,
                 None,
-                Some(Arc::new(|s| {
-                    Some(Self::get_contrast_curve(if s.is_dark { 6.0 } else { 4.5 }))
-                })),
-                None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        Some(Self::get_contrast_curve(if s.is_dark { 6.0 } else { 4.5 }))
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_surface_variant()
@@ -435,12 +423,10 @@ impl ColorSpec for ColorSpec2026 {
                 "inverse_surface".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 true,
+                Some(Arc::new(|s| if s.is_dark { 98.0 } else { 4.0 })),
                 Some(Arc::new(
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
-                None,
-                Some(Arc::new(|s| if s.is_dark { 98.0 } else { 4.0 })),
-                None,
                 None,
                 None,
                 None,
@@ -458,14 +444,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.neutral_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().inverse_surface())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().inverse_surface())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(7.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .inverse_on_surface()
@@ -479,17 +467,19 @@ impl ColorSpec for ColorSpec2026 {
                 "outline".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 false,
+                None,
                 Some(Arc::new(
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(3.0)))),
-                None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(3.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .outline()
@@ -503,17 +493,19 @@ impl ColorSpec for ColorSpec2026 {
                 "outline_variant".to_string(),
                 Arc::new(|s| s.neutral_palette.clone()),
                 false,
+                None,
                 Some(Arc::new(
                     |s| if s.variant == Variant::Cmf { 1.7 } else { 1.0 },
                 )),
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(1.5)))),
-                None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(1.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .outline_variant()
@@ -539,10 +531,6 @@ impl ColorSpec for ColorSpec2026 {
                 "primary".to_string(),
                 Arc::new(|s| s.primary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     if s.source_color_hct().chroma() <= 12.0 {
                         if s.is_dark { 80.0 } else { 40.0 }
@@ -551,9 +539,15 @@ impl ColorSpec for ColorSpec2026 {
                     }
                 })),
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
                 None,
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(4.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .primary()
@@ -572,14 +566,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.primary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().primary())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().primary())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_primary()
@@ -594,10 +590,6 @@ impl ColorSpec for ColorSpec2026 {
                 "primary_container".to_string(),
                 Arc::new(|s| s.primary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(move |s| {
-                    Some(ColorSpecs::get(override_spec[0]).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     if !s.is_dark && s.source_color_hct().chroma() <= 12.0 {
                         90.0
@@ -608,13 +600,6 @@ impl ColorSpec for ColorSpec2026 {
                     }
                 })),
                 None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 Some(Arc::new(move |_s| {
                     Some(ToneDeltaPair::new(
                         ColorSpecs::get(override_spec[0]).call().primary_container(),
@@ -626,6 +611,19 @@ impl ColorSpec for ColorSpec2026 {
                     ))
                 })),
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(move |s| {
+                        Some(ColorSpecs::get(override_spec[0]).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .primary_container()
@@ -641,14 +639,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.primary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(move |_s| {
-                    Some(ColorSpecs::get(override_spec[0]).call().primary_container())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(move |_s| {
+                        Some(ColorSpecs::get(override_spec[0]).call().primary_container())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_primary_container()
@@ -668,26 +668,29 @@ impl ColorSpec for ColorSpec2026 {
                 "primary_fixed".to_string(),
                 Arc::new(|s| s.primary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version).call()
+                    ColorSpecs::get(s.spec_version)
+                        .call()
                         .primary_container()
                         .get_tone(&temp_s)
                 })),
                 None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 None,
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .primary_fixed()
@@ -701,21 +704,13 @@ impl ColorSpec for ColorSpec2026 {
                 "primary_fixed_dim".to_string(),
                 Arc::new(|s| s.primary_palette.clone()),
                 true,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version)
+                        .call()
+                        .primary_fixed()
+                        .get_tone(s)
+                })),
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
-                Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).call().primary_fixed().get_tone(s)
-                })),
-                None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
                         ColorSpecs::get(s.spec_version).call().primary_fixed_dim(),
@@ -727,6 +722,19 @@ impl ColorSpec for ColorSpec2026 {
                     ))
                 })),
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .primary_fixed_dim()
@@ -741,14 +749,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.primary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(7.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_primary_fixed()
@@ -763,14 +773,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.primary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().primary_fixed_dim())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(4.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_primary_fixed_variant()
@@ -786,10 +798,6 @@ impl ColorSpec for ColorSpec2026 {
                 "secondary".to_string(),
                 Arc::new(|s| s.secondary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     if s.is_dark {
                         Self::t_min_c(&s.secondary_palette, 0.0, 100.0)
@@ -798,9 +806,15 @@ impl ColorSpec for ColorSpec2026 {
                     }
                 })),
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
                 None,
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(4.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .secondary()
@@ -819,14 +833,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.secondary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().secondary())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().secondary())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_secondary()
@@ -840,10 +856,6 @@ impl ColorSpec for ColorSpec2026 {
                 "secondary_container".to_string(),
                 Arc::new(|s| s.secondary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     if s.is_dark {
                         Self::t_min_c(&s.secondary_palette, 20.0, 49.0)
@@ -852,13 +864,6 @@ impl ColorSpec for ColorSpec2026 {
                     }
                 })),
                 None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
                         ColorSpecs::get(s.spec_version).call().secondary_container(),
@@ -870,6 +875,19 @@ impl ColorSpec for ColorSpec2026 {
                     ))
                 })),
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .secondary_container()
@@ -884,14 +902,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.secondary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().secondary_container())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().secondary_container())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_secondary_container()
@@ -905,26 +925,29 @@ impl ColorSpec for ColorSpec2026 {
                 "secondary_fixed".to_string(),
                 Arc::new(|s| s.secondary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version).call()
+                    ColorSpecs::get(s.spec_version)
+                        .call()
                         .secondary_container()
                         .get_tone(&temp_s)
                 })),
                 None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 None,
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .secondary_fixed()
@@ -938,23 +961,13 @@ impl ColorSpec for ColorSpec2026 {
                 "secondary_fixed_dim".to_string(),
                 Arc::new(|s| s.secondary_palette.clone()),
                 true,
-                None,
                 Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
-                Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).call()
+                    ColorSpecs::get(s.spec_version)
+                        .call()
                         .secondary_fixed()
                         .get_tone(s)
                 })),
                 None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
                         ColorSpecs::get(s.spec_version).call().secondary_fixed_dim(),
@@ -966,6 +979,19 @@ impl ColorSpec for ColorSpec2026 {
                     ))
                 })),
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .secondary_fixed_dim()
@@ -980,14 +1006,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.secondary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(7.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_secondary_fixed()
@@ -1002,14 +1030,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.secondary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().secondary_fixed_dim())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(4.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_secondary_fixed_variant()
@@ -1025,19 +1055,21 @@ impl ColorSpec for ColorSpec2026 {
                 "tertiary".to_string(),
                 Arc::new(|s| s.tertiary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     s.source_color_hct_list
                         .get(1)
                         .map_or_else(|| s.source_color_hct().tone(), Hct::tone)
                 })),
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
                 None,
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(4.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .tertiary()
@@ -1052,14 +1084,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.tertiary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().tertiary())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().tertiary())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_tertiary()
@@ -1073,10 +1107,6 @@ impl ColorSpec for ColorSpec2026 {
                 "tertiary_container".to_string(),
                 Arc::new(|s| s.tertiary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     let sec_hct = s
                         .source_color_hct_list
@@ -1090,13 +1120,6 @@ impl ColorSpec for ColorSpec2026 {
                 })),
                 None,
                 Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
-                Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
                         ColorSpecs::get(s.spec_version).call().tertiary_container(),
                         ColorSpecs::get(s.spec_version).call().tertiary(),
@@ -1107,6 +1130,19 @@ impl ColorSpec for ColorSpec2026 {
                     ))
                 })),
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .tertiary_container()
@@ -1121,14 +1157,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.tertiary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().tertiary_container())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().tertiary_container())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_tertiary_container()
@@ -1142,26 +1180,29 @@ impl ColorSpec for ColorSpec2026 {
                 "tertiary_fixed".to_string(),
                 Arc::new(|s| s.tertiary_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     let temp_s = DynamicScheme::from_scheme_with_contrast(s, false, 0.0);
-                    ColorSpecs::get(s.spec_version).call()
+                    ColorSpecs::get(s.spec_version)
+                        .call()
                         .tertiary_container()
                         .get_tone(&temp_s)
                 })),
                 None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 None,
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .tertiary_fixed()
@@ -1175,21 +1216,13 @@ impl ColorSpec for ColorSpec2026 {
                 "tertiary_fixed_dim".to_string(),
                 Arc::new(|s| s.tertiary_palette.clone()),
                 true,
+                Some(Arc::new(|s| {
+                    ColorSpecs::get(s.spec_version)
+                        .call()
+                        .tertiary_fixed()
+                        .get_tone(s)
+                })),
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
-                Some(Arc::new(|s| {
-                    ColorSpecs::get(s.spec_version).call().tertiary_fixed().get_tone(s)
-                })),
-                None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
                         ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim(),
@@ -1201,6 +1234,19 @@ impl ColorSpec for ColorSpec2026 {
                     ))
                 })),
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .tertiary_fixed_dim()
@@ -1215,14 +1261,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.tertiary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(7.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(7.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_tertiary_fixed()
@@ -1237,14 +1285,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.tertiary_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().tertiary_fixed_dim())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(4.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_tertiary_fixed_variant()
@@ -1260,17 +1310,19 @@ impl ColorSpec for ColorSpec2026 {
                 "error".to_string(),
                 Arc::new(|s| s.error_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     Self::t_max_c(&s.error_palette, 0.0, 100.0, 1.0)
                 })),
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(4.5)))),
                 None,
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(4.5))),
+                    second_background: None,
+                }),
             );
             self.base
                 .error()
@@ -1285,12 +1337,14 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.error_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| Some(ColorSpecs::get(s.spec_version).call().error()))),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| Some(ColorSpecs::get(s.spec_version).call().error())),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_error()
@@ -1304,10 +1358,6 @@ impl ColorSpec for ColorSpec2026 {
                 "error_container".to_string(),
                 Arc::new(|s| s.error_palette.clone()),
                 true,
-                None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
-                })),
                 Some(Arc::new(|s| {
                     if s.is_dark {
                         Self::t_min_c(&s.error_palette, 0.0, 100.0)
@@ -1316,13 +1366,6 @@ impl ColorSpec for ColorSpec2026 {
                     }
                 })),
                 None,
-                Some(Arc::new(|s| {
-                    if s.contrast_level > 0.0 {
-                        Some(Self::get_contrast_curve(1.5))
-                    } else {
-                        None
-                    }
-                })),
                 Some(Arc::new(|s| {
                     Some(ToneDeltaPair::new(
                         ColorSpecs::get(s.spec_version).call().error_container(),
@@ -1334,6 +1377,19 @@ impl ColorSpec for ColorSpec2026 {
                     ))
                 })),
                 None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().highest_surface(s))
+                    }),
+                    contrast_curve: Arc::new(|s| {
+                        if s.contrast_level > 0.0 {
+                            Some(Self::get_contrast_curve(1.5))
+                        } else {
+                            None
+                        }
+                    }),
+                    second_background: None,
+                }),
             );
             self.base
                 .error_container()
@@ -1348,14 +1404,16 @@ impl ColorSpec for ColorSpec2026 {
                 Arc::new(|s| s.error_palette.clone()),
                 false,
                 None,
-                Some(Arc::new(|s| {
-                    Some(ColorSpecs::get(s.spec_version).call().error_container())
-                })),
                 None,
                 None,
-                Some(Arc::new(|_| Some(Self::get_contrast_curve(6.0)))),
                 None,
-                None,
+                Some(ContrastConstraints {
+                    background: Arc::new(|s| {
+                        Some(ColorSpecs::get(s.spec_version).call().error_container())
+                    }),
+                    contrast_curve: Arc::new(|_| Some(Self::get_contrast_curve(6.0))),
+                    second_background: None,
+                }),
             );
             self.base
                 .on_error_container()
