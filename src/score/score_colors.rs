@@ -1,19 +1,3 @@
-/*
- * Copyright 2025 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 use crate::hct::hct_color::Hct;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
@@ -34,7 +18,7 @@ pub struct Score;
 
 #[bon]
 impl Score {
-    const TARGET_CHROMA: f64 = 48.0; // A1 Chroma
+    const TARGET_CHROMA: f64 = 48.0;
     const WEIGHT_PROPORTION: f64 = 0.7;
     const WEIGHT_CHROMA_ABOVE: f64 = 0.3;
     const WEIGHT_CHROMA_BELOW: f64 = 0.1;
@@ -75,83 +59,73 @@ impl Score {
         #[builder(default = true)]
         filter: bool,
     ) -> Vec<Argb> {
-        // Get the HCT color for each Argb value, while finding the per hue count and
-        // total count.
-        let mut colors_hct: Vec<Hct> = Vec::with_capacity(colors_to_population.len());
         let mut hue_population = [0u32; 360];
         let mut population_sum = 0.0;
 
-        for (&argb, &population) in colors_to_population {
-            let hct = Hct::from_argb(argb);
-            colors_hct.push(hct);
-            let hue = hct.hue().floor() as i32;
-            let sanitized_hue = MathUtils::sanitize_degrees_int(hue) as usize;
-            hue_population[sanitized_hue] += population;
-            population_sum += f64::from(population);
+        // 1. Create HCTs and populate hue data
+        let colors_hct: Vec<Hct> = colors_to_population
+            .iter()
+            .map(|(&argb, &population)| {
+                let hct = Hct::from_argb(argb);
+                let hue = MathUtils::sanitize_degrees_int(hct.hue().floor() as i32) as usize;
+                hue_population[hue] += population;
+                population_sum += f64::from(population);
+                hct
+            })
+            .collect();
+
+        if population_sum == 0.0 {
+            return vec![fallback_color_argb];
         }
 
-        // Hues with more usage in neighboring 30 degree slice get a larger number.
+        // 2. Calculate excited proportions (Exact neighborhood logic)
         let mut hue_excited_proportions = [0.0; 360];
-        for hue in 0..360 {
-            let proportion = f64::from(hue_population[hue]) / population_sum;
+        for (hue, &pop) in hue_population.iter().enumerate() {
+            let proportion = f64::from(pop) / population_sum;
             for i in (hue as i32 - 14)..(hue as i32 + 16) {
                 let neighbor_hue = MathUtils::sanitize_degrees_int(i) as usize;
                 hue_excited_proportions[neighbor_hue] += proportion;
             }
         }
 
-        // Scores each HCT color based on usage and chroma, while optionally
-        // filtering out values that do not have enough chroma or usage.
-        let mut scored_hcts: Vec<ScoredHct> = Vec::new();
-        for hct in colors_hct {
-            let hue = MathUtils::sanitize_degrees_int(hct.hue().round() as i32) as usize;
-            let proportion = hue_excited_proportions[hue];
+        // 3. Score and Filter
+        let mut scored_hcts: Vec<ScoredHct> = colors_hct
+            .into_iter()
+            .filter_map(|hct| {
+                let hue = MathUtils::sanitize_degrees_int(hct.hue().round() as i32) as usize;
+                let proportion = hue_excited_proportions[hue];
 
-            if filter
-                && (hct.chroma() < Self::CUTOFF_CHROMA
-                    || proportion <= Self::CUTOFF_EXCITED_PROPORTION)
-            {
-                continue;
-            }
+                if filter && (hct.chroma() < Self::CUTOFF_CHROMA || proportion <= Self::CUTOFF_EXCITED_PROPORTION) {
+                    return None;
+                }
 
-            let proportion_score = proportion * 100.0 * Self::WEIGHT_PROPORTION;
-            let chroma_weight = if hct.chroma() < Self::TARGET_CHROMA {
-                Self::WEIGHT_CHROMA_BELOW
-            } else {
-                Self::WEIGHT_CHROMA_ABOVE
-            };
-            let chroma_score = (hct.chroma() - Self::TARGET_CHROMA) * chroma_weight;
-            let score = proportion_score + chroma_score;
-            scored_hcts.push(ScoredHct { hct, score });
-        }
+                let chroma_score = (hct.chroma() - Self::TARGET_CHROMA) * if hct.chroma() < Self::TARGET_CHROMA {
+                    Self::WEIGHT_CHROMA_BELOW
+                } else {
+                    Self::WEIGHT_CHROMA_ABOVE
+                };
 
-        // Sorted so that colors with higher scores come first.
-        scored_hcts.sort_by(|a, b| {
-            b.score
-                .partial_cmp(&a.score)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
+                Some(ScoredHct {
+                    hct,
+                    score: (proportion * 100.0).mul_add(Self::WEIGHT_PROPORTION, chroma_score),
+                })
+            })
+            .collect();
 
-        // Iterates through potential hue differences in degrees in order to select
-        // the colors with the largest distribution of hues possible. Starting at
-        // 90 degrees(maximum difference for 4 colors) then decreasing down to a
-        // 15 degree minimum.
-        let mut chosen_colors: Vec<Hct> = Vec::new();
+        // Stable sort is required to match original tie-breaking behavior
+        scored_hcts.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+
+        // 4. Selection Logic (The greedy spread)
+        let mut chosen_colors: Vec<Hct> = Vec::with_capacity(desired_count);
         for difference_degrees in (15..=90).rev() {
             chosen_colors.clear();
             for entry in &scored_hcts {
-                let hct = entry.hct;
-                let mut has_duplicate_hue = false;
-                for chosen_hct in &chosen_colors {
-                    if MathUtils::difference_degrees(hct.hue(), chosen_hct.hue())
-                        < f64::from(difference_degrees)
-                    {
-                        has_duplicate_hue = true;
-                        break;
-                    }
-                }
-                if !has_duplicate_hue {
-                    chosen_colors.push(hct);
+                let has_duplicate = chosen_colors.iter().any(|chosen| {
+                    MathUtils::difference_degrees(entry.hct.hue(), chosen.hue()) < f64::from(difference_degrees)
+                });
+
+                if !has_duplicate {
+                    chosen_colors.push(entry.hct);
                 }
                 if chosen_colors.len() >= desired_count {
                     break;
