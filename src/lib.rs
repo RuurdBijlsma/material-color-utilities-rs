@@ -24,3 +24,4 @@ pub mod scheme;
 pub mod score;
 pub mod temperature;
 pub mod utils;
+pub mod theme;

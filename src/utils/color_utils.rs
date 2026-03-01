@@ -1,6 +1,7 @@
 use super::math_utils::MathUtils;
 use crate::utils::error::ColorParseError;
 use std::fmt;
+use std::fmt::Display;
 use std::str::FromStr;
 
 /// A color in the ARGB color space.
@@ -16,6 +17,12 @@ impl fmt::Debug for Argb {
             self.green(),
             self.blue()
         )
+    }
+}
+
+impl Display for Argb {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_hex())
     }
 }
 
@@ -62,6 +69,29 @@ impl Argb {
     #[must_use]
     pub const fn from_rgb(red: u8, green: u8, blue: u8) -> Self {
         Self(0xFF000000 | ((red as u32) << 16) | ((green as u32) << 8) | (blue as u32))
+    }
+
+    /// Converts a color from hex RGB string to ARGB format.
+    /// # Errors
+    /// If the string can't be parsed to an Argb.
+    pub fn from_hex(hex_string: &str) -> Result<Self, ColorParseError> {
+        let hex = hex_string.strip_prefix('#').unwrap_or(hex_string);
+        match hex.len() {
+            6 => {
+                let val = u32::from_str_radix(hex, 16)?;
+                Ok(Self(0xFF000000 | val))
+            }
+            8 => {
+                let val = u32::from_str_radix(hex, 16)?;
+                Ok(Self(val))
+            }
+            _ => Err(ColorParseError::InvalidLength),
+        }
+    }
+
+    #[must_use] 
+    pub fn to_hex(&self) -> String {
+        format!("#{:02X}{:02X}{:02X}", self.red(), self.green(), self.blue())
     }
 
     /// Converts a color from linear RGB components to ARGB format.
@@ -261,18 +291,7 @@ impl FromStr for Argb {
     type Err = ColorParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let hex = s.strip_prefix('#').unwrap_or(s);
-        match hex.len() {
-            6 => {
-                let val = u32::from_str_radix(hex, 16)?;
-                Ok(Self(0xFF000000 | val))
-            }
-            8 => {
-                let val = u32::from_str_radix(hex, 16)?;
-                Ok(Self(val))
-            }
-            _ => Err(ColorParseError::InvalidLength),
-        }
+        Self::from_hex(s)
     }
 }
 
