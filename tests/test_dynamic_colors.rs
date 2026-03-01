@@ -41,16 +41,16 @@ impl ReferenceEntry {
         let c = self.contrast;
 
         match self.scheme.as_str() {
-            "CMF" => Ok(SchemeCmf::new(hct, d, c)),
-            "CONTENT" => Ok(SchemeContent::new(hct, d, c)),
-            "EXPRESSIVE" => Ok(SchemeExpressive::new(hct, d, c)),
-            "FIDELITY" => Ok(SchemeFidelity::new(hct, d, c)),
-            "FRUIT_SALAD" => Ok(SchemeFruitSalad::new(hct, d, c)),
-            "MONOCHROME" => Ok(SchemeMonochrome::new(hct, d, c)),
-            "NEUTRAL" => Ok(SchemeNeutral::new(hct, d, c)),
-            "RAINBOW" => Ok(SchemeRainbow::new(hct, d, c)),
-            "TONAL_SPOT" => Ok(SchemeTonalSpot::new(hct, d, c)),
-            "VIBRANT" => Ok(SchemeVibrant::new(hct, d, c)),
+            "CMF" => Ok(SchemeCmf::builder(hct, d, c).build()),
+            "CONTENT" => Ok(SchemeContent::builder(hct, d, c).build()),
+            "EXPRESSIVE" => Ok(SchemeExpressive::builder(hct, d, c).build()),
+            "FIDELITY" => Ok(SchemeFidelity::builder(hct, d, c).build()),
+            "FRUIT_SALAD" => Ok(SchemeFruitSalad::builder(hct, d, c).build()),
+            "MONOCHROME" => Ok(SchemeMonochrome::builder(hct, d, c).build()),
+            "NEUTRAL" => Ok(SchemeNeutral::builder(hct, d, c).build()),
+            "RAINBOW" => Ok(SchemeRainbow::builder(hct, d, c).build()),
+            "TONAL_SPOT" => Ok(SchemeTonalSpot::builder(hct, d, c).build()),
+            "VIBRANT" => Ok(SchemeVibrant::builder(hct, d, c).build()),
             _ => Err(eyre!("Unsupported scheme type: {}", self.scheme)),
         }
     }

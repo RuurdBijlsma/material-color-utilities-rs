@@ -3,34 +3,26 @@ use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::variant::Variant;
 use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
+use bon::bon;
 
 /// A Dynamic Color theme with 2 source colors.
 pub struct SchemeCmf;
 
+#[bon]
 impl SchemeCmf {
-    #[must_use]
-    pub fn new(source_color_hct: Hct, is_dark: bool, contrast_level: f64) -> DynamicScheme {
-        Self::new_with_platform(source_color_hct, is_dark, contrast_level, Platform::Phone)
-    }
-
-    #[must_use]
-    pub fn new_with_platform(
-        source_color_hct: Hct,
-        is_dark: bool,
-        contrast_level: f64,
-        platform: Platform,
+    #[builder]
+    pub fn new(
+        #[builder(start_fn, into)] source_color: Hct,
+        #[builder(start_fn)] is_dark: bool,
+        #[builder(start_fn)] contrast_level: f64,
+        #[builder(default, into)] additional_colors: Vec<Hct>,
+        #[builder(default = SpecVersion::Spec2026)] spec_version: SpecVersion,
+        #[builder(default = Platform::Phone)] platform: Platform,
     ) -> DynamicScheme {
-        Self::new_with_list_and_platform(vec![source_color_hct], is_dark, contrast_level, platform)
-    }
+        let mut source_color_hct_list = vec![source_color];
+        source_color_hct_list.extend(additional_colors);
 
-    #[must_use]
-    pub fn new_with_list_and_platform(
-        source_color_hct_list: Vec<Hct>,
-        is_dark: bool,
-        contrast_level: f64,
-        platform: Platform,
-    ) -> DynamicScheme {
-        let source_color_hct = source_color_hct_list[0];
+        let source_color_hct = &source_color_hct_list[0];
 
         let primary_palette =
             TonalPalette::from_hue_and_chroma(source_color_hct.hue(), source_color_hct.chroma());
@@ -51,12 +43,12 @@ impl SchemeCmf {
             TonalPalette::from_hue_and_chroma(23.0, source_color_hct.chroma().max(50.0));
 
         let mut scheme = DynamicScheme::new_with_platform_and_spec(
-            source_color_hct,
+            *source_color_hct,
             Variant::Cmf,
             is_dark,
             contrast_level,
             platform,
-            SpecVersion::Spec2026,
+            spec_version,
             primary_palette,
             secondary_palette,
             tertiary_palette,

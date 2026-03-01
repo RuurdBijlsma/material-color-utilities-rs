@@ -3,48 +3,26 @@ use crate::dynamic::color_specs::ColorSpecs;
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::variant::Variant;
 use crate::hct::hct_color::Hct;
+use bon::bon;
 
 /// A calm theme, sedated colors that aren't particularly chromatic.
 pub struct SchemeTonalSpot;
 
+#[bon]
 impl SchemeTonalSpot {
-    #[must_use]
-    pub fn new(source_color_hct: Hct, is_dark: bool, contrast_level: f64) -> DynamicScheme {
-        Self::new_with_platform_and_spec(
-            source_color_hct,
-            is_dark,
-            contrast_level,
-            SpecVersion::Spec2021,
-            Platform::Phone,
-        )
-    }
-
-    #[must_use]
-    pub fn new_with_platform_and_spec(
-        source_color_hct: Hct,
-        is_dark: bool,
-        contrast_level: f64,
-        spec_version: SpecVersion,
-        platform: Platform,
-    ) -> DynamicScheme {
-        Self::new_with_list_and_platform_and_spec(
-            vec![source_color_hct],
-            is_dark,
-            contrast_level,
-            spec_version,
-            platform,
-        )
-    }
-
-    #[must_use]
-    pub fn new_with_list_and_platform_and_spec(
-        source_color_hct_list: Vec<Hct>,
-        is_dark: bool,
-        contrast_level: f64,
-        spec_version: SpecVersion,
-        platform: Platform,
+    #[builder]
+    pub fn new(
+        #[builder(start_fn, into)] source_color: Hct,
+        #[builder(start_fn)] is_dark: bool,
+        #[builder(start_fn)] contrast_level: f64,
+        #[builder(default, into)] additional_colors: Vec<Hct>,
+        #[builder(default = SpecVersion::Spec2021)] spec_version: SpecVersion,
+        #[builder(default = Platform::Phone)] platform: Platform,
     ) -> DynamicScheme {
         let spec = ColorSpecs::get(spec_version).call();
+        let mut source_color_hct_list = vec![source_color];
+        source_color_hct_list.extend(additional_colors);
+
         let source_color_hct = &source_color_hct_list[0];
         let mut scheme = DynamicScheme::new_with_platform_and_spec(
             *source_color_hct,
