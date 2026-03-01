@@ -37,16 +37,12 @@ impl ContrastCurve {
     /// The value. For contrast ratios, a number between 1.0 and 21.0.
     #[must_use]
     pub fn get(&self, contrast_level: f64) -> f64 {
-        if contrast_level <= -1.0 {
-            self.low
-        } else if contrast_level < 0.0 {
-            MathUtils::lerp(self.low, self.normal, contrast_level + 1.0)
-        } else if contrast_level < 0.5 {
-            MathUtils::lerp(self.normal, self.medium, contrast_level / 0.5)
-        } else if contrast_level < 1.0 {
-            MathUtils::lerp(self.medium, self.high, (contrast_level - 0.5) / 0.5)
-        } else {
-            self.high
+        match contrast_level {
+            x if x <= -1.0 => self.low,
+            x if x < 0.0 => MathUtils::lerp(self.low, self.normal, x + 1.0),
+            x if x < 0.5 => MathUtils::lerp(self.normal, self.medium, x / 0.5),
+            x if x < 1.0 => MathUtils::lerp(self.medium, self.high, (x - 0.5) / 0.5),
+            _ => self.high,
         }
     }
 }

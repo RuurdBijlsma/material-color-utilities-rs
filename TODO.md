@@ -20,17 +20,16 @@
 * ✅ Score::score kan beter met bon builder, vind defaults in Score.kt
 * ✅ rename to_int to to_argb?
 * ✅ alle scheme_*.rs files omzetten om bon builder te gebruiken
+* ✅ waarom is color_specs.rs get( met een Box?
+* ✅ into trait voor u32->argb maken en reverseo
+* ✅ benchmark en vergelijken met kotlin code
+* ✅ tonalpallette cache bug
+* ✅ contrast_curve get functie met match statement doen
 * ✅ from impls maken voor kleur conversions?
   * ✅ from/to_hex_string
   * ✅ publieke functies die een kleur nemen zorgen dat ze Into argb accepteren 
 * unwrap/expect/panic/assert weghalen
 * quantize function in wsmeans neemt Argb vec als image input, misschien is dit niet efficient
-* contrast_curve get functie met match statement doen
-* bon builder voor tone_delta_pair? defaults moet je nu maar gokken
-* waarom is color_specs.rs get( met een Box?
 * Heleboel clones in color_spec_2021, kan vast beter
 * zie of ik de anonymous functies in dynamiccolor kan vervangen met een hashmap ofzo idk
 * test of de gekke COLOR_GETTERS in material_dynamic_colors.rs wel beter is dan gewoon alle kleuren teruggeven in die functie (is het sneller? hoeveel sneller?)
-* into trait voor u32->argb maken en reverseo
-* benchmark en vergelijken met kotlin code
-* tonalpallette cache bug
