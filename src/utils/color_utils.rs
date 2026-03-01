@@ -294,7 +294,7 @@ impl From<Argb> for Lab {
 
 impl From<Lab> for Argb {
     fn from(lab: Lab) -> Self {
-        Argb::from_lab(lab)
+        Self::from_lab(lab)
     }
 }
 
@@ -303,7 +303,7 @@ impl From<Lab> for Argb {
 /// Converts a linear-RGB triple `[r, g, b]` (values in 0–100) to `Argb`.
 impl From<[f64; 3]> for Argb {
     fn from(linrgb: [f64; 3]) -> Self {
-        Argb::from_linrgb(linrgb)
+        Self::from_linrgb(linrgb)
     }
 }
 

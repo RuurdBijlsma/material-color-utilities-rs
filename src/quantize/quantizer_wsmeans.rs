@@ -75,7 +75,7 @@ impl QuantizerWsmeans {
         for &input_pixel in input_pixels {
             let pixel_count = pixel_to_count.entry(input_pixel).or_insert(0);
             if *pixel_count == 0 {
-                points.push(point_provider.from_argb(input_pixel));
+                points.push(point_provider.point_from_argb(input_pixel));
                 pixels.push(input_pixel);
                 point_count += 1;
             }
@@ -95,18 +95,13 @@ impl QuantizerWsmeans {
         let mut clusters = vec![[0.0, 0.0, 0.0]; cluster_count];
         let mut clusters_created = 0;
         for i in 0..starting_clusters.len().min(cluster_count) {
-            clusters[i] = point_provider.from_argb(starting_clusters[i]);
+            clusters[i] = point_provider.point_from_argb(starting_clusters[i]);
             clusters_created += 1;
         }
 
         // Handle case where starting_clusters is empty or smaller than cluster_count
-        // The Kotlin code had an empty loop here, which would lead to crashes.
-        // We'll initialize any remaining clusters to random points if needed.
         if clusters_created < cluster_count {
             for i in clusters_created..cluster_count {
-                // This is a sensible fallback if empty loop in Kotlin was a bug.
-                // However, we'll follow the logical structure.
-                // If it's still [0,0,0], the first iteration will update it if points are assigned.
                 clusters[i] = [0.0, 0.0, 0.0];
             }
         }
@@ -215,7 +210,7 @@ impl QuantizerWsmeans {
             if count == 0 {
                 continue;
             }
-            let possible_new_cluster = point_provider.to_argb(clusters[i]);
+            let possible_new_cluster = point_provider.point_to_argb(clusters[i]);
             argb_to_population
                 .entry(possible_new_cluster)
                 .or_insert(count);

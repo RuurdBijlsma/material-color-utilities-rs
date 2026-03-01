@@ -6,12 +6,12 @@ use crate::utils::color_utils::{Argb, Lab};
 pub struct PointProviderLab;
 
 impl PointProvider for PointProviderLab {
-    fn from_argb(&self, argb: Argb) -> [f64; 3] {
+    fn point_from_argb(&self, argb: Argb) -> [f64; 3] {
         let lab = argb.to_lab();
         [lab.l, lab.a, lab.b]
     }
 
-    fn to_argb(&self, point: [f64; 3]) -> Argb {
+    fn point_to_argb(&self, point: [f64; 3]) -> Argb {
         Argb::from_lab(Lab {
             l: point[0],
             a: point[1],
@@ -37,7 +37,7 @@ mod tests {
     fn test_from_argb() {
         let provider = PointProviderLab;
         let argb = Argb(0xff00ff00); // Green
-        let point = provider.from_argb(argb);
+        let point = provider.point_from_argb(argb);
         let lab = argb.to_lab();
 
         assert_eq!(point, [lab.l, lab.a, lab.b]);
@@ -48,7 +48,7 @@ mod tests {
         let provider = PointProviderLab;
         // Red color within sRGB gamut
         let point = [53.23288, 80.1093, 67.22];
-        let argb = provider.to_argb(point);
+        let argb = provider.point_to_argb(point);
         let lab = argb.to_lab();
 
         // L*a*b* <-> ARGB conversions involve precision loss (8-bit rounding).
@@ -74,8 +74,8 @@ mod tests {
     fn test_back_and_forth() {
         let provider = PointProviderLab;
         let argb = Argb(0xff00ff00);
-        let point = provider.from_argb(argb);
-        let argb_again = provider.to_argb(point);
+        let point = provider.point_from_argb(argb);
+        let argb_again = provider.point_to_argb(point);
 
         assert_eq!(argb_again, argb);
     }

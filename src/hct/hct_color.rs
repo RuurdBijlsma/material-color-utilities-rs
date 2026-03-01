@@ -220,7 +220,7 @@ impl fmt::Display for Hct {
 /// sRGB ⇌ HCT
 impl From<Argb> for Hct {
     fn from(argb: Argb) -> Self {
-        Hct::from_argb(argb)
+        Self::from_argb(argb)
     }
 }
 

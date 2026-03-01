@@ -5,10 +5,10 @@ use crate::utils::color_utils::Argb;
 /// where distance measurements (Delta E) can be performed.
 pub trait PointProvider {
     /// Converts an ARGB color into coordinates in the provider's color space.
-    fn from_argb(&self, argb: Argb) -> [f64; 3];
+    fn point_from_argb(&self, argb: Argb) -> [f64; 3];
 
     /// Converts coordinates back into an ARGB color.
-    fn to_argb(&self, point: [f64; 3]) -> Argb;
+    fn point_to_argb(&self, point: [f64; 3]) -> Argb;
 
     /// Returns the squared Euclidean distance between two points.
     ///

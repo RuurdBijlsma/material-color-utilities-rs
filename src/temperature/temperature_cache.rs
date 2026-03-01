@@ -4,12 +4,11 @@ use crate::utils::math_utils::MathUtils;
 use std::collections::HashMap;
 use std::sync::{OnceLock, RwLock};
 
-// Global caches to be shared across all instances
-static COMPLEMENT_CACHE: OnceLock<RwLock<HashMap<Argb, Hct>>> = OnceLock::new();
-static HCTS_BY_HUE_CACHE: OnceLock<RwLock<HashMap<(u64, u64), Vec<Hct>>>> = OnceLock::new();
-static HCTS_BY_TEMP_CACHE: OnceLock<RwLock<HashMap<(u64, u64), Vec<Hct>>>> = OnceLock::new();
-static TEMPS_BY_HCT_CACHE: OnceLock<RwLock<HashMap<(u64, u64), HashMap<Argb, f64>>>> =
-    OnceLock::new();
+type OnceLockHashMap<K, V> = OnceLock<RwLock<HashMap<K, V>>>;
+static COMPLEMENT_CACHE: OnceLockHashMap<Argb, Hct> = OnceLock::new();
+static HCTS_BY_HUE_CACHE: OnceLockHashMap<(u64, u64), Vec<Hct>> = OnceLock::new();
+static HCTS_BY_TEMP_CACHE: OnceLockHashMap<(u64, u64), Vec<Hct>> = OnceLock::new();
+static TEMPS_BY_HCT_CACHE: OnceLockHashMap<(u64, u64), HashMap<Argb, f64>> = OnceLock::new();
 
 pub struct TemperatureCache {
     input: Hct,
@@ -21,7 +20,6 @@ impl TemperatureCache {
         Self { input }
     }
 
-    /// Helper to get or initialize a RwLock'd HashMap
     fn get_global_map<K, V>(lock: &OnceLock<RwLock<HashMap<K, V>>>) -> &RwLock<HashMap<K, V>>
     where
         K: Eq + std::hash::Hash,
@@ -29,16 +27,16 @@ impl TemperatureCache {
         lock.get_or_init(|| RwLock::new(HashMap::new()))
     }
 
+    #[must_use]
     pub fn complement(&self) -> Hct {
         let cache = Self::get_global_map(&COMPLEMENT_CACHE);
         let key = self.input.to_argb();
 
         // 1. Try to read from cache
-        if let Ok(map) = cache.read() {
-            if let Some(&complement) = map.get(&key) {
+        if let Ok(map) = cache.read()
+            && let Some(&complement) = map.get(&key) {
                 return complement;
             }
-        }
 
         // 2. Compute
         let coldest = self.coldest();
@@ -96,6 +94,7 @@ impl TemperatureCache {
     /// 5 colors that pair well with the input color.
     ///
     /// The colors are equidistant in temperature and adjacent in hue.
+    #[must_use]
     pub fn get_analogous_colors(&self) -> Vec<Hct> {
         self.get_analogous_colors_with_options(5, 12)
     }
@@ -111,6 +110,7 @@ impl TemperatureCache {
     ///
     /// * `count` - The number of colors to return, includes the input color.
     /// * `divisions` - The number of divisions on the color wheel.
+    #[must_use]
     pub fn get_analogous_colors_with_options(&self, count: usize, divisions: usize) -> Vec<Hct> {
         // The starting hue is the hue of the input color.
         let start_hue = self.input.hue().round() as i32;
@@ -196,6 +196,7 @@ impl TemperatureCache {
     ///
     /// @param hct HCT to find the relative temperature of.
     /// @return Value on a scale from 0 to 1.
+    #[must_use]
     pub fn get_relative_temperature(&self, hct: &Hct) -> f64 {
         let coldest_temp = self.get_temp(&self.coldest());
         let warmest_temp = self.get_temp(&self.warmest());
@@ -218,13 +219,11 @@ impl TemperatureCache {
         let chroma_tone_key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
         let cache = Self::get_global_map(&TEMPS_BY_HCT_CACHE);
 
-        if let Ok(map) = cache.read() {
-            if let Some(temps) = map.get(&chroma_tone_key) {
-                if let Some(&temp) = temps.get(&hct.to_argb()) {
+        if let Ok(map) = cache.read()
+            && let Some(temps) = map.get(&chroma_tone_key)
+                && let Some(&temp) = temps.get(&hct.to_argb()) {
                     return temp;
                 }
-            }
-        }
 
         // Fallback to recalculating (this is rare if temps_by_hct() was called)
         Self::raw_temperature(hct)
@@ -244,15 +243,14 @@ impl TemperatureCache {
         let key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
         let cache = Self::get_global_map(&HCTS_BY_HUE_CACHE);
 
-        if let Ok(map) = cache.read() {
-            if let Some(hcts) = map.get(&key) {
+        if let Ok(map) = cache.read()
+            && let Some(hcts) = map.get(&key) {
                 return hcts.clone();
             }
-        }
 
         let mut hcts = Vec::with_capacity(360);
         for i in 0..360 {
-            hcts.push(Hct::from(i as f64, self.input.chroma(), self.input.tone()));
+            hcts.push(Hct::from(f64::from(i), self.input.chroma(), self.input.tone()));
         }
 
         if let Ok(mut map) = cache.write() {
@@ -265,11 +263,10 @@ impl TemperatureCache {
         let key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
         let cache = Self::get_global_map(&HCTS_BY_TEMP_CACHE);
 
-        if let Ok(map) = cache.read() {
-            if let Some(hcts) = map.get(&key) {
+        if let Ok(map) = cache.read()
+            && let Some(hcts) = map.get(&key) {
                 return hcts.clone();
             }
-        }
 
         let mut hcts = self.hcts_by_hue();
         hcts.push(self.input);
@@ -295,11 +292,10 @@ impl TemperatureCache {
         let key = (self.input.chroma().to_bits(), self.input.tone().to_bits());
         let cache = Self::get_global_map(&TEMPS_BY_HCT_CACHE);
 
-        if let Ok(map) = cache.read() {
-            if let Some(temps) = map.get(&key) {
+        if let Ok(map) = cache.read()
+            && let Some(temps) = map.get(&key) {
                 return temps.clone();
             }
-        }
 
         let mut all_hcts = self.hcts_by_hue();
         all_hcts.push(self.input);

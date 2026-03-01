@@ -113,6 +113,7 @@ impl DynamicColor {
         }
     }
 
+    #[must_use]
     pub fn get_argb(&self, scheme: &DynamicScheme) -> Argb {
         let argb = self.get_hct(scheme).to_argb();
         if let Some(ref opacity_func) = self.opacity
@@ -125,10 +126,12 @@ impl DynamicColor {
         argb
     }
 
+    #[must_use]
     pub fn get_hct(&self, scheme: &DynamicScheme) -> Hct {
         ColorSpecs::get(scheme.spec_version).call().get_hct(scheme, self)
     }
 
+    #[must_use]
     pub fn get_tone(&self, scheme: &DynamicScheme) -> f64 {
         ColorSpecs::get(scheme.spec_version).call().get_tone(scheme, self)
     }

@@ -55,6 +55,7 @@ impl std::hash::Hash for DynamicScheme {
 }
 
 impl DynamicScheme {
+    #[must_use]
     pub fn new(
         source_color_hct: Hct,
         variant: Variant,
@@ -83,6 +84,7 @@ impl DynamicScheme {
         )
     }
 
+    #[must_use]
     pub fn new_with_platform_and_spec(
         source_color_hct: Hct,
         variant: Variant,
@@ -113,10 +115,12 @@ impl DynamicScheme {
         }
     }
 
+    #[must_use]
     pub fn from_scheme(other: &Self, is_dark: bool) -> Self {
         Self::from_scheme_with_contrast(other, is_dark, other.contrast_level)
     }
 
+    #[must_use]
     pub fn from_scheme_with_contrast(other: &Self, is_dark: bool, contrast_level: f64) -> Self {
         Self {
             source_color_hct_list: other.source_color_hct_list.clone(),
@@ -135,18 +139,22 @@ impl DynamicScheme {
     }
 
     /// Returns the primary source color in HCT.
+    #[must_use]
     pub fn source_color_hct(&self) -> &Hct {
         &self.source_color_hct_list[0]
     }
 
+    #[must_use]
     pub fn source_color_argb(&self) -> Argb {
         self.source_color_hct().to_argb()
     }
 
+    #[must_use]
     pub fn get_hct(&self, dynamic_color: &DynamicColor) -> Hct {
         dynamic_color.get_hct(self)
     }
 
+    #[must_use]
     pub fn get_argb(&self, dynamic_color: &DynamicColor) -> Argb {
         dynamic_color.get_argb(self)
     }
@@ -202,218 +210,272 @@ impl DynamicScheme {
         SpecVersion::Spec2021
     }
 
+    #[must_use]
     pub fn primary_palette_key_color(&self) -> Argb {
         self.get_argb(&dynamic_colors().primary_palette_key_color())
     }
 
+    #[must_use]
     pub fn secondary_palette_key_color(&self) -> Argb {
         self.get_argb(&dynamic_colors().secondary_palette_key_color())
     }
 
+    #[must_use]
     pub fn tertiary_palette_key_color(&self) -> Argb {
         self.get_argb(&dynamic_colors().tertiary_palette_key_color())
     }
 
+    #[must_use]
     pub fn neutral_palette_key_color(&self) -> Argb {
         self.get_argb(&dynamic_colors().neutral_palette_key_color())
     }
 
+    #[must_use]
     pub fn neutral_variant_palette_key_color(&self) -> Argb {
         self.get_argb(&dynamic_colors().neutral_variant_palette_key_color())
     }
 
+    #[must_use]
     pub fn background(&self) -> Argb {
         self.get_argb(&dynamic_colors().background())
     }
 
+    #[must_use]
     pub fn on_background(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_background())
     }
 
+    #[must_use]
     pub fn surface(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface())
     }
 
+    #[must_use]
     pub fn surface_dim(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_dim())
     }
 
+    #[must_use]
     pub fn surface_bright(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_bright())
     }
 
+    #[must_use]
     pub fn surface_container_lowest(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_container_lowest())
     }
 
+    #[must_use]
     pub fn surface_container_low(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_container_low())
     }
 
+    #[must_use]
     pub fn surface_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_container())
     }
 
+    #[must_use]
     pub fn surface_container_high(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_container_high())
     }
 
+    #[must_use]
     pub fn surface_container_highest(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_container_highest())
     }
 
+    #[must_use]
     pub fn on_surface(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_surface())
     }
 
+    #[must_use]
     pub fn surface_variant(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_variant())
     }
 
+    #[must_use]
     pub fn on_surface_variant(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_surface_variant())
     }
 
+    #[must_use]
     pub fn inverse_surface(&self) -> Argb {
         self.get_argb(&dynamic_colors().inverse_surface())
     }
 
+    #[must_use]
     pub fn inverse_on_surface(&self) -> Argb {
         self.get_argb(&dynamic_colors().inverse_on_surface())
     }
 
+    #[must_use]
     pub fn outline(&self) -> Argb {
         self.get_argb(&dynamic_colors().outline())
     }
 
+    #[must_use]
     pub fn outline_variant(&self) -> Argb {
         self.get_argb(&dynamic_colors().outline_variant())
     }
 
+    #[must_use]
     pub fn shadow(&self) -> Argb {
         self.get_argb(&dynamic_colors().shadow())
     }
 
+    #[must_use]
     pub fn scrim(&self) -> Argb {
         self.get_argb(&dynamic_colors().scrim())
     }
 
+    #[must_use]
     pub fn surface_tint(&self) -> Argb {
         self.get_argb(&dynamic_colors().surface_tint())
     }
 
+    #[must_use]
     pub fn primary(&self) -> Argb {
         self.get_argb(&dynamic_colors().primary())
     }
 
+    #[must_use]
     pub fn on_primary(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_primary())
     }
 
+    #[must_use]
     pub fn primary_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().primary_container())
     }
 
+    #[must_use]
     pub fn on_primary_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_primary_container())
     }
 
+    #[must_use]
     pub fn inverse_primary(&self) -> Argb {
         self.get_argb(&dynamic_colors().inverse_primary())
     }
 
+    #[must_use]
     pub fn secondary(&self) -> Argb {
         self.get_argb(&dynamic_colors().secondary())
     }
 
+    #[must_use]
     pub fn on_secondary(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_secondary())
     }
 
+    #[must_use]
     pub fn secondary_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().secondary_container())
     }
 
+    #[must_use]
     pub fn on_secondary_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_secondary_container())
     }
 
+    #[must_use]
     pub fn tertiary(&self) -> Argb {
         self.get_argb(&dynamic_colors().tertiary())
     }
 
+    #[must_use]
     pub fn on_tertiary(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_tertiary())
     }
 
+    #[must_use]
     pub fn tertiary_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().tertiary_container())
     }
 
+    #[must_use]
     pub fn on_tertiary_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_tertiary_container())
     }
 
+    #[must_use]
     pub fn error(&self) -> Argb {
         self.get_argb(&dynamic_colors().error())
     }
 
+    #[must_use]
     pub fn on_error(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_error())
     }
 
+    #[must_use]
     pub fn error_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().error_container())
     }
 
+    #[must_use]
     pub fn on_error_container(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_error_container())
     }
 
+    #[must_use]
     pub fn primary_fixed(&self) -> Argb {
         self.get_argb(&dynamic_colors().primary_fixed())
     }
 
+    #[must_use]
     pub fn primary_fixed_dim(&self) -> Argb {
         self.get_argb(&dynamic_colors().primary_fixed_dim())
     }
 
+    #[must_use]
     pub fn on_primary_fixed(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_primary_fixed())
     }
 
+    #[must_use]
     pub fn on_primary_fixed_variant(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_primary_fixed_variant())
     }
 
+    #[must_use]
     pub fn secondary_fixed(&self) -> Argb {
         self.get_argb(&dynamic_colors().secondary_fixed())
     }
 
+    #[must_use]
     pub fn secondary_fixed_dim(&self) -> Argb {
         self.get_argb(&dynamic_colors().secondary_fixed_dim())
     }
 
+    #[must_use]
     pub fn on_secondary_fixed(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_secondary_fixed())
     }
 
+    #[must_use]
     pub fn on_secondary_fixed_variant(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_secondary_fixed_variant())
     }
 
+    #[must_use]
     pub fn tertiary_fixed(&self) -> Argb {
         self.get_argb(&dynamic_colors().tertiary_fixed())
     }
 
+    #[must_use]
     pub fn tertiary_fixed_dim(&self) -> Argb {
         self.get_argb(&dynamic_colors().tertiary_fixed_dim())
     }
 
+    #[must_use]
     pub fn on_tertiary_fixed(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_tertiary_fixed())
     }
 
+    #[must_use]
     pub fn on_tertiary_fixed_variant(&self) -> Argb {
         self.get_argb(&dynamic_colors().on_tertiary_fixed_variant())
     }
