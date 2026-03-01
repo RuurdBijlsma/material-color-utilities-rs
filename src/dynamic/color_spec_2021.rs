@@ -46,12 +46,12 @@ impl ColorSpec2021 {
         by_decreasing_tone: bool,
     ) -> f64 {
         let mut answer = tone;
-        let mut closest_to_chroma = Hct::from(hue, chroma, tone);
+        let mut closest_to_chroma = Hct::new(hue, chroma, tone);
         if closest_to_chroma.chroma() < chroma {
             let mut chroma_peak = closest_to_chroma.chroma();
             while closest_to_chroma.chroma() < chroma {
                 answer += if by_decreasing_tone { -1.0 } else { 1.0 };
-                let potential_solution = Hct::from(hue, chroma, answer);
+                let potential_solution = Hct::new(hue, chroma, answer);
                 if chroma_peak > potential_solution.chroma() {
                     break;
                 }

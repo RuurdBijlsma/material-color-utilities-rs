@@ -64,13 +64,13 @@ impl ColorSpec2025 {
         by_decreasing_tone: bool,
     ) -> f64 {
         let mut answer = tone;
-        let mut best_candidate = Hct::from(hue, chroma, answer);
+        let mut best_candidate = Hct::new(hue, chroma, answer);
         while best_candidate.chroma() < chroma {
             if !(0.0..=100.0).contains(&tone) {
                 break;
             }
             tone += if by_decreasing_tone { -1.0 } else { 1.0 };
-            let new_candidate = Hct::from(hue, chroma, tone);
+            let new_candidate = Hct::new(hue, chroma, tone);
             if best_candidate.chroma() < new_candidate.chroma() {
                 best_candidate = new_candidate;
                 answer = tone;
@@ -2314,7 +2314,7 @@ impl ColorSpec for ColorSpec2025 {
         let palette = (color.palette)(scheme);
         let tone = self.get_tone(scheme, color);
         let chroma_multiplier = color.chroma_multiplier.as_ref().map_or(1.0, |f| f(scheme));
-        Hct::from(palette.hue, palette.chroma * chroma_multiplier, tone)
+        Hct::new(palette.hue, palette.chroma * chroma_multiplier, tone)
     }
 
     fn get_tone(&self, scheme: &DynamicScheme, color: &DynamicColor) -> f64 {

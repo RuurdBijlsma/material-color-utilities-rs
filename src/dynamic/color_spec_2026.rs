@@ -40,13 +40,13 @@ impl ColorSpec2026 {
         by_decreasing_tone: bool,
     ) -> f64 {
         let mut answer = tone;
-        let mut best_candidate = Hct::from(hue, chroma, answer);
+        let mut best_candidate = Hct::new(hue, chroma, answer);
         while best_candidate.chroma() < chroma {
             if !(0.0..=100.0).contains(&tone) {
                 break;
             }
             tone += if by_decreasing_tone { -1.0 } else { 1.0 };
-            let new_candidate = Hct::from(hue, chroma, tone);
+            let new_candidate = Hct::new(hue, chroma, tone);
             if best_candidate.chroma() < new_candidate.chroma() {
                 best_candidate = new_candidate;
                 answer = tone;

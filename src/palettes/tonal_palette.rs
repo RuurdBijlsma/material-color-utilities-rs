@@ -107,7 +107,7 @@ impl TonalPalette {
     #[must_use]
     pub fn tone(&self, tone: i32) -> Argb {
         if !(0..=100).contains(&tone) {
-            return Hct::from(self.hue, self.chroma, f64::from(tone)).to_argb();
+            return Hct::new(self.hue, self.chroma, f64::from(tone)).to_argb();
         }
 
         let index = tone as usize;
@@ -119,7 +119,7 @@ impl TonalPalette {
         let color = if tone == 99 && Hct::is_yellow(self.hue) {
             Self::average_argb(self.tone(98), self.tone(100))
         } else {
-            Hct::from(self.hue, self.chroma, f64::from(tone)).to_argb()
+            Hct::new(self.hue, self.chroma, f64::from(tone)).to_argb()
         };
 
         self.cache[index].store(color.0, Ordering::Relaxed);
@@ -129,7 +129,7 @@ impl TonalPalette {
     /// Given a tone, use hue and chroma of palette to create a color, and return it as HCT.
     #[must_use]
     pub fn get_hct(&self, tone: f64) -> Hct {
-        Hct::from(self.hue, self.chroma, tone)
+        Hct::new(self.hue, self.chroma, tone)
     }
 
     fn average_argb(argb1: Argb, argb2: Argb) -> Argb {
@@ -192,7 +192,7 @@ impl KeyColor {
                     upper_tone = mid_tone;
                 } else {
                     if lower_tone == mid_tone {
-                        return Hct::from(self.hue, self.requested_chroma, f64::from(lower_tone));
+                        return Hct::new(self.hue, self.requested_chroma, f64::from(lower_tone));
                     }
                     lower_tone = mid_tone;
                 }
@@ -207,12 +207,12 @@ impl KeyColor {
                 }
             }
         }
-        Hct::from(self.hue, self.requested_chroma, f64::from(lower_tone))
+        Hct::new(self.hue, self.requested_chroma, f64::from(lower_tone))
     }
 
     // Find the maximum chroma for a given tone
     fn max_chroma(&self, tone: i32) -> f64 {
-        Hct::from(self.hue, Self::MAX_CHROMA_VALUE, f64::from(tone)).chroma()
+        Hct::new(self.hue, Self::MAX_CHROMA_VALUE, f64::from(tone)).chroma()
     }
 }
 

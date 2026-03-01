@@ -25,7 +25,7 @@ impl DislikeAnalyzer {
     #[must_use]
     pub fn fix_if_disliked(hct: Hct) -> Hct {
         if Self::is_disliked(&hct) {
-            Hct::from(hct.hue(), hct.chroma(), 70.0)
+            Hct::new(hct.hue(), hct.chroma(), 70.0)
         } else {
             hct
         }
@@ -40,21 +40,21 @@ mod tests {
     fn test_is_disliked() {
         // A known disliked color: dark yellow-green
         // #897700
-        let disliked = Hct::from(100.0, 50.0, 50.0);
+        let disliked = Hct::new(100.0, 50.0, 50.0);
         assert!(DislikeAnalyzer::is_disliked(&disliked));
 
         // A liked color: blue
-        let liked = Hct::from(250.0, 50.0, 50.0);
+        let liked = Hct::new(250.0, 50.0, 50.0);
         assert!(!DislikeAnalyzer::is_disliked(&liked));
 
         // Light yellow-green (liked)
-        let light = Hct::from(100.0, 50.0, 80.0);
+        let light = Hct::new(100.0, 50.0, 80.0);
         assert!(!DislikeAnalyzer::is_disliked(&light));
     }
 
     #[test]
     fn test_fix_if_disliked() {
-        let disliked = Hct::from(100.0, 50.0, 50.0);
+        let disliked = Hct::new(100.0, 50.0, 50.0);
         let fixed = DislikeAnalyzer::fix_if_disliked(disliked);
 
         assert!(!DislikeAnalyzer::is_disliked(&fixed));

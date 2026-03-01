@@ -1,5 +1,7 @@
 use super::math_utils::MathUtils;
+use crate::utils::error::ColorParseError;
 use std::fmt;
+use std::str::FromStr;
 
 /// A color in the ARGB color space.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -251,6 +253,25 @@ impl ColorUtils {
             ft3
         } else {
             116.0f64.mul_add(ft, -16.0) / kappa
+        }
+    }
+}
+
+impl FromStr for Argb {
+    type Err = ColorParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let hex = s.strip_prefix('#').unwrap_or(s);
+        match hex.len() {
+            6 => {
+                let val = u32::from_str_radix(hex, 16)?;
+                Ok(Self(0xFF000000 | val))
+            }
+            8 => {
+                let val = u32::from_str_radix(hex, 16)?;
+                Ok(Self(val))
+            }
+            _ => Err(ColorParseError::InvalidLength),
         }
     }
 }

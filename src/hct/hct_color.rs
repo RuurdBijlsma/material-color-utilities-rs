@@ -59,7 +59,7 @@ impl Hct {
     ///
     /// HCT representation of a color in default viewing conditions.
     #[must_use]
-    pub fn from(hue: f64, chroma: f64, tone: f64) -> Self {
+    pub fn new(hue: f64, chroma: f64, tone: f64) -> Self {
         let argb = HctSolver::solve_to_argb(hue, chroma, tone);
         Self::new_internal(argb)
     }
@@ -164,7 +164,7 @@ impl Hct {
         // 3. Create HCT from:
         // - CAM16 using default VC with XYZ coordinates in specified VC.
         // - L* converted from Y in XYZ coordinates in specified VC.
-        Self::from(
+        Self::new(
             recast_in_vc.hue,
             recast_in_vc.chroma,
             ColorUtils::lstar_from_y(viewed_in_vc.y),
@@ -206,7 +206,7 @@ mod tests {
 
     #[test]
     fn test_hct_red() {
-        let hct = Hct::from(0.0, 50.0, 50.0);
+        let hct = Hct::new(0.0, 50.0, 50.0);
         // We don't check exact values because rounding and floating point might vary slightly
         // but it should be close to what we requested.
         assert!((hct.hue() - 0.0).abs() < 1.0 || (hct.hue() - 360.0).abs() < 1.0);
@@ -224,7 +224,7 @@ mod tests {
 
     #[test]
     fn test_hct_setters() {
-        let mut hct = Hct::from(120.0, 60.0, 50.0);
+        let mut hct = Hct::new(120.0, 60.0, 50.0);
         hct.set_hue(200.0);
         assert!((hct.hue() - 200.0).abs() < 1.0);
 
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn test_hct_in_viewing_conditions() {
-        let hct = Hct::from(0.0, 50.0, 50.0);
+        let hct = Hct::new(0.0, 50.0, 50.0);
         let vc = ViewingConditions::default();
         let hct_vc = hct.in_viewing_conditions(&vc);
         // In default conditions, it should stay the same
@@ -259,7 +259,7 @@ mod tests {
         let hue = 67.0;
         let chroma = 20.0;
         let tone = 52.0;
-        let hct = Hct::from(hue, chroma, tone);
+        let hct = Hct::new(hue, chroma, tone);
 
         // HCT -> RGB -> HCT should be stable for in-gamut colors
         let argb = hct.to_argb();
@@ -276,7 +276,7 @@ mod tests {
     fn test_hct_clipping() {
         // HCT(67, 91, 52) is out of gamut in sRGB.
         // It should be clipped to the maximum possible chroma (~49.2).
-        let hct = Hct::from(67.0, 91.0, 52.0);
+        let hct = Hct::new(67.0, 91.0, 52.0);
 
         assert!((hct.hue() - 67.0).abs() < 1.0);
         assert!(hct.chroma() < 50.0); // Clipped!

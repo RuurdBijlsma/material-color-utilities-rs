@@ -253,7 +253,7 @@ impl TemperatureCache {
 
         let mut hcts = Vec::with_capacity(360);
         for i in 0..360 {
-            hcts.push(Hct::from(
+            hcts.push(Hct::new(
                 f64::from(i),
                 self.input.chroma(),
                 self.input.tone(),

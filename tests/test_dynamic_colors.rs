@@ -36,21 +36,21 @@ impl ReferenceEntry {
     }
 
     fn to_dynamic_scheme(&self) -> Result<DynamicScheme> {
-        let hct = Hct::from_argb(self.parse_color(&self.color)?);
+        let argb = self.parse_color(&self.color)?;
         let d = self.is_dark;
         let c = self.contrast;
 
         match self.scheme.as_str() {
-            "CMF" => Ok(SchemeCmf::builder(hct, d, c).build()),
-            "CONTENT" => Ok(SchemeContent::builder(hct, d, c).build()),
-            "EXPRESSIVE" => Ok(SchemeExpressive::builder(hct, d, c).build()),
-            "FIDELITY" => Ok(SchemeFidelity::builder(hct, d, c).build()),
-            "FRUIT_SALAD" => Ok(SchemeFruitSalad::builder(hct, d, c).build()),
-            "MONOCHROME" => Ok(SchemeMonochrome::builder(hct, d, c).build()),
-            "NEUTRAL" => Ok(SchemeNeutral::builder(hct, d, c).build()),
-            "RAINBOW" => Ok(SchemeRainbow::builder(hct, d, c).build()),
-            "TONAL_SPOT" => Ok(SchemeTonalSpot::builder(hct, d, c).build()),
-            "VIBRANT" => Ok(SchemeVibrant::builder(hct, d, c).build()),
+            "CMF" => Ok(SchemeCmf::builder(argb, d, c).build()),
+            "CONTENT" => Ok(SchemeContent::builder(argb, d, c).build()),
+            "EXPRESSIVE" => Ok(SchemeExpressive::builder(argb, d, c).build()),
+            "FIDELITY" => Ok(SchemeFidelity::builder(argb, d, c).build()),
+            "FRUIT_SALAD" => Ok(SchemeFruitSalad::builder(argb, d, c).build()),
+            "MONOCHROME" => Ok(SchemeMonochrome::builder(argb, d, c).build()),
+            "NEUTRAL" => Ok(SchemeNeutral::builder(argb, d, c).build()),
+            "RAINBOW" => Ok(SchemeRainbow::builder(argb, d, c).build()),
+            "TONAL_SPOT" => Ok(SchemeTonalSpot::builder(argb, d, c).build()),
+            "VIBRANT" => Ok(SchemeVibrant::builder(argb, d, c).build()),
             _ => Err(eyre!("Unsupported scheme type: {}", self.scheme)),
         }
     }

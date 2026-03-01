@@ -29,7 +29,7 @@ impl Blend {
             from_hct.hue()
                 + rotation_degrees * MathUtils::rotation_direction(from_hct.hue(), to_hct.hue()),
         );
-        Hct::from(output_hue, from_hct.chroma(), from_hct.tone()).to_argb()
+        Hct::new(output_hue, from_hct.chroma(), from_hct.tone()).to_argb()
     }
 
     /// Blends hue from one color into another. The chroma and tone of the original color are
@@ -49,7 +49,7 @@ impl Blend {
         let ucs = Self::cam16_ucs(from, to, amount);
         let ucs_cam = Cam16::from_argb(ucs);
         let from_cam = Cam16::from_argb(from);
-        let blended = Hct::from(ucs_cam.hue, from_cam.chroma, from.lstar());
+        let blended = Hct::new(ucs_cam.hue, from_cam.chroma, from.lstar());
         blended.to_argb()
     }
 
