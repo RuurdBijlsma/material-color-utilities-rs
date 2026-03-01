@@ -199,20 +199,6 @@ impl fmt::Display for Hct {
     }
 }
 
-// ── Standard conversion traits ──────────────────────────────────────────────
-
-/// sRGB ⇌ HCT
-impl From<Argb> for Hct {
-    fn from(argb: Argb) -> Self {
-        Self::from_argb(argb)
-    }
-}
-
-impl From<Hct> for Argb {
-    fn from(hct: Hct) -> Self {
-        hct.to_argb()
-    }
-}
 
 #[cfg(test)]
 mod tests {

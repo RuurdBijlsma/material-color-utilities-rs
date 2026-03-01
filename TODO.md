@@ -19,7 +19,7 @@
 * ✅ impl display for Argb & debug
 * ✅ Score::score kan beter met bon builder, vind defaults in Score.kt
 * ✅ rename to_int to to_argb?
-* alle scheme_*.rs files omzetten om bon builder te gebruiken
+* ✅ alle scheme_*.rs files omzetten om bon builder te gebruiken
 * from impls maken voor kleur conversions?
   * from/to "#ffcc00" en "rgb(255,0,0)" mogelijk maken
   * from/to_hex_string
