@@ -6,17 +6,16 @@ use crate::utils::color_utils::Argb;
 /// Extract prominent colors from an image using quantization + scoring.
 #[bon::builder]
 pub fn extract_image_colors(
-    /// The source image. This is the starting positional parameter.
+    /// The source image.
     #[builder(start_fn)]
     image: &image::DynamicImage,
-    /// Max colors to pass to the quantizer. Defaults to `128`.
+    /// Max colors to pass to the quantizer.
     #[builder(default = 128)]
     quantize_max_colors: usize,
-    /// Desired number of final colors to return. Defaults to `4`.
+    /// Desired number of final colors to return.
     #[builder(default = 4)]
     desired_colors: usize,
 ) -> Vec<Argb> {
-    // Convert image to RGB8 to have consistent pixel layout and ignore alpha.
     let pixels: Vec<Argb> = image
         .to_rgb8()
         .pixels()

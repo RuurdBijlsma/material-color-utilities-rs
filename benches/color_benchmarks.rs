@@ -8,6 +8,7 @@ use material_color_utilities::palettes::tonal_palette::TonalPalette;
 use material_color_utilities::scheme::scheme_tonal_spot::SchemeTonalSpot;
 use material_color_utilities::utils::color_utils::Argb;
 use std::hint::black_box;
+use material_color_utilities::get_theme_from_color;
 
 /// Benchmark Scheme Generation
 fn bench_scheme_generation(c: &mut Criterion) {
@@ -88,7 +89,18 @@ fn bench_bulk_resolution(c: &mut Criterion) {
                     black_box(color.get_argb(&scheme));
                 }
             }
-        })
+        });
+    });
+}
+
+/// Benchmark Full Theme Materialization
+fn bench_materialized_theme(c: &mut Criterion) {
+    let argb = Argb(0xFF4285F4);
+
+    c.bench_function("get_theme_from_color (Full Light + Dark Materialization)", |b| {
+        b.iter(|| {
+            black_box(get_theme_from_color(argb).call())
+        });
     });
 }
 
@@ -96,6 +108,7 @@ criterion_group!(
     benches,
     bench_scheme_generation,
     bench_color_resolution,
-    bench_bulk_resolution
+    bench_bulk_resolution,
+    bench_materialized_theme
 );
 criterion_main!(benches);

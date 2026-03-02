@@ -93,7 +93,6 @@ mod tests {
         assert!(safe_lighter_blue.is_none());
 
         let lighter_blue_tone = unsafe_lighter_blue.lstar();
-        dbg!(lighter_blue_tone, unsafe_lighter_blue);
         assert!((lighter_blue_tone - 100.0).abs() < f64::EPSILON);
 
         Ok(())

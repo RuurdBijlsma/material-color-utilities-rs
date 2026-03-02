@@ -4,6 +4,7 @@ use crate::hct::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct MaterializedTheme {
     pub source_color_hct: Hct,
     pub source_color: Argb,
@@ -14,9 +15,10 @@ pub struct MaterializedTheme {
     pub schemes: MaterializedSchemeGroup,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct MaterializedSchemeGroup {
-    light: MaterializedScheme,
-    dark: MaterializedScheme,
+    pub light: MaterializedScheme,
+    pub dark: MaterializedScheme,
 }
 
 #[derive(Debug, Clone, PartialEq)]
