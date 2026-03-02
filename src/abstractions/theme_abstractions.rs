@@ -121,7 +121,7 @@ fn create_dynamic_scheme(
     }
 }
 
-/// Extracts all ARGB values from a DynamicScheme into a MaterializedScheme.
+/// Extracts all ARGB values from a `DynamicScheme` into a `MaterializedScheme`.
 fn materialize(scheme: &DynamicScheme, mdc: &MaterialDynamicColors) -> MaterializedScheme {
     MaterializedScheme {
         is_dark: scheme.is_dark,
@@ -203,7 +203,6 @@ mod tests {
     use super::*;
     use crate::dynamic::variant::Variant;
     use crate::utils::color_utils::Argb;
-    use color_eyre::Result;
 
     const GOOGLE_BLUE: Argb = Argb(0xFF4285F4);
 
