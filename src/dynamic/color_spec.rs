@@ -46,6 +46,7 @@ macro_rules! cached_color_opt {
 /// The `PartialOrd` / `Ord` derivations are intentional: `DynamicColor::extend_spec_version`
 /// uses `>=` to decide which branch of a color definition applies at runtime.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SpecVersion {
     Spec2021,
     Spec2025,
@@ -54,6 +55,7 @@ pub enum SpecVersion {
 
 /// The device platform that the scheme is being generated for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Platform {
     Phone,
     Watch,

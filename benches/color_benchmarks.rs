@@ -7,8 +7,9 @@ use material_color_utilities::hct::hct_color::Hct;
 use material_color_utilities::palettes::tonal_palette::TonalPalette;
 use material_color_utilities::scheme::scheme_tonal_spot::SchemeTonalSpot;
 use material_color_utilities::utils::color_utils::Argb;
+use material_color_utilities::{extract_image_colors, get_theme_from_color};
+use std::fs;
 use std::hint::black_box;
-use material_color_utilities::get_theme_from_color;
 
 /// Benchmark Scheme Generation
 fn bench_scheme_generation(c: &mut Criterion) {
@@ -97,9 +98,23 @@ fn bench_bulk_resolution(c: &mut Criterion) {
 fn bench_materialized_theme(c: &mut Criterion) {
     let argb = Argb(0xFF4285F4);
 
-    c.bench_function("get_theme_from_color (Full Light + Dark Materialization)", |b| {
+    c.bench_function(
+        "get_theme_from_color (Full Light + Dark Materialization)",
+        |b| {
+            b.iter(|| black_box(get_theme_from_color(argb).call()));
+        },
+    );
+}
+
+fn bench_extract_image_colors(c: &mut Criterion) {
+    let dir = "tests/assets/img";
+    let images = fs::read_dir(dir).unwrap().flatten().collect::<Vec<_>>();
+    let path = images.first().unwrap().path();
+    let img = image::open(&path).unwrap();
+
+    c.bench_function("extract_image_colors", |b| {
         b.iter(|| {
-            black_box(get_theme_from_color(argb).call())
+            black_box(extract_image_colors(&img).call());
         });
     });
 }
@@ -109,6 +124,7 @@ criterion_group!(
     bench_scheme_generation,
     bench_color_resolution,
     bench_bulk_resolution,
-    bench_materialized_theme
+    bench_materialized_theme,
+    bench_extract_image_colors,
 );
 criterion_main!(benches);

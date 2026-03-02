@@ -1,12 +1,11 @@
 use crate::dynamic::color_spec::{Platform, SpecVersion};
 use crate::dynamic::variant::Variant;
-use crate::hct::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MaterializedTheme {
-    pub source_color_hct: Hct,
     pub source_color: Argb,
     pub variant: Variant,
     pub contrast_level: f64,
@@ -16,16 +15,18 @@ pub struct MaterializedTheme {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MaterializedSchemeGroup {
     pub light: MaterializedScheme,
     pub dark: MaterializedScheme,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MaterializedScheme {
     // Metadata and Parameters
     pub is_dark: bool,
-    pub source_color_hct: Hct,
+    pub source_color: Argb,
     pub variant: Variant,
     pub contrast_level: f64,
     pub platform: Platform,

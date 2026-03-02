@@ -3,7 +3,6 @@ use crate::dynamic::color_spec::{Platform, SpecVersion};
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::material_dynamic_colors::MaterialDynamicColors;
 use crate::dynamic::variant::Variant;
-use crate::hct::hct_color::Hct;
 use crate::scheme::{
     SchemeCmf, SchemeContent, SchemeExpressive, SchemeFidelity, SchemeFruitSalad, SchemeMonochrome,
     SchemeNeutral, SchemeRainbow, SchemeTonalSpot, SchemeVibrant,
@@ -33,8 +32,6 @@ pub fn get_theme_from_color(
     #[builder(default = Platform::Phone)]
     platform: Platform,
 ) -> MaterializedTheme {
-    let source_hct = Hct::from_argb(source_color);
-
     let light_scheme = create_dynamic_scheme(
         source_color,
         variant,
@@ -55,7 +52,6 @@ pub fn get_theme_from_color(
     let mdc = MaterialDynamicColors::new_with_spec(spec_version);
 
     MaterializedTheme {
-        source_color_hct: source_hct,
         source_color,
         variant,
         contrast_level,
@@ -125,7 +121,7 @@ fn create_dynamic_scheme(
 fn materialize(scheme: &DynamicScheme, mdc: &MaterialDynamicColors) -> MaterializedScheme {
     MaterializedScheme {
         is_dark: scheme.is_dark,
-        source_color_hct: *scheme.source_color_hct(),
+        source_color: scheme.source_color_argb(),
         variant: scheme.variant,
         contrast_level: scheme.contrast_level,
         platform: scheme.platform,
@@ -202,6 +198,7 @@ fn materialize(scheme: &DynamicScheme, mdc: &MaterialDynamicColors) -> Materiali
 mod tests {
     use super::*;
     use crate::dynamic::variant::Variant;
+    use crate::hct::Hct;
     use crate::utils::color_utils::Argb;
 
     const GOOGLE_BLUE: Argb = Argb(0xFF4285F4);
@@ -245,9 +242,7 @@ mod tests {
             .contrast_level(-1.0)
             .call();
 
-        let high_contrast = get_theme_from_color(GOOGLE_BLUE)
-            .contrast_level(1.0)
-            .call();
+        let high_contrast = get_theme_from_color(GOOGLE_BLUE).contrast_level(1.0).call();
 
         // High contrast primary should be different from low contrast primary
         assert_ne!(
