@@ -32,6 +32,31 @@ pub fn theme_from_color(
     #[builder(default = Platform::Phone)]
     platform: Platform,
 ) -> MaterializedTheme {
+    #[cfg(feature = "rayon")]
+    let (light_scheme, dark_scheme) = rayon::join(
+        || {
+            create_dynamic_scheme(
+                source_color,
+                variant,
+                false,
+                contrast_level,
+                spec_version,
+                platform,
+            )
+        },
+        || {
+            create_dynamic_scheme(
+                source_color,
+                variant,
+                true,
+                contrast_level,
+                spec_version,
+                platform,
+            )
+        },
+    );
+
+    #[cfg(not(feature = "rayon"))]
     let light_scheme = create_dynamic_scheme(
         source_color,
         variant,
@@ -40,6 +65,7 @@ pub fn theme_from_color(
         spec_version,
         platform,
     );
+    #[cfg(not(feature = "rayon"))]
     let dark_scheme = create_dynamic_scheme(
         source_color,
         variant,
@@ -51,16 +77,21 @@ pub fn theme_from_color(
 
     let mdc = MaterialDynamicColors::new_with_spec(spec_version);
 
+    #[cfg(feature = "rayon")]
+    let (light, dark) = rayon::join(|| materialize(&light_scheme, &mdc), || materialize(&dark_scheme, &mdc));
+
+    #[cfg(not(feature = "rayon"))]
+    let light = materialize(&light_scheme, &mdc);
+    #[cfg(not(feature = "rayon"))]
+    let dark = materialize(&dark_scheme, &mdc);
+
     MaterializedTheme {
         source_color,
         variant,
         contrast_level,
         platform,
         spec_version,
-        schemes: MaterializedSchemeGroup {
-            light: materialize(&light_scheme, &mdc),
-            dark: materialize(&dark_scheme, &mdc),
-        },
+        schemes: MaterializedSchemeGroup { light, dark },
     }
 }
 
@@ -118,7 +149,249 @@ fn create_dynamic_scheme(
 }
 
 /// Extracts all ARGB values from a `DynamicScheme` into a `MaterializedScheme`.
+/// Extracts all ARGB values from a `DynamicScheme` into a `MaterializedScheme`.
 fn materialize(scheme: &DynamicScheme, mdc: &MaterialDynamicColors) -> MaterializedScheme {
+    #[cfg(feature = "rayon")]
+    let (
+        (
+            (
+                background,
+                on_background,
+                surface,
+                surface_dim,
+                surface_bright,
+                surface_container_lowest,
+                surface_container_low,
+                surface_container,
+                surface_container_high,
+                surface_container_highest,
+                on_surface,
+                surface_variant,
+                on_surface_variant,
+                inverse_surface,
+                inverse_on_surface,
+            ),
+            (outline, outline_variant, shadow, scrim, surface_tint),
+        ),
+        (
+            (
+                (primary, on_primary, primary_container, on_primary_container, inverse_primary),
+                (secondary, on_secondary, secondary_container, on_secondary_container),
+                (tertiary, on_tertiary, tertiary_container, on_tertiary_container),
+                (error, on_error, error_container, on_error_container),
+            ),
+            (
+                (
+                    primary_fixed,
+                    primary_fixed_dim,
+                    on_primary_fixed,
+                    on_primary_fixed_variant,
+                ),
+                (
+                    secondary_fixed,
+                    secondary_fixed_dim,
+                    on_secondary_fixed,
+                    on_secondary_fixed_variant,
+                ),
+                (
+                    tertiary_fixed,
+                    tertiary_fixed_dim,
+                    on_tertiary_fixed,
+                    on_tertiary_fixed_variant,
+                ),
+            ),
+        ),
+    ) = rayon::join(
+        || {
+            rayon::join(
+                || {
+                    (
+                        scheme.get_argb(&mdc.background()),
+                        scheme.get_argb(&mdc.on_background()),
+                        scheme.get_argb(&mdc.surface()),
+                        scheme.get_argb(&mdc.surface_dim()),
+                        scheme.get_argb(&mdc.surface_bright()),
+                        scheme.get_argb(&mdc.surface_container_lowest()),
+                        scheme.get_argb(&mdc.surface_container_low()),
+                        scheme.get_argb(&mdc.surface_container()),
+                        scheme.get_argb(&mdc.surface_container_high()),
+                        scheme.get_argb(&mdc.surface_container_highest()),
+                        scheme.get_argb(&mdc.on_surface()),
+                        scheme.get_argb(&mdc.surface_variant()),
+                        scheme.get_argb(&mdc.on_surface_variant()),
+                        scheme.get_argb(&mdc.inverse_surface()),
+                        scheme.get_argb(&mdc.inverse_on_surface()),
+                    )
+                },
+                || {
+                    (
+                        scheme.get_argb(&mdc.outline()),
+                        scheme.get_argb(&mdc.outline_variant()),
+                        scheme.get_argb(&mdc.shadow()),
+                        scheme.get_argb(&mdc.scrim()),
+                        scheme.get_argb(&mdc.surface_tint()),
+                    )
+                },
+            )
+        },
+        || {
+            rayon::join(
+                || {
+                    (
+                        (
+                            scheme.get_argb(&mdc.primary()),
+                            scheme.get_argb(&mdc.on_primary()),
+                            scheme.get_argb(&mdc.primary_container()),
+                            scheme.get_argb(&mdc.on_primary_container()),
+                            scheme.get_argb(&mdc.inverse_primary()),
+                        ),
+                        (
+                            scheme.get_argb(&mdc.secondary()),
+                            scheme.get_argb(&mdc.on_secondary()),
+                            scheme.get_argb(&mdc.secondary_container()),
+                            scheme.get_argb(&mdc.on_secondary_container()),
+                        ),
+                        (
+                            scheme.get_argb(&mdc.tertiary()),
+                            scheme.get_argb(&mdc.on_tertiary()),
+                            scheme.get_argb(&mdc.tertiary_container()),
+                            scheme.get_argb(&mdc.on_tertiary_container()),
+                        ),
+                        (
+                            scheme.get_argb(&mdc.error()),
+                            scheme.get_argb(&mdc.on_error()),
+                            scheme.get_argb(&mdc.error_container()),
+                            scheme.get_argb(&mdc.on_error_container()),
+                        ),
+                    )
+                },
+                || {
+                    (
+                        (
+                            scheme.get_argb(&mdc.primary_fixed()),
+                            scheme.get_argb(&mdc.primary_fixed_dim()),
+                            scheme.get_argb(&mdc.on_primary_fixed()),
+                            scheme.get_argb(&mdc.on_primary_fixed_variant()),
+                        ),
+                        (
+                            scheme.get_argb(&mdc.secondary_fixed()),
+                            scheme.get_argb(&mdc.secondary_fixed_dim()),
+                            scheme.get_argb(&mdc.on_secondary_fixed()),
+                            scheme.get_argb(&mdc.on_secondary_fixed_variant()),
+                        ),
+                        (
+                            scheme.get_argb(&mdc.tertiary_fixed()),
+                            scheme.get_argb(&mdc.tertiary_fixed_dim()),
+                            scheme.get_argb(&mdc.on_tertiary_fixed()),
+                            scheme.get_argb(&mdc.on_tertiary_fixed_variant()),
+                        ),
+                    )
+                },
+            )
+        },
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (
+        background,
+        on_background,
+        surface,
+        surface_dim,
+        surface_bright,
+        surface_container_lowest,
+        surface_container_low,
+        surface_container,
+        surface_container_high,
+        surface_container_highest,
+        on_surface,
+        surface_variant,
+        on_surface_variant,
+        inverse_surface,
+        inverse_on_surface,
+    ) = (
+        scheme.get_argb(&mdc.background()),
+        scheme.get_argb(&mdc.on_background()),
+        scheme.get_argb(&mdc.surface()),
+        scheme.get_argb(&mdc.surface_dim()),
+        scheme.get_argb(&mdc.surface_bright()),
+        scheme.get_argb(&mdc.surface_container_lowest()),
+        scheme.get_argb(&mdc.surface_container_low()),
+        scheme.get_argb(&mdc.surface_container()),
+        scheme.get_argb(&mdc.surface_container_high()),
+        scheme.get_argb(&mdc.surface_container_highest()),
+        scheme.get_argb(&mdc.on_surface()),
+        scheme.get_argb(&mdc.surface_variant()),
+        scheme.get_argb(&mdc.on_surface_variant()),
+        scheme.get_argb(&mdc.inverse_surface()),
+        scheme.get_argb(&mdc.inverse_on_surface()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (outline, outline_variant, shadow, scrim, surface_tint) = (
+        scheme.get_argb(&mdc.outline()),
+        scheme.get_argb(&mdc.outline_variant()),
+        scheme.get_argb(&mdc.shadow()),
+        scheme.get_argb(&mdc.scrim()),
+        scheme.get_argb(&mdc.surface_tint()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (primary, on_primary, primary_container, on_primary_container, inverse_primary) = (
+        scheme.get_argb(&mdc.primary()),
+        scheme.get_argb(&mdc.on_primary()),
+        scheme.get_argb(&mdc.primary_container()),
+        scheme.get_argb(&mdc.on_primary_container()),
+        scheme.get_argb(&mdc.inverse_primary()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (secondary, on_secondary, secondary_container, on_secondary_container) = (
+        scheme.get_argb(&mdc.secondary()),
+        scheme.get_argb(&mdc.on_secondary()),
+        scheme.get_argb(&mdc.secondary_container()),
+        scheme.get_argb(&mdc.on_secondary_container()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (tertiary, on_tertiary, tertiary_container, on_tertiary_container) = (
+        scheme.get_argb(&mdc.tertiary()),
+        scheme.get_argb(&mdc.on_tertiary()),
+        scheme.get_argb(&mdc.tertiary_container()),
+        scheme.get_argb(&mdc.on_tertiary_container()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (error, on_error, error_container, on_error_container) = (
+        scheme.get_argb(&mdc.error()),
+        scheme.get_argb(&mdc.on_error()),
+        scheme.get_argb(&mdc.error_container()),
+        scheme.get_argb(&mdc.on_error_container()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (primary_fixed, primary_fixed_dim, on_primary_fixed, on_primary_fixed_variant) = (
+        scheme.get_argb(&mdc.primary_fixed()),
+        scheme.get_argb(&mdc.primary_fixed_dim()),
+        scheme.get_argb(&mdc.on_primary_fixed()),
+        scheme.get_argb(&mdc.on_primary_fixed_variant()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (secondary_fixed, secondary_fixed_dim, on_secondary_fixed, on_secondary_fixed_variant) = (
+        scheme.get_argb(&mdc.secondary_fixed()),
+        scheme.get_argb(&mdc.secondary_fixed_dim()),
+        scheme.get_argb(&mdc.on_secondary_fixed()),
+        scheme.get_argb(&mdc.on_secondary_fixed_variant()),
+    );
+
+    #[cfg(not(feature = "rayon"))]
+    let (tertiary_fixed, tertiary_fixed_dim, on_tertiary_fixed, on_tertiary_fixed_variant) = (
+        scheme.get_argb(&mdc.tertiary_fixed()),
+        scheme.get_argb(&mdc.tertiary_fixed_dim()),
+        scheme.get_argb(&mdc.on_tertiary_fixed()),
+        scheme.get_argb(&mdc.on_tertiary_fixed_variant()),
+    );
+
     MaterializedScheme {
         is_dark: scheme.is_dark,
         source_color: scheme.source_color_argb(),
@@ -134,63 +407,63 @@ fn materialize(scheme: &DynamicScheme, mdc: &MaterialDynamicColors) -> Materiali
         neutral_variant_palette: scheme.neutral_variant_palette.clone(),
         error_palette: scheme.error_palette.clone(),
 
-        background: scheme.get_argb(&mdc.background()),
-        on_background: scheme.get_argb(&mdc.on_background()),
-        surface: scheme.get_argb(&mdc.surface()),
-        surface_dim: scheme.get_argb(&mdc.surface_dim()),
-        surface_bright: scheme.get_argb(&mdc.surface_bright()),
-        surface_container_lowest: scheme.get_argb(&mdc.surface_container_lowest()),
-        surface_container_low: scheme.get_argb(&mdc.surface_container_low()),
-        surface_container: scheme.get_argb(&mdc.surface_container()),
-        surface_container_high: scheme.get_argb(&mdc.surface_container_high()),
-        surface_container_highest: scheme.get_argb(&mdc.surface_container_highest()),
-        on_surface: scheme.get_argb(&mdc.on_surface()),
-        surface_variant: scheme.get_argb(&mdc.surface_variant()),
-        on_surface_variant: scheme.get_argb(&mdc.on_surface_variant()),
-        inverse_surface: scheme.get_argb(&mdc.inverse_surface()),
-        inverse_on_surface: scheme.get_argb(&mdc.inverse_on_surface()),
+        background,
+        on_background,
+        surface,
+        surface_dim,
+        surface_bright,
+        surface_container_lowest,
+        surface_container_low,
+        surface_container,
+        surface_container_high,
+        surface_container_highest,
+        on_surface,
+        surface_variant,
+        on_surface_variant,
+        inverse_surface,
+        inverse_on_surface,
 
-        outline: scheme.get_argb(&mdc.outline()),
-        outline_variant: scheme.get_argb(&mdc.outline_variant()),
-        shadow: scheme.get_argb(&mdc.shadow()),
-        scrim: scheme.get_argb(&mdc.scrim()),
-        surface_tint: scheme.get_argb(&mdc.surface_tint()),
+        outline,
+        outline_variant,
+        shadow,
+        scrim,
+        surface_tint,
 
-        primary: scheme.get_argb(&mdc.primary()),
-        on_primary: scheme.get_argb(&mdc.on_primary()),
-        primary_container: scheme.get_argb(&mdc.primary_container()),
-        on_primary_container: scheme.get_argb(&mdc.on_primary_container()),
-        inverse_primary: scheme.get_argb(&mdc.inverse_primary()),
+        primary,
+        on_primary,
+        primary_container,
+        on_primary_container,
+        inverse_primary,
 
-        secondary: scheme.get_argb(&mdc.secondary()),
-        on_secondary: scheme.get_argb(&mdc.on_secondary()),
-        secondary_container: scheme.get_argb(&mdc.secondary_container()),
-        on_secondary_container: scheme.get_argb(&mdc.on_secondary_container()),
+        secondary,
+        on_secondary,
+        secondary_container,
+        on_secondary_container,
 
-        tertiary: scheme.get_argb(&mdc.tertiary()),
-        on_tertiary: scheme.get_argb(&mdc.on_tertiary()),
-        tertiary_container: scheme.get_argb(&mdc.tertiary_container()),
-        on_tertiary_container: scheme.get_argb(&mdc.on_tertiary_container()),
+        tertiary,
+        on_tertiary,
+        tertiary_container,
+        on_tertiary_container,
 
-        error: scheme.get_argb(&mdc.error()),
-        on_error: scheme.get_argb(&mdc.on_error()),
-        error_container: scheme.get_argb(&mdc.error_container()),
-        on_error_container: scheme.get_argb(&mdc.on_error_container()),
+        error,
+        on_error,
+        error_container,
+        on_error_container,
 
-        primary_fixed: scheme.get_argb(&mdc.primary_fixed()),
-        primary_fixed_dim: scheme.get_argb(&mdc.primary_fixed_dim()),
-        on_primary_fixed: scheme.get_argb(&mdc.on_primary_fixed()),
-        on_primary_fixed_variant: scheme.get_argb(&mdc.on_primary_fixed_variant()),
+        primary_fixed,
+        primary_fixed_dim,
+        on_primary_fixed,
+        on_primary_fixed_variant,
 
-        secondary_fixed: scheme.get_argb(&mdc.secondary_fixed()),
-        secondary_fixed_dim: scheme.get_argb(&mdc.secondary_fixed_dim()),
-        on_secondary_fixed: scheme.get_argb(&mdc.on_secondary_fixed()),
-        on_secondary_fixed_variant: scheme.get_argb(&mdc.on_secondary_fixed_variant()),
+        secondary_fixed,
+        secondary_fixed_dim,
+        on_secondary_fixed,
+        on_secondary_fixed_variant,
 
-        tertiary_fixed: scheme.get_argb(&mdc.tertiary_fixed()),
-        tertiary_fixed_dim: scheme.get_argb(&mdc.tertiary_fixed_dim()),
-        on_tertiary_fixed: scheme.get_argb(&mdc.on_tertiary_fixed()),
-        on_tertiary_fixed_variant: scheme.get_argb(&mdc.on_tertiary_fixed_variant()),
+        tertiary_fixed,
+        tertiary_fixed_dim,
+        on_tertiary_fixed,
+        on_tertiary_fixed_variant,
     }
 }
 
