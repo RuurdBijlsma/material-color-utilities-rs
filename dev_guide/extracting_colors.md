@@ -87,7 +87,7 @@ let theme = theme_from_image(&img)
     .unwrap();
 ```
 
-### Generating multiple themes from an image (uses `rayon` for parallelization)
+### Generating multiple themes from an image (uses `rayon` for parallelization if the feature is enabled)
 
 ```rust
 use material_color_utilities::themes_from_image;

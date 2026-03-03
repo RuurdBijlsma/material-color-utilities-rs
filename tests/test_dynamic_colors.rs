@@ -1,3 +1,8 @@
+#![allow(
+    clippy::unreadable_literal,
+    clippy::float_cmp,
+    clippy::cast_precision_loss,
+)]
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
 use material_color_utilities::dynamic::color_spec::SpecVersion;
@@ -29,14 +34,14 @@ struct ReferenceEntry {
 }
 
 impl ReferenceEntry {
-    fn parse_color(&self, hex: &str) -> Result<Argb> {
+    fn parse_color(hex: &str) -> Result<Argb> {
         let val = u32::from_str_radix(hex.trim_start_matches("0x"), 16)
             .map_err(|_| eyre!("Invalid hex format: {}", hex))?;
         Ok(Argb(val))
     }
 
     fn to_dynamic_scheme(&self) -> Result<DynamicScheme> {
-        let argb = self.parse_color(&self.color)?;
+        let argb = Self::parse_color(&self.color)?;
         let d = self.is_dark;
         let c = self.contrast;
 
@@ -98,7 +103,7 @@ impl ValidationTracker {
         }
 
         let total_errs = self.mismatches.len();
-        println!("\n⛔ FOUND {} MISMATCHES", total_errs);
+        println!("\n⛔ FOUND {total_errs} MISMATCHES");
 
         // 1. Random Sample
         let mut rng = rand::rng();
@@ -147,18 +152,17 @@ fn run_reference_test(path: &str, spec: SpecVersion, filter_role: Option<&str>) 
         for getter in mdc.all_dynamic_colors() {
             let Some(dc) = getter() else { continue };
 
-            if let Some(target) = filter_role {
-                if dc.name != target {
+            if let Some(target) = filter_role
+                && dc.name != target {
                     continue;
                 }
-            }
 
             let actual = dc.get_argb(&scheme);
             let expected_hex = entry.roles.get(&dc.name).ok_or_else(|| {
                 eyre!("Role {} missing in reference for {}", dc.name, entry.scheme)
             })?;
 
-            let expected = entry.parse_color(expected_hex)?;
+            let expected = ReferenceEntry::parse_color(expected_hex)?;
             tracker.total_tested += 1;
 
             if actual != expected {

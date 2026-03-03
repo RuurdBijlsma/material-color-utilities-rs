@@ -177,6 +177,8 @@ impl Contrast {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::float_cmp)]
+
     use super::*;
     use crate::utils::color_utils::Argb;
 

@@ -7,7 +7,9 @@ use crate::score::score_colors::Score;
 use crate::utils::color_utils::Argb;
 use crate::{MaterializedTheme, theme_from_color};
 use image::DynamicImage;
+#[cfg(feature = "rayon")]
 use rayon::iter::ParallelIterator;
+#[cfg(feature = "rayon")]
 use rayon::prelude::IntoParallelRefIterator;
 
 /// Extract prominent colors from an image using quantization + scoring.
@@ -73,17 +75,20 @@ pub fn themes_from_image(
         .quantize_max_colors(quantize_max_colors)
         .call();
 
-    colors
-        .par_iter()
-        .map(|c| {
-            theme_from_color(*c)
-                .spec_version(spec_version)
-                .platform(platform)
-                .contrast_level(contrast_level)
-                .variant(variant)
-                .call()
-        })
-        .collect()
+    #[cfg(feature = "rayon")]
+    let iter = colors.par_iter();
+    #[cfg(not(feature = "rayon"))]
+    let iter = colors.iter();
+
+    iter.map(|c| {
+        theme_from_color(*c)
+            .spec_version(spec_version)
+            .platform(platform)
+            .contrast_level(contrast_level)
+            .variant(variant)
+            .call()
+    })
+    .collect()
 }
 
 /// Generate single theme from a source image.

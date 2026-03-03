@@ -1,3 +1,9 @@
+#![allow(
+    clippy::unreadable_literal,
+    clippy::float_cmp,
+    clippy::cast_precision_loss,
+    clippy::too_many_lines,
+)]
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
 use material_color_utilities::hct::Cam16;
@@ -64,7 +70,7 @@ impl ExtractionTracker {
             .all_distances_by_image
             .values()
             .flatten()
-            .cloned()
+            .copied()
             .collect();
         let (global_mean, global_std_dev) = calculate_stats(&distances);
 
@@ -82,8 +88,7 @@ impl ExtractionTracker {
             (1.0 - (self.mismatches.len() as f64 / self.total_seeds_checked as f64)) * 100.0
         );
         println!(
-            "Global Error Stats: Mean ΔE: {:.4}, StdDev: {:.4}",
-            global_mean, global_std_dev
+            "Global Error Stats: Mean ΔE: {global_mean:.4}, StdDev: {global_std_dev:.4}"
         );
 
         // --- COUNT ANALYSIS SECTION ---
@@ -138,8 +143,7 @@ impl ExtractionTracker {
             let (img_mean, img_std_dev) = calculate_stats(&self.all_distances_by_image[img_name]);
 
             println!(
-                "\n🖼️  Image: {:<15} | Avg ΔE: {:>6.2} | StdDev: {:>6.2}",
-                img_name, img_mean, img_std_dev
+                "\n🖼️  Image: {img_name:<15} | Avg ΔE: {img_mean:>6.2} | StdDev: {img_std_dev:>6.2}"
             );
             println!("{:-<115}", "");
             println!(
@@ -198,7 +202,7 @@ fn test_color_extraction() -> Result<()> {
         tracker.total_images_processed += 1;
         let img_path = format!("tests/assets/img/{}", case.image);
         let img =
-            image::open(&img_path).wrap_err_with(|| format!("Failed to open {}", img_path))?;
+            image::open(&img_path).wrap_err_with(|| format!("Failed to open {img_path}"))?;
 
         let pixels: Vec<Argb> = img
             .to_rgb8()

@@ -199,13 +199,12 @@ impl DynamicScheme {
         let hct = self.get_hct(dynamic_color);
         let mut argb = hct.to_argb();
 
-        if let Some(ref opacity_func) = dynamic_color.opacity {
-            if let Some(opacity_percentage) = opacity_func(self) {
+        if let Some(ref opacity_func) = dynamic_color.opacity
+            && let Some(opacity_percentage) = opacity_func(self) {
                 let alpha = (opacity_percentage * 255.0).round() as u32;
                 let alpha = alpha.clamp(0, 255);
                 argb = Argb((argb.0 & 0x00ffffff) | (alpha << 24));
             }
-        }
 
         self.argb_cache
             .borrow_mut()
@@ -556,6 +555,7 @@ fn dynamic_colors() -> &'static MaterialDynamicColors {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::float_cmp)]
     use super::*;
     use crate::utils::color_utils::Argb;
 

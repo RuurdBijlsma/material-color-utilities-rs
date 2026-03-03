@@ -1,3 +1,7 @@
+#![allow(
+    clippy::unreadable_literal,
+    clippy::float_cmp,
+)]
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use material_color_utilities::dynamic::color_spec::{Platform, SpecVersion};
 use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
@@ -18,7 +22,7 @@ fn bench_scheme_generation(c: &mut Criterion) {
 
     for variant in [Variant::TonalSpot, Variant::Vibrant, Variant::Cmf] {
         group.bench_with_input(
-            BenchmarkId::new("New Scheme", format!("{:?}", variant)),
+            BenchmarkId::new("New Scheme", format!("{variant:?}")),
             &variant,
             |b, &_v| {
                 b.iter(|| {
@@ -61,17 +65,17 @@ fn bench_color_resolution(c: &mut Criterion) {
 
     group.bench_function("Resolve Surface (Spec2026)", |b| {
         let color = mdc.surface();
-        b.iter(|| color.get_argb(black_box(&scheme_2026)))
+        b.iter(|| color.get_argb(black_box(&scheme_2026)));
     });
 
     group.bench_function("Resolve Primary (Spec2026 - Complex)", |b| {
         let color = mdc.primary();
-        b.iter(|| color.get_argb(black_box(&scheme_2026)))
+        b.iter(|| color.get_argb(black_box(&scheme_2026)));
     });
 
     group.bench_function("Resolve Primary (Spec2021 - Legacy)", |b| {
         let color = MaterialDynamicColors::new_with_spec(SpecVersion::Spec2021).primary();
-        b.iter(|| color.get_argb(black_box(&scheme_2021)))
+        b.iter(|| color.get_argb(black_box(&scheme_2021)));
     });
 
     group.finish();

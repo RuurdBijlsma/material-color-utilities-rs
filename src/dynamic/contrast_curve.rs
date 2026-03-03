@@ -49,6 +49,7 @@ impl ContrastCurve {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::float_cmp)]
     use super::*;
 
     #[test]

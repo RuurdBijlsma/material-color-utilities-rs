@@ -187,7 +187,7 @@ mod tests {
     fn test_score_ranked() {
         let mut colors = IndexMap::new();
         colors.insert(Argb(0xFFCCDDCC), 50);
-        colors.insert(Argb(0xff00DD88), 50);
+        colors.insert(Argb(0xFF00DD88), 50);
         colors.insert(Argb(0xFFCCDDEE), 50);
         let fallback = Argb(0xff4285f4);
         let result = Score::score(&colors)
@@ -195,7 +195,7 @@ mod tests {
             .fallback_color_argb(fallback)
             .filter(true)
             .call();
-        assert_eq!(result[0], Argb(0xff00DD88));
+        assert_eq!(result[0], Argb(0xFF00DD88));
     }
 
     #[test]

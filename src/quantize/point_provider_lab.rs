@@ -31,6 +31,7 @@ impl PointProvider for PointProviderLab {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::float_cmp)]
     use super::*;
 
     #[test]
@@ -66,7 +67,7 @@ mod tests {
         let b = [12.0, 18.0, 35.0];
         let dist = provider.distance(a, b);
 
-        let expected = 2.0f64.powi(2) + (-2.0f64).powi(2) + 5.0f64.powi(2);
+        let expected = 5.0f64.mul_add(5.0f64, 2.0f64.mul_add(2.0f64, (-2.0f64).powi(2)));
         assert_eq!(dist, expected);
     }
 
