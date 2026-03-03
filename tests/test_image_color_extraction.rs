@@ -4,6 +4,7 @@
     clippy::cast_precision_loss,
     clippy::too_many_lines
 )]
+
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
 use material_color_utils::hct::Cam16;
@@ -12,6 +13,7 @@ use material_color_utils::quantize::{Quantizer, QuantizerCelebi};
 use material_color_utils::score::score_colors::Score;
 use material_color_utils::utils::color_utils::Argb;
 use serde::Deserialize;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs;
 
@@ -99,13 +101,12 @@ impl ExtractionTracker {
         println!("{:-<115}", "");
 
         for cm in &self.count_mismatches {
-            let seed_status = if cm.actual_seeds < cm.expected_seeds {
-                "MISSING"
-            } else if cm.actual_seeds > cm.expected_seeds {
-                "EXTRA"
-            } else {
-                "MATCH"
+            let seed_status = match cm.actual_seeds.cmp(&cm.expected_seeds) {
+                Ordering::Less => "MISSING",
+                Ordering::Greater => "EXTRA",
+                Ordering::Equal => "MATCH",
             };
+
             println!(
                 "{:<15} | {:<10} | {:<15} | {:<15} | {:<15} ({})",
                 cm.image_name,
