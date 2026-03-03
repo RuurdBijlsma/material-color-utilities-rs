@@ -84,6 +84,33 @@
 //! println!("On-Primary: {:?}", on_primary);
 //! ```
 //!
+//! ### Contrast Helpers
+//!
+//! Utilities for calculating contrast ratios and adjusting colors to meet accessibility standards.
+//!
+//! ```rust
+//! use material_color_utils::utils::color_utils::Argb;
+//! use material_color_utils::{get_contrast_ratio, lighter_tone, darker_tone, lighter_tone_unsafe, darker_tone_unsafe};
+//!
+//! let color1 = Argb(0xFF4285F4);
+//! let color2 = Argb::from_hex("#FFFFFF").unwrap();
+//!
+//! // Calculate contrast ratio
+//! let ratio = get_contrast_ratio(color1, color2);
+//! println!("Contrast ratio: {:.2}", ratio);
+//!
+//! // Find a color that meets a target contrast ratio
+//! if let Some(lighter) = lighter_tone(color1, 4.5) {
+//!     println!("Lighter color with 4.5 contrast: {}", lighter);
+//! }
+//!
+//! // lighter_tone_unsafe will clip to white if it can't reach the desired contrast ratio.
+//! let lighter_unsafe = lighter_tone_unsafe(color1, 4.5);
+//! let darker_unsafe = darker_tone_unsafe(color1, 4.5);
+//! println!("Lighter color, clipped if necessary at tone=100 (white): {}", lighter_unsafe);
+//! println!("Darker color, clipped if necessary at tone=0 (black): {}", lighter_unsafe);
+//! ```
+//!
 //! ### UI Integration
 //!
 //! Dynamic colors are designed for lazy evaluation, allowing for high-performance,
