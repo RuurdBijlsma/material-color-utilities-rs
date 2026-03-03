@@ -10,9 +10,7 @@ struct Distance {
 
 impl Default for Distance {
     fn default() -> Self {
-        Self {
-            distance: -1.0,
-        }
+        Self { distance: -1.0 }
     }
 }
 
@@ -43,7 +41,9 @@ impl QuantizerWsmeans {
         }
 
         let point_count = pixel_to_count.len();
-        if point_count == 0 { return IndexMap::new(); }
+        if point_count == 0 {
+            return IndexMap::new();
+        }
 
         let mut points = Vec::with_capacity(point_count);
         let mut counts = Vec::with_capacity(point_count);
@@ -68,7 +68,8 @@ impl QuantizerWsmeans {
             .map(|_| random.next_int(cluster_count as i32) as usize)
             .collect();
 
-        let mut distance_to_index_matrix = vec![vec![Distance::default(); cluster_count]; cluster_count];
+        let mut distance_to_index_matrix =
+            vec![vec![Distance::default(); cluster_count]; cluster_count];
         let mut pixel_count_sums = vec![0u32; cluster_count];
 
         // 3. Main Iteration Loop
@@ -79,21 +80,28 @@ impl QuantizerWsmeans {
                     distance_to_index_matrix[j][i] = Distance { distance };
                     distance_to_index_matrix[i][j] = Distance { distance };
                 }
-                distance_to_index_matrix[i].sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(std::cmp::Ordering::Equal));
+                distance_to_index_matrix[i].sort_by(|a, b| {
+                    a.distance
+                        .partial_cmp(&b.distance)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
             }
 
             let mut points_moved = 0;
             for i in 0..point_count {
                 let point = points[i];
                 let previous_cluster_index = cluster_indices[i];
-                let previous_distance = point_provider.distance(point, clusters[previous_cluster_index]);
+                let previous_distance =
+                    point_provider.distance(point, clusters[previous_cluster_index]);
 
                 let mut minimum_distance = previous_distance;
                 let mut new_cluster_index = None;
 
                 // CRITICAL: We must maintain this specific loop structure to match original behavior
                 for j in 0..cluster_count {
-                    if distance_to_index_matrix[previous_cluster_index][j].distance >= 4.0 * previous_distance {
+                    if distance_to_index_matrix[previous_cluster_index][j].distance
+                        >= 4.0 * previous_distance
+                    {
                         continue;
                     }
                     let distance = point_provider.distance(point, clusters[j]);
@@ -104,7 +112,8 @@ impl QuantizerWsmeans {
                 }
 
                 if let Some(idx) = new_cluster_index {
-                    let distance_change = (minimum_distance.sqrt() - previous_distance.sqrt()).abs();
+                    let distance_change =
+                        (minimum_distance.sqrt() - previous_distance.sqrt()).abs();
                     if distance_change > Self::MIN_MOVEMENT_DISTANCE {
                         points_moved += 1;
                         cluster_indices[i] = idx;
@@ -135,7 +144,11 @@ impl QuantizerWsmeans {
                 let count = pixel_count_sums[i];
                 if count > 0 {
                     let c = f64::from(count);
-                    clusters[i] = [component_a_sums[i] / c, component_b_sums[i] / c, component_c_sums[i] / c];
+                    clusters[i] = [
+                        component_a_sums[i] / c,
+                        component_b_sums[i] / c,
+                        component_c_sums[i] / c,
+                    ];
                 } else {
                     clusters[i] = [0.0, 0.0, 0.0];
                 }
@@ -143,7 +156,8 @@ impl QuantizerWsmeans {
         }
 
         // 5. Final Result Mapping
-        clusters.into_iter()
+        clusters
+            .into_iter()
             .zip(pixel_count_sums)
             .filter(|(_, count)| *count > 0)
             .map(|(cluster, count)| (point_provider.point_to_argb(cluster), count))

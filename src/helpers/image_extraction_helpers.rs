@@ -1,6 +1,6 @@
-use crate::helpers::error::ThemeGenerationError;
 use crate::dynamic::color_spec::{Platform, SpecVersion};
 use crate::dynamic::variant::Variant;
+use crate::helpers::error::ThemeGenerationError;
 use crate::quantize::Quantizer;
 use crate::quantize::QuantizerCelebi;
 use crate::score::score_colors::Score;

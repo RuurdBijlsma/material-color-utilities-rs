@@ -95,15 +95,19 @@ impl Score {
                 let hue = MathUtils::sanitize_degrees_int(hct.hue().round() as i32) as usize;
                 let proportion = hue_excited_proportions[hue];
 
-                if filter && (hct.chroma() < Self::CUTOFF_CHROMA || proportion <= Self::CUTOFF_EXCITED_PROPORTION) {
+                if filter
+                    && (hct.chroma() < Self::CUTOFF_CHROMA
+                        || proportion <= Self::CUTOFF_EXCITED_PROPORTION)
+                {
                     return None;
                 }
 
-                let chroma_score = (hct.chroma() - Self::TARGET_CHROMA) * if hct.chroma() < Self::TARGET_CHROMA {
-                    Self::WEIGHT_CHROMA_BELOW
-                } else {
-                    Self::WEIGHT_CHROMA_ABOVE
-                };
+                let chroma_score = (hct.chroma() - Self::TARGET_CHROMA)
+                    * if hct.chroma() < Self::TARGET_CHROMA {
+                        Self::WEIGHT_CHROMA_BELOW
+                    } else {
+                        Self::WEIGHT_CHROMA_ABOVE
+                    };
 
                 Some(ScoredHct {
                     hct,
@@ -113,7 +117,11 @@ impl Score {
             .collect();
 
         // Stable sort is required to match original tie-breaking behavior
-        scored_hcts.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+        scored_hcts.sort_by(|a, b| {
+            b.score
+                .partial_cmp(&a.score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
 
         // 4. Selection Logic (The greedy spread)
         let mut chosen_colors: Vec<Hct> = Vec::with_capacity(desired_count);
@@ -121,7 +129,8 @@ impl Score {
             chosen_colors.clear();
             for entry in &scored_hcts {
                 let has_duplicate = chosen_colors.iter().any(|chosen| {
-                    MathUtils::difference_degrees(entry.hct.hue(), chosen.hue()) < f64::from(difference_degrees)
+                    MathUtils::difference_degrees(entry.hct.hue(), chosen.hue())
+                        < f64::from(difference_degrees)
                 });
 
                 if !has_duplicate {

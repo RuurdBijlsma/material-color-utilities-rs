@@ -1,8 +1,8 @@
-use crate::helpers::{MaterializedScheme, MaterializedSchemeGroup, MaterializedTheme};
 use crate::dynamic::color_spec::{Platform, SpecVersion};
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::material_dynamic_colors::MaterialDynamicColors;
 use crate::dynamic::variant::Variant;
+use crate::helpers::{MaterializedScheme, MaterializedSchemeGroup, MaterializedTheme};
 use crate::scheme::{
     SchemeCmf, SchemeContent, SchemeExpressive, SchemeFidelity, SchemeFruitSalad, SchemeMonochrome,
     SchemeNeutral, SchemeRainbow, SchemeTonalSpot, SchemeVibrant,
@@ -32,31 +32,6 @@ pub fn theme_from_color(
     #[builder(default = Platform::Phone)]
     platform: Platform,
 ) -> MaterializedTheme {
-    #[cfg(feature = "rayon")]
-    let (light_scheme, dark_scheme) = rayon::join(
-        || {
-            create_dynamic_scheme(
-                source_color,
-                variant,
-                false,
-                contrast_level,
-                spec_version,
-                platform,
-            )
-        },
-        || {
-            create_dynamic_scheme(
-                source_color,
-                variant,
-                true,
-                contrast_level,
-                spec_version,
-                platform,
-            )
-        },
-    );
-
-    #[cfg(not(feature = "rayon"))]
     let light_scheme = create_dynamic_scheme(
         source_color,
         variant,
@@ -65,7 +40,6 @@ pub fn theme_from_color(
         spec_version,
         platform,
     );
-    #[cfg(not(feature = "rayon"))]
     let dark_scheme = create_dynamic_scheme(
         source_color,
         variant,
@@ -78,7 +52,10 @@ pub fn theme_from_color(
     let mdc = MaterialDynamicColors::new_with_spec(spec_version);
 
     #[cfg(feature = "rayon")]
-    let (light, dark) = rayon::join(|| materialize(&light_scheme, &mdc), || materialize(&dark_scheme, &mdc));
+    let (light, dark) = rayon::join(
+        || materialize(&light_scheme, &mdc),
+        || materialize(&dark_scheme, &mdc),
+    );
 
     #[cfg(not(feature = "rayon"))]
     let light = materialize(&light_scheme, &mdc);
@@ -181,24 +158,14 @@ fn materialize(scheme: &DynamicScheme, mdc: &MaterialDynamicColors) -> Materiali
                 (error, on_error, error_container, on_error_container),
             ),
             (
-                (
-                    primary_fixed,
-                    primary_fixed_dim,
-                    on_primary_fixed,
-                    on_primary_fixed_variant,
-                ),
+                (primary_fixed, primary_fixed_dim, on_primary_fixed, on_primary_fixed_variant),
                 (
                     secondary_fixed,
                     secondary_fixed_dim,
                     on_secondary_fixed,
                     on_secondary_fixed_variant,
                 ),
-                (
-                    tertiary_fixed,
-                    tertiary_fixed_dim,
-                    on_tertiary_fixed,
-                    on_tertiary_fixed_variant,
-                ),
+                (tertiary_fixed, tertiary_fixed_dim, on_tertiary_fixed, on_tertiary_fixed_variant),
             ),
         ),
     ) = rayon::join(
@@ -511,9 +478,7 @@ mod tests {
 
     #[test]
     fn test_contrast_levels_affect_output() {
-        let low_contrast = theme_from_color(GOOGLE_BLUE)
-            .contrast_level(-1.0)
-            .call();
+        let low_contrast = theme_from_color(GOOGLE_BLUE).contrast_level(-1.0).call();
 
         let high_contrast = theme_from_color(GOOGLE_BLUE).contrast_level(1.0).call();
 

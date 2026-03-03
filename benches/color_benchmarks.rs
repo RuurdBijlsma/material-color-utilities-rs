@@ -1,7 +1,4 @@
-#![allow(
-    clippy::unreadable_literal,
-    clippy::float_cmp,
-)]
+#![allow(clippy::unreadable_literal, clippy::float_cmp)]
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use material_color_utilities::dynamic::color_spec::{Platform, SpecVersion};
 use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;

@@ -2,7 +2,7 @@
     clippy::unreadable_literal,
     clippy::float_cmp,
     clippy::cast_precision_loss,
-    clippy::too_many_lines,
+    clippy::too_many_lines
 )]
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
@@ -87,9 +87,7 @@ impl ExtractionTracker {
             "Global Accuracy: {:.2}%",
             (1.0 - (self.mismatches.len() as f64 / self.total_seeds_checked as f64)) * 100.0
         );
-        println!(
-            "Global Error Stats: Mean ΔE: {global_mean:.4}, StdDev: {global_std_dev:.4}"
-        );
+        println!("Global Error Stats: Mean ΔE: {global_mean:.4}, StdDev: {global_std_dev:.4}");
 
         // --- COUNT ANALYSIS SECTION ---
         println!("\n📊 OUTPUT COUNT ANALYSIS");
@@ -201,8 +199,7 @@ fn test_color_extraction() -> Result<()> {
     for case in cases {
         tracker.total_images_processed += 1;
         let img_path = format!("tests/assets/img/{}", case.image);
-        let img =
-            image::open(&img_path).wrap_err_with(|| format!("Failed to open {img_path}"))?;
+        let img = image::open(&img_path).wrap_err_with(|| format!("Failed to open {img_path}"))?;
 
         let pixels: Vec<Argb> = img
             .to_rgb8()

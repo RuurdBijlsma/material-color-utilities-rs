@@ -288,7 +288,6 @@ impl Cam16 {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

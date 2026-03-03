@@ -168,7 +168,6 @@ impl DynamicScheme {
         self.source_color_hct().to_argb()
     }
 
-
     #[must_use]
     pub fn get_hct(&self, dynamic_color: &DynamicColor) -> Hct {
         let pin = self.hct_cache.pin();
@@ -193,11 +192,12 @@ impl DynamicScheme {
         let mut argb = hct.to_argb();
 
         if let Some(ref opacity_func) = dynamic_color.opacity
-            && let Some(opacity_percentage) = opacity_func(self) {
-                let alpha = (opacity_percentage * 255.0).round() as u32;
-                let alpha = alpha.clamp(0, 255);
-                argb = Argb((argb.0 & 0x00ffffff) | (alpha << 24));
-            }
+            && let Some(opacity_percentage) = opacity_func(self)
+        {
+            let alpha = (opacity_percentage * 255.0).round() as u32;
+            let alpha = alpha.clamp(0, 255);
+            argb = Argb((argb.0 & 0x00ffffff) | (alpha << 24));
+        }
 
         pin.insert(dynamic_color.name.clone(), argb);
         argb

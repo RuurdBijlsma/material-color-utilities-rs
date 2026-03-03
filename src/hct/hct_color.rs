@@ -199,7 +199,6 @@ impl fmt::Display for Hct {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

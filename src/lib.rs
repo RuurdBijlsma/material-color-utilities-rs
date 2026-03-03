@@ -13,12 +13,12 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss
 )]
-mod helpers;
 pub mod blend;
 pub mod contrast;
 pub mod dislike;
 pub mod dynamic;
 pub mod hct;
+mod helpers;
 pub mod palettes;
 pub mod quantize;
 pub mod scheme;

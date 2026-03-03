@@ -1,7 +1,7 @@
 #![allow(
     clippy::unreadable_literal,
     clippy::float_cmp,
-    clippy::cast_precision_loss,
+    clippy::cast_precision_loss
 )]
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
@@ -153,9 +153,10 @@ fn run_reference_test(path: &str, spec: SpecVersion, filter_role: Option<&str>) 
             let Some(dc) = getter() else { continue };
 
             if let Some(target) = filter_role
-                && dc.name != target {
-                    continue;
-                }
+                && dc.name != target
+            {
+                continue;
+            }
 
             let actual = dc.get_argb(&scheme);
             let expected_hex = entry.roles.get(&dc.name).ok_or_else(|| {

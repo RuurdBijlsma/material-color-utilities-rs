@@ -89,7 +89,7 @@ impl Argb {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn to_hex(&self) -> String {
         format!("#{:02X}{:02X}{:02X}", self.red(), self.green(), self.blue())
     }
