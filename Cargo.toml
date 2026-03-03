@@ -6,6 +6,7 @@ license-file = "LICENSE"
 edition = "2024"
 homepage = "https://github.com/RuurdBijlsma/material-color-utilities-rs"
 repository = "https://github.com/RuurdBijlsma/material-color-utilities-rs"
+documentation = "https://docs.rs/material-color-utils/0.1.0/material_color_utils/"
 exclude = ["kotlin", "dev_guide", "concepts", "tests/assets/json"]
 
 [dependencies]
