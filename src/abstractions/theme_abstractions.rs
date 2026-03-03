@@ -11,7 +11,7 @@ use crate::utils::color_utils::Argb;
 
 /// Generates a materialized theme from a source color.
 #[bon::builder]
-pub fn get_theme_from_color(
+pub fn theme_from_color(
     /// The source color.
     #[builder(start_fn)]
     source_color: Argb,
@@ -206,7 +206,7 @@ mod tests {
     #[test]
     fn test_theme_generation_basic() {
         // Test with default values
-        let theme = get_theme_from_color(GOOGLE_BLUE).call();
+        let theme = theme_from_color(GOOGLE_BLUE).call();
 
         assert_eq!(theme.source_color, GOOGLE_BLUE);
         assert_eq!(theme.variant, Variant::Vibrant); // Default
@@ -222,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_theme_variant_monochrome() {
-        let theme = get_theme_from_color(GOOGLE_BLUE)
+        let theme = theme_from_color(GOOGLE_BLUE)
             .variant(Variant::Monochrome)
             .call();
 
@@ -238,11 +238,11 @@ mod tests {
 
     #[test]
     fn test_contrast_levels_affect_output() {
-        let low_contrast = get_theme_from_color(GOOGLE_BLUE)
+        let low_contrast = theme_from_color(GOOGLE_BLUE)
             .contrast_level(-1.0)
             .call();
 
-        let high_contrast = get_theme_from_color(GOOGLE_BLUE).contrast_level(1.0).call();
+        let high_contrast = theme_from_color(GOOGLE_BLUE).contrast_level(1.0).call();
 
         // High contrast primary should be different from low contrast primary
         assert_ne!(
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_light_dark_contrast_polarization() {
-        let theme = get_theme_from_color(GOOGLE_BLUE).call();
+        let theme = theme_from_color(GOOGLE_BLUE).call();
 
         let light_bg = Hct::from_argb(theme.schemes.light.background).tone();
         let dark_bg = Hct::from_argb(theme.schemes.dark.background).tone();
@@ -271,7 +271,7 @@ mod tests {
 
     #[test]
     fn test_fixed_colors_presence() {
-        let theme = get_theme_from_color(GOOGLE_BLUE).call();
+        let theme = theme_from_color(GOOGLE_BLUE).call();
         let light = &theme.schemes.light;
 
         // Fixed colors should be generated regardless of light/dark mode
@@ -285,11 +285,11 @@ mod tests {
 
     #[test]
     fn test_spec_version_consistency() {
-        let theme_2021 = get_theme_from_color(GOOGLE_BLUE)
+        let theme_2021 = theme_from_color(GOOGLE_BLUE)
             .spec_version(SpecVersion::Spec2021)
             .call();
 
-        let theme_2026 = get_theme_from_color(GOOGLE_BLUE)
+        let theme_2026 = theme_from_color(GOOGLE_BLUE)
             .spec_version(SpecVersion::Spec2026)
             .call();
 

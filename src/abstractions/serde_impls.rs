@@ -93,18 +93,17 @@ mod serde_tests {
     use crate::dynamic::variant::Variant;
     use crate::hct::Hct;
     use crate::utils::color_utils::Argb;
-    use crate::{MaterializedTheme, get_theme_from_color};
+    use crate::{MaterializedTheme, theme_from_color};
     use color_eyre::eyre::Result;
 
     #[test]
     fn test_theme_serde_round_trip() -> Result<()> {
         // Create a theme
         let color = Argb::from_hex("#4285F4")?;
-        let theme = get_theme_from_color(color).variant(Variant::Cmf).call();
+        let theme = theme_from_color(color).variant(Variant::Cmf).call();
 
         // Serialize to JSON
         let json_string = serde_json::to_string_pretty(&theme)?;
-        println!("{json_string}");
 
         // Verify JSON content requirements:
         assert!(json_string.contains("#4285F4"));

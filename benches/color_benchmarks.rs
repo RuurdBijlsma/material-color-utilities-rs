@@ -7,7 +7,7 @@ use material_color_utilities::hct::hct_color::Hct;
 use material_color_utilities::palettes::tonal_palette::TonalPalette;
 use material_color_utilities::scheme::scheme_tonal_spot::SchemeTonalSpot;
 use material_color_utilities::utils::color_utils::Argb;
-use material_color_utilities::{extract_image_colors, get_theme_from_color};
+use material_color_utilities::{extract_image_colors, theme_from_color};
 use std::fs;
 use std::hint::black_box;
 
@@ -101,7 +101,7 @@ fn bench_materialized_theme(c: &mut Criterion) {
     c.bench_function(
         "get_theme_from_color (Full Light + Dark Materialization)",
         |b| {
-            b.iter(|| black_box(get_theme_from_color(argb).call()));
+            b.iter(|| black_box(theme_from_color(argb).call()));
         },
     );
 }

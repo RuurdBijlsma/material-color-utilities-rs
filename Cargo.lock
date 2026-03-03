@@ -876,6 +876,7 @@ dependencies = [
  "image",
  "indexmap",
  "rand 0.10.0",
+ "rayon",
  "serde",
  "serde_json",
  "statrs",
