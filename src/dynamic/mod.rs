@@ -1,3 +1,4 @@
+#[macro_use]
 pub mod color_spec;
 pub mod color_spec_2021;
 pub mod color_spec_2025;
