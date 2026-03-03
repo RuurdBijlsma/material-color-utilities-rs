@@ -2,7 +2,6 @@
 name = "material-color-utilities"
 version = "0.1.0"
 description = "Color libraries for Google's Material You"
-license = "Apache-2.0"
 license-file = "LICENSE"
 edition = "2024"
 homepage = "https://github.com/RuurdBijlsma/material-color-utilities-rs"
