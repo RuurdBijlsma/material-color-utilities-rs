@@ -1545,7 +1545,7 @@ impl ColorSpec for ColorSpec2021 {
             if let (Some(bg_color), Some(n_cc), Some(f_cc)) = (bg_opt, n_cc_opt, f_cc_opt) {
                 let n_contrast = n_cc.get(scheme.contrast_level);
                 let f_contrast = f_cc.get(scheme.contrast_level);
-                let bg_tone = bg_color.get_tone(scheme);
+                let bg_tone = scheme.get_tone(&bg_color);
 
                 if Contrast::ratio_of_tones(bg_tone, n_tone) < n_contrast {
                     n_tone = DynamicColor::foreground_tone(bg_tone, n_contrast);
@@ -1603,7 +1603,7 @@ impl ColorSpec for ColorSpec2021 {
                 return answer;
             };
 
-            let bg_tone = bg_color.get_tone(scheme);
+            let bg_tone = scheme.get_tone(&bg_color);
             let desired_ratio = cc.get(scheme.contrast_level);
 
             if Contrast::ratio_of_tones(bg_tone, answer) < desired_ratio {
@@ -1630,7 +1630,7 @@ impl ColorSpec for ColorSpec2021 {
             };
 
             let bg_tone1 = bg_tone; // Re-use
-            let bg_tone2 = bg2_color.get_tone(scheme);
+            let bg_tone2 = scheme.get_tone(&bg2_color);
             let upper = bg_tone1.max(bg_tone2);
             let lower = bg_tone1.min(bg_tone2);
 

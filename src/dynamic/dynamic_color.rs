@@ -1,6 +1,5 @@
 use crate::contrast::contrast_utils::Contrast;
 use crate::dynamic::color_spec::SpecVersion;
-use crate::dynamic::color_specs::ColorSpecs;
 use crate::dynamic::contrast_curve::ContrastCurve;
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::tone_delta_pair::ToneDeltaPair;
@@ -92,29 +91,17 @@ impl DynamicColor {
 
     #[must_use]
     pub fn get_argb(&self, scheme: &DynamicScheme) -> Argb {
-        let argb = self.get_hct(scheme).to_argb();
-        if let Some(ref opacity_func) = self.opacity
-            && let Some(opacity_percentage) = opacity_func(scheme)
-        {
-            let alpha = (opacity_percentage * 255.0).round() as u32;
-            let alpha = alpha.clamp(0, 255);
-            return Argb((argb.0 & 0x00ffffff) | (alpha << 24));
-        }
-        argb
+        scheme.get_argb(self)
     }
 
     #[must_use]
     pub fn get_hct(&self, scheme: &DynamicScheme) -> Hct {
-        ColorSpecs::get(scheme.spec_version)
-            .call()
-            .get_hct(scheme, self)
+        scheme.get_hct(self)
     }
 
     #[must_use]
     pub fn get_tone(&self, scheme: &DynamicScheme) -> f64 {
-        ColorSpecs::get(scheme.spec_version)
-            .call()
-            .get_tone(scheme, self)
+        scheme.get_tone(self)
     }
 
     /// Create a `DynamicColor` from an ARGB hex code.

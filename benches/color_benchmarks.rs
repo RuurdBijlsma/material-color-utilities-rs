@@ -121,10 +121,10 @@ fn bench_extract_image_colors(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    bench_scheme_generation,
-    bench_color_resolution,
-    bench_bulk_resolution,
+    // bench_scheme_generation,
+    // bench_color_resolution,
+    // bench_bulk_resolution,
+    // bench_extract_image_colors,
     bench_materialized_theme,
-    bench_extract_image_colors,
 );
 criterion_main!(benches);

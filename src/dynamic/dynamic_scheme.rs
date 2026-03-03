@@ -7,8 +7,11 @@ use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
 use std::sync::OnceLock;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct DynamicScheme {
     pub source_color_hct_list: Vec<Hct>,
     pub variant: Variant,
@@ -22,6 +25,23 @@ pub struct DynamicScheme {
     pub neutral_palette: TonalPalette,
     pub neutral_variant_palette: TonalPalette,
     pub error_palette: TonalPalette,
+    #[cfg(feature = "serde")]
+    #[serde(skip)]
+    pub argb_cache: std::cell::RefCell<std::collections::HashMap<String, Argb>>,
+    #[cfg(not(feature = "serde"))]
+    pub argb_cache: std::cell::RefCell<std::collections::HashMap<String, Argb>>,
+
+    #[cfg(feature = "serde")]
+    #[serde(skip)]
+    pub tone_cache: std::cell::RefCell<std::collections::HashMap<String, f64>>,
+    #[cfg(not(feature = "serde"))]
+    pub tone_cache: std::cell::RefCell<std::collections::HashMap<String, f64>>,
+
+    #[cfg(feature = "serde")]
+    #[serde(skip)]
+    pub hct_cache: std::cell::RefCell<std::collections::HashMap<String, Hct>>,
+    #[cfg(not(feature = "serde"))]
+    pub hct_cache: std::cell::RefCell<std::collections::HashMap<String, Hct>>,
 }
 
 impl PartialEq for DynamicScheme {
@@ -112,6 +132,9 @@ impl DynamicScheme {
             neutral_palette,
             neutral_variant_palette,
             error_palette,
+            argb_cache: std::cell::RefCell::new(std::collections::HashMap::with_capacity(64)),
+            tone_cache: std::cell::RefCell::new(std::collections::HashMap::with_capacity(64)),
+            hct_cache: std::cell::RefCell::new(std::collections::HashMap::with_capacity(64)),
         }
     }
 
@@ -135,6 +158,9 @@ impl DynamicScheme {
             neutral_palette: other.neutral_palette.clone(),
             neutral_variant_palette: other.neutral_variant_palette.clone(),
             error_palette: other.error_palette.clone(),
+            argb_cache: std::cell::RefCell::new(std::collections::HashMap::with_capacity(64)),
+            tone_cache: std::cell::RefCell::new(std::collections::HashMap::with_capacity(64)),
+            hct_cache: std::cell::RefCell::new(std::collections::HashMap::with_capacity(64)),
         }
     }
 
@@ -149,14 +175,56 @@ impl DynamicScheme {
         self.source_color_hct().to_argb()
     }
 
+
     #[must_use]
     pub fn get_hct(&self, dynamic_color: &DynamicColor) -> Hct {
-        dynamic_color.get_hct(self)
+        if let Some(&hct) = self.hct_cache.borrow().get(&dynamic_color.name) {
+            return hct;
+        }
+        let hct = crate::dynamic::color_specs::ColorSpecs::get(self.spec_version)
+            .call()
+            .get_hct(self, dynamic_color);
+        self.hct_cache
+            .borrow_mut()
+            .insert(dynamic_color.name.clone(), hct);
+        hct
     }
 
     #[must_use]
     pub fn get_argb(&self, dynamic_color: &DynamicColor) -> Argb {
-        dynamic_color.get_argb(self)
+        if let Some(&argb) = self.argb_cache.borrow().get(&dynamic_color.name) {
+            return argb;
+        }
+        // Entry point for Argb resolution
+        let hct = self.get_hct(dynamic_color);
+        let mut argb = hct.to_argb();
+
+        if let Some(ref opacity_func) = dynamic_color.opacity {
+            if let Some(opacity_percentage) = opacity_func(self) {
+                let alpha = (opacity_percentage * 255.0).round() as u32;
+                let alpha = alpha.clamp(0, 255);
+                argb = Argb((argb.0 & 0x00ffffff) | (alpha << 24));
+            }
+        }
+
+        self.argb_cache
+            .borrow_mut()
+            .insert(dynamic_color.name.clone(), argb);
+        argb
+    }
+
+    #[must_use]
+    pub fn get_tone(&self, dynamic_color: &DynamicColor) -> f64 {
+        if let Some(&tone) = self.tone_cache.borrow().get(&dynamic_color.name) {
+            return tone;
+        }
+        let tone = crate::dynamic::color_specs::ColorSpecs::get(self.spec_version)
+            .call()
+            .get_tone(self, dynamic_color);
+        self.tone_cache
+            .borrow_mut()
+            .insert(dynamic_color.name.clone(), tone);
+        tone
     }
 
     #[must_use]
