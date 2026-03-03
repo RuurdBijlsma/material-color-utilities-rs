@@ -2,6 +2,18 @@
 
 A Rust port of [Material Color Utilities](https://github.com/material-foundation/material-color-utilities).
 
+## Rust Port Highlights
+
+- **Perfect Parity**: Tested against millions of combinations of color, contrast, scheme, and dark/light modes. Every
+  output matches the reference Kotlin implementation exactly.
+- **No panics**: Safe Rust code. No `unwrap`, `expect`, or `panic` used in the library.
+- **Performance**: Faster than Kotlin reference, while being thread safe.
+- **Concurrency**: Built to be thread-safe for use in multithreaded apps.
+- **Efficiency**: Cached where possible to allow for nearly free recalculation of colors. _~30 ns to resolve
+  already-calculated roles_
+- **Minimal dependencies**: Minimal dependencies. Optional feature flags let you pull in extra functionality only when
+  you need it for helper functions.
+
 ---
 
 Color is a powerful design tool and part of the Material system along with
@@ -36,7 +48,6 @@ integration of subsets into other libraries, like Material Design Components
 and Android System UI. Some consumers do not require all components, for
 example, MDC doesn’t need quantization, scoring, image extraction.
 
-
 | Components      | Purpose                                                                                                                                                                                             |
 |-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **helpers**     | High-level helpers for theme generation, image color extraction, and contrast calculations                                                                                                          |
@@ -66,8 +77,11 @@ The library uses Cargo features to control dependencies and functionality. All f
 
 This library provides two primary ways to work with Material color schemes:
 
-1.  **Dynamic Colors (`DynamicScheme`)**: Performs color calculations on the fly. This is the most efficient approach for production UI as it only calculates the specific color roles you actually use.
-2.  **Materialized Themes (`MaterializedTheme`)**: Generates a full set of both Light and Dark schemes beforehand. This is useful when you need to serialize the entire theme (e.g., to JSON) or when you want a simple, pre-computed object containing all color values.
+1. **Dynamic Colors (`DynamicScheme`)**: Performs color calculations on the fly. This is the most efficient approach for
+   production UI as it only calculates the specific color roles you actually use.
+2. **Materialized Themes (`MaterializedTheme`)**: Generates a full set of both Light and Dark schemes beforehand. This
+   is useful when you need to serialize the entire theme (e.g., to JSON) or when you want a simple, pre-computed object
+   containing all color values.
 
 Both approaches are powered by the same underlying Material Design algorithms.
 
@@ -83,8 +97,8 @@ let source_color = Argb::from_hex("#4285F4").unwrap();
 
 // Generate a full materialized theme (Light + Dark schemes)
 let theme = theme_from_color(source_color)
-    .variant(Variant::Vibrant)
-    .call();
+.variant(Variant::Vibrant)
+.call();
 
 println!("Light Primary: {:?}", theme.schemes.light.primary);
 println!("Dark Primary: {:?}", theme.schemes.dark.primary);
