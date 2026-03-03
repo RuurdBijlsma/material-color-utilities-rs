@@ -5,7 +5,6 @@ use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use std::sync::Arc;
 
-#[macro_export]
 macro_rules! cached_color {
     ($spec:expr, $init:expr) => {{
         static CACHE_2021: std::sync::OnceLock<std::sync::Arc<DynamicColor>> =
@@ -23,7 +22,6 @@ macro_rules! cached_color {
     }};
 }
 
-#[macro_export]
 macro_rules! cached_color_opt {
     ($spec:expr, $init:expr) => {{
         static CACHE_2021: std::sync::OnceLock<Option<std::sync::Arc<DynamicColor>>> =

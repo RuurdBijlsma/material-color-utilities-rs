@@ -6,12 +6,13 @@ A Rust port of [Material Color Utilities](https://github.com/material-foundation
 
 - **Perfect Parity**: Tested against millions of combinations of color, contrast, scheme, and dark/light modes. Every
   output matches the reference Kotlin implementation exactly.
+- **2026 spec**: Includes the 2026 color spec, and CMF scheme which were added recently.
 - **No panics**: Safe Rust code. No `unwrap`, `expect`, or `panic` used in the library.
 - **Performance**: Faster than Kotlin reference, while being thread safe.
 - **Concurrency**: Built to be thread-safe for use in multithreaded apps.
 - **Efficiency**: Cached where possible to allow for nearly free recalculation of colors. _~30 ns to resolve
   already-calculated roles_
-- **Minimal dependencies**: Minimal dependencies. Optional feature flags let you pull in extra functionality only when
+- **Minimal dependencies**: Optional feature flags let you pull in extra functionality only when
   you need it for helper functions.
 
 ---

@@ -21,6 +21,8 @@ jobs:
           components: clippy
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ github.job }}
       - name: Run Clippy
         run: cargo clippy --no-deps --all-features --tests --benches -- -W clippy::all -W clippy::pedantic -W clippy::nursery
 
@@ -33,7 +35,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ github.job }}
       - name: Run Tests
         run: cargo test --release --all-features
-      - name: Run Doc Tests
-        run: cargo test --release --doc --all-features

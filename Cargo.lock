@@ -868,7 +868,7 @@ dependencies = [
 
 [[package]]
 name = "material-color-utils"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "bon",
  "color-eyre",
