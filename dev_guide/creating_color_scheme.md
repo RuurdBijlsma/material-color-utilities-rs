@@ -9,13 +9,13 @@ To get color values for styling your UIs, the first step is to create a
 `DynamicScheme`. The easiest way is to use one of the provided scheme variant
 constructors. Each variant requires:
 
-1.  A source color in HCT format (`Hct`).
-1.  Whether the scheme is in dark mode (`is_dark: bool`).
-1.  Contrast level (`contrast_level: f64`). The recommended levels are:
-    -   `0.0` for default contrast.
-    -   `0.5` for medium contrast.
-    -   `1.0` for highest contrast.
-    -   `-1.0` for reduced contrast.
+1. A source color in HCT format (`Hct`).
+2. Whether the scheme is in dark mode (`is_dark: bool`).
+3. Contrast level (`contrast_level: f64`). The recommended levels are:
+    - `0.0` for default contrast.
+    - `0.5` for medium contrast.
+    - `1.0` for highest contrast.
+    - `-1.0` for reduced contrast.
 
 The `DynamicScheme` struct does not store pre-computed ARGB values for each
 color role. Instead, values are computed on demand. You can retrieve them either
@@ -44,15 +44,15 @@ let scheme = SchemeTonalSpot::new(hct, false, 0.0); // light mode, default contr
 
 The available variants are:
 
-*   `SchemeTonalSpot` — calm, sedated colors
-*   `SchemeContent` — colors derived closely from the source color
-*   `SchemeExpressive` — highly colorful, playful
-*   `SchemeFidelity` — maximally faithful to source color
-*   `SchemeFruitSalad` — multiple hues
-*   `SchemeMonochrome` — grayscale
-*   `SchemeNeutral` — near-neutral palette
-*   `SchemeRainbow` — rainbow-like palette
-*   `SchemeVibrant` — highly saturated
+* `SchemeTonalSpot` — calm, sedated colors
+* `SchemeContent` — colors derived closely from the source color
+* `SchemeExpressive` — highly colorful, playful
+* `SchemeFidelity` — maximally faithful to source color
+* `SchemeFruitSalad` — multiple hues
+* `SchemeMonochrome` — grayscale
+* `SchemeNeutral` — near-neutral palette
+* `SchemeRainbow` — rainbow-like palette
+* `SchemeVibrant` — highly saturated
 
 All are in the `material_color_utilities::scheme` module and share the same
 `::new(source_color_hct: Hct, is_dark: bool, contrast_level: f64) -> DynamicScheme`
@@ -87,6 +87,31 @@ let scheme = DynamicScheme::new(
     TonalPalette::from_hct(Hct::from_argb(Argb(0xFFFF0000))), // error palette
 );
 ```
+
+#### Method 3 — Using the `theme_from_color` helper
+
+The `theme_from_color` function is the easiest way to generate a full theme. It returns a `MaterializedTheme` which
+contains both light and dark schemes. There's also `theme_from_immage` to generate a theme from a source image.
+
+```rust
+use material_color_utilities::theme_from_color;
+use material_color_utilities::dynamic::variant::Variant;
+use material_color_utilities::utils::color_utils::Argb;
+
+let source_color = Argb(0xFF6750A4);
+
+let theme = theme_from_color(source_color)
+.variant(Variant::TonalSpot)
+.contrast_level(0.0) // optional, default is 0.0
+.call();
+
+// Access materialized colors
+let primary_light = theme.schemes.light.primary;
+let primary_dark = theme.schemes.dark.primary;
+```
+
+This helper handles the creation of `DynamicScheme`s and the extraction of ARGB values into a simple struct for
+you.
 
 ### 2. Obtaining colors
 

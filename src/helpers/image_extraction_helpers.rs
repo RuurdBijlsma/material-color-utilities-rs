@@ -1,4 +1,4 @@
-use crate::abstractions::error::ThemeGenerationError;
+use crate::helpers::error::ThemeGenerationError;
 use crate::dynamic::color_spec::{Platform, SpecVersion};
 use crate::dynamic::variant::Variant;
 use crate::quantize::Quantizer;

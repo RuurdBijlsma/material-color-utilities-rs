@@ -9,7 +9,31 @@ a conceptual overview.
 
 All functions described here live in `material_color_utilities::contrast::Contrast`.
 
-## Calculating contrast ratio
+## High-level Argb Contrast Helpers
+
+For convenience, the root module re-exports high-level helpers that work directly with `Argb` values, handling the conversion to tone for you.
+
+```rust
+use material_color_utilities::{get_contrast_ratio, lighter_tone, darker_tone};
+use material_color_utilities::utils::color_utils::Argb;
+
+let color1 = Argb::from_hex("#4285F4").unwrap();
+let color2 = Argb::from_hex("#FFFFFF").unwrap();
+
+// Get ratio directly from ARGB
+let ratio = get_contrast_ratio(color1, color2);
+
+// Obtain colors that meet a specific ratio
+let light_blue = lighter_tone(color1, 4.5); // Option<Argb>
+let dark_blue = darker_tone(color1, 4.5);   // Option<Argb>
+
+// Unsafe variants (clamped to black/white)
+let light_blue_unsafe = lighter_tone_unsafe(color1, 7.0); // Argb
+```
+
+---
+
+## Calculating contrast ratio (Manual)
 
 To measure the contrast of two colors, use `Contrast::ratio_of_tones` on the
 tones (`L*`) of the two colors.

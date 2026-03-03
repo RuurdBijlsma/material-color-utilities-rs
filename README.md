@@ -39,6 +39,7 @@ example, MDC doesn’t need quantization, scoring, image extraction.
 
 | Components      | Purpose                                                                                                                                                                                             |
 |-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **helpers**     | High-level helpers for theme generation, image color extraction, and contrast calculations                                                                                                          |
 | **blend**       | Interpolate, harmonize, animate, and gradate colors in HCT                                                                                                                                          |
 | **contrast**    | Measure contrast, obtain contrastful colors                                                                                                                                                         |
 | **dislike**     | Check and fix universally disliked colors                                                                                                                                                           |
@@ -50,6 +51,34 @@ example, MDC doesn’t need quantization, scoring, image extraction.
 | **score**       | Rank colors for suitability for theming                                                                                                                                                             |
 | **temperature** | Obtain analogous and complementary colors                                                                                                                                                           |
 | **utilities**   | Color — convert between color spaces needed to implement HCT/CAM16 <br>Math — functions for ex. ensuring hue is between 0 and 360, clamping, etc. <br>String - convert between strings and integers |
+
+## Dynamic Colors vs. Materialized Themes
+
+This library provides two primary ways to work with Material color schemes:
+
+1.  **Dynamic Colors (`DynamicScheme`)**: Performs color calculations on the fly. This is the most efficient approach for production UI as it only calculates the specific color roles you actually use.
+2.  **Materialized Themes (`MaterializedTheme`)**: Generates a full set of both Light and Dark schemes beforehand. This is useful when you need to serialize the entire theme (e.g., to JSON) or when you want a simple, pre-computed object containing all color values.
+
+Both approaches are powered by the same underlying Material Design algorithms.
+
+## Usage Example
+
+The easiest way to generate a theme is using the `theme_from_color` helper:
+
+```rust
+use material_color_utilities::theme_from_color;
+use material_color_utilities::utils::color_utils::Argb;
+
+let source_color = Argb::from_hex("#4285F4").unwrap();
+
+// Generate a full materialized theme (Light + Dark schemes)
+let theme = theme_from_color(source_color)
+    .variant(Variant::Vibrant)
+    .call();
+
+println!("Light Primary: {:?}", theme.schemes.light.primary);
+println!("Dark Primary: {:?}", theme.schemes.dark.primary);
+```
 
 ## Learn about color science
 

@@ -13,7 +13,7 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss
 )]
-mod abstractions;
+mod helpers;
 pub mod blend;
 pub mod contrast;
 pub mod dislike;
@@ -26,4 +26,4 @@ pub mod score;
 pub mod temperature;
 pub mod utils;
 
-pub use abstractions::*;
+pub use helpers::*;

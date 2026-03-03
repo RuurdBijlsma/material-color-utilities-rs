@@ -62,7 +62,44 @@ Additional entry points:
 | `Score::score_fallback(map, n, fallback)` | Up to `n` results with a custom fallback color |
 | `Score::score_with_options(map, n, fallback, filter)` | Full control |
 
-## Putting it all together
+## High-level Extraction Helpers
+
+If you are using the `image` feature, you can use high-level helpers to simplify the process.
+
+### Extracting colors from an image
+
+```rust
+use material_color_utilities::extract_image_colors;
+
+let colors = extract_image_colors(&img)
+    .desired_colors(4)
+    .call();
+```
+
+### Generating a theme from an image
+
+```rust
+use material_color_utilities::theme_from_image;
+
+let theme = theme_from_image(&img)
+    .variant(Variant::Vibrant)
+    .call()
+    .unwrap();
+```
+
+### Generating multiple themes from an image (uses `rayon` for parallelization)
+
+```rust
+use material_color_utilities::themes_from_image;
+
+let themes = themes_from_image(&img)
+    .desired_theme_count(4)
+    .call();
+```
+
+## Manual image extraction flow
+
+If you need more control, you can follow the manual flow:
 
 ```rust
 use material_color_utilities::quantize::{QuantizerCelebi, Quantizer};

@@ -1,4 +1,4 @@
-use crate::abstractions::{MaterializedScheme, MaterializedSchemeGroup, MaterializedTheme};
+use crate::helpers::{MaterializedScheme, MaterializedSchemeGroup, MaterializedTheme};
 use crate::dynamic::color_spec::{Platform, SpecVersion};
 use crate::dynamic::dynamic_scheme::DynamicScheme;
 use crate::dynamic::material_dynamic_colors::MaterialDynamicColors;
