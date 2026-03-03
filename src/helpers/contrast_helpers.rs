@@ -26,7 +26,7 @@ pub fn darker_tone(color: Argb, ratio: f64) -> Option<Argb> {
     Some(Hct::new(hct.hue(), hct.chroma(), new_tone).to_argb())
 }
 
-/// Unsafe variant of `lighter_tone`: always returns a value in [0,100].
+/// Unsafe variant of `lighter_tone`: always returns a value in \[0,100].
 #[must_use]
 pub fn lighter_tone_unsafe(color: Argb, ratio: f64) -> Argb {
     let hct = Hct::from_argb(color);
@@ -34,7 +34,7 @@ pub fn lighter_tone_unsafe(color: Argb, ratio: f64) -> Argb {
     Hct::new(hct.hue(), hct.chroma(), new_tone).to_argb()
 }
 
-/// Unsafe variant of `darker_tone`: always returns a value in [0,100].
+/// Unsafe variant of `darker_tone`: always returns a value in \[0,100].
 #[must_use]
 pub fn darker_tone_unsafe(color: Argb, ratio: f64) -> Argb {
     let hct = Hct::from_argb(color);
