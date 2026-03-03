@@ -6,7 +6,8 @@ use crate::hct::hct_color::Hct;
 use crate::palettes::tonal_palette::TonalPalette;
 use crate::utils::color_utils::Argb;
 use crate::utils::math_utils::MathUtils;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::OnceLock;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -25,23 +26,15 @@ pub struct DynamicScheme {
     pub neutral_palette: TonalPalette,
     pub neutral_variant_palette: TonalPalette,
     pub error_palette: TonalPalette,
-    #[cfg(feature = "serde")]
-    #[serde(skip)]
-    pub argb_cache: Arc<Mutex<std::collections::HashMap<String, Argb>>>,
-    #[cfg(not(feature = "serde"))]
-    pub argb_cache: Arc<Mutex<std::collections::HashMap<String, Argb>>>,
 
-    #[cfg(feature = "serde")]
-    #[serde(skip)]
-    pub tone_cache: Arc<Mutex<std::collections::HashMap<String, f64>>>,
-    #[cfg(not(feature = "serde"))]
-    pub tone_cache: Arc<Mutex<std::collections::HashMap<String, f64>>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub argb_cache: papaya::HashMap<String, Argb>,
 
-    #[cfg(feature = "serde")]
-    #[serde(skip)]
-    pub hct_cache: Arc<Mutex<std::collections::HashMap<String, Hct>>>,
-    #[cfg(not(feature = "serde"))]
-    pub hct_cache: Arc<Mutex<std::collections::HashMap<String, Hct>>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub tone_cache: papaya::HashMap<String, f64>,
+
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub hct_cache: papaya::HashMap<String, Hct>,
 }
 
 impl PartialEq for DynamicScheme {
@@ -132,9 +125,9 @@ impl DynamicScheme {
             neutral_palette,
             neutral_variant_palette,
             error_palette,
-            argb_cache: Arc::new(Mutex::new(std::collections::HashMap::with_capacity(64))),
-            tone_cache: Arc::new(Mutex::new(std::collections::HashMap::with_capacity(64))),
-            hct_cache: Arc::new(Mutex::new(std::collections::HashMap::with_capacity(64))),
+            argb_cache: papaya::HashMap::new(),
+            tone_cache: papaya::HashMap::new(),
+            hct_cache: papaya::HashMap::new(),
         }
     }
 
@@ -158,9 +151,9 @@ impl DynamicScheme {
             neutral_palette: other.neutral_palette.clone(),
             neutral_variant_palette: other.neutral_variant_palette.clone(),
             error_palette: other.error_palette.clone(),
-            argb_cache: Arc::new(Mutex::new(std::collections::HashMap::with_capacity(64))),
-            tone_cache: Arc::new(Mutex::new(std::collections::HashMap::with_capacity(64))),
-            hct_cache: Arc::new(Mutex::new(std::collections::HashMap::with_capacity(64))),
+            argb_cache: papaya::HashMap::new(),
+            tone_cache: papaya::HashMap::new(),
+            hct_cache: papaya::HashMap::new(),
         }
     }
 
@@ -178,22 +171,21 @@ impl DynamicScheme {
 
     #[must_use]
     pub fn get_hct(&self, dynamic_color: &DynamicColor) -> Hct {
-        if let Some(&hct) = self.hct_cache.lock().unwrap().get(&dynamic_color.name) {
+        let pin = self.hct_cache.pin();
+        if let Some(&hct) = pin.get(&dynamic_color.name) {
             return hct;
         }
         let hct = crate::dynamic::color_specs::ColorSpecs::get(self.spec_version)
             .call()
             .get_hct(self, dynamic_color);
-        self.hct_cache
-            .lock()
-            .unwrap()
-            .insert(dynamic_color.name.clone(), hct);
+        pin.insert(dynamic_color.name.clone(), hct);
         hct
     }
 
     #[must_use]
     pub fn get_argb(&self, dynamic_color: &DynamicColor) -> Argb {
-        if let Some(&argb) = self.argb_cache.lock().unwrap().get(&dynamic_color.name) {
+        let pin = self.argb_cache.pin();
+        if let Some(&argb) = pin.get(&dynamic_color.name) {
             return argb;
         }
         // Entry point for Argb resolution
@@ -207,25 +199,20 @@ impl DynamicScheme {
                 argb = Argb((argb.0 & 0x00ffffff) | (alpha << 24));
             }
 
-        self.argb_cache
-            .lock()
-            .unwrap()
-            .insert(dynamic_color.name.clone(), argb);
+        pin.insert(dynamic_color.name.clone(), argb);
         argb
     }
 
     #[must_use]
     pub fn get_tone(&self, dynamic_color: &DynamicColor) -> f64 {
-        if let Some(&tone) = self.tone_cache.lock().unwrap().get(&dynamic_color.name) {
+        let pin = self.tone_cache.pin();
+        if let Some(&tone) = pin.get(&dynamic_color.name) {
             return tone;
         }
         let tone = crate::dynamic::color_specs::ColorSpecs::get(self.spec_version)
             .call()
             .get_tone(self, dynamic_color);
-        self.tone_cache
-            .lock()
-            .unwrap()
-            .insert(dynamic_color.name.clone(), tone);
+        pin.insert(dynamic_color.name.clone(), tone);
         tone
     }
 
