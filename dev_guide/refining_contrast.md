@@ -7,15 +7,15 @@ MCU contrast library. For optimal color contrast, we recommend using the
 See [Contrast for Accessibility](../concepts/contrast_for_accessibility.md) for
 a conceptual overview.
 
-All functions described here live in `material_color_utilities::contrast::Contrast`.
+All functions described here live in `material_color_utils::contrast::Contrast`.
 
 ## High-level Argb Contrast Helpers
 
 For convenience, the root module re-exports high-level helpers that work directly with `Argb` values, handling the conversion to tone for you.
 
 ```rust
-use material_color_utilities::{get_contrast_ratio, lighter_tone, darker_tone};
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::{get_contrast_ratio, lighter_tone, darker_tone};
+use material_color_utils::utils::color_utils::Argb;
 
 let color1 = Argb::from_hex("#4285F4").unwrap();
 let color2 = Argb::from_hex("#FFFFFF").unwrap();
@@ -42,9 +42,9 @@ The tone of an `Hct` color is `hct.tone()`. The tone of an `Argb` color can be
 obtained via `argb.lstar()`.
 
 ```rust
-use material_color_utilities::contrast::Contrast;
-use material_color_utilities::hct::Hct;
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::contrast::Contrast;
+use material_color_utils::hct::Hct;
+use material_color_utils::utils::color_utils::Argb;
 
 // From HCT colors:
 let contrast_ratio = Contrast::ratio_of_tones(hct1.tone(), hct2.tone());
@@ -75,8 +75,8 @@ in `[0, 100]` — clamping to black (0) or white (100) when the ratio cannot be
 met — but do **not** guarantee the contrast ratio will be reached.
 
 ```rust
-use material_color_utilities::contrast::Contrast;
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::contrast::Contrast;
+use material_color_utils::utils::color_utils::Argb;
 
 let original = Argb(0xFF00AA00).lstar(); // ≈ 60.56
 

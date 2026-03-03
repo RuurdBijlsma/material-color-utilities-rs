@@ -66,8 +66,8 @@ Both approaches are powered by the same underlying Material Design algorithms.
 The easiest way to generate a theme is using the `theme_from_color` helper:
 
 ```rust
-use material_color_utilities::theme_from_color;
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::theme_from_color;
+use material_color_utils::utils::color_utils::Argb;
 
 let source_color = Argb::from_hex("#4285F4").unwrap();
 

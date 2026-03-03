@@ -6,11 +6,11 @@
 )]
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
-use material_color_utilities::hct::Cam16;
-use material_color_utilities::hct::hct_color::Hct;
-use material_color_utilities::quantize::{Quantizer, QuantizerCelebi};
-use material_color_utilities::score::score_colors::Score;
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::hct::Cam16;
+use material_color_utils::hct::hct_color::Hct;
+use material_color_utils::quantize::{Quantizer, QuantizerCelebi};
+use material_color_utils::score::score_colors::Score;
+use material_color_utils::utils::color_utils::Argb;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;

@@ -1,14 +1,14 @@
 #![allow(clippy::unreadable_literal, clippy::float_cmp)]
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
-use material_color_utilities::dynamic::color_spec::{Platform, SpecVersion};
-use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
-use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
-use material_color_utilities::dynamic::variant::Variant;
-use material_color_utilities::hct::hct_color::Hct;
-use material_color_utilities::palettes::tonal_palette::TonalPalette;
-use material_color_utilities::scheme::scheme_tonal_spot::SchemeTonalSpot;
-use material_color_utilities::utils::color_utils::Argb;
-use material_color_utilities::{extract_image_colors, theme_from_color};
+use material_color_utils::dynamic::color_spec::{Platform, SpecVersion};
+use material_color_utils::dynamic::dynamic_scheme::DynamicScheme;
+use material_color_utils::dynamic::material_dynamic_colors::MaterialDynamicColors;
+use material_color_utils::dynamic::variant::Variant;
+use material_color_utils::hct::hct_color::Hct;
+use material_color_utils::palettes::tonal_palette::TonalPalette;
+use material_color_utils::scheme::scheme_tonal_spot::SchemeTonalSpot;
+use material_color_utils::utils::color_utils::Argb;
+use material_color_utils::{extract_image_colors, theme_from_color};
 use std::fs;
 use std::hint::black_box;
 

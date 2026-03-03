@@ -13,7 +13,7 @@ MCU does not provide image loading or resizing itself. Use a crate such as
 [`image`](https://crates.io/crates/image) from the ecosystem:
 
 ```rust
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::utils::color_utils::Argb;
 
 fn image_to_pixels(img: &image::DynamicImage) -> Vec<Argb> {
     let img = img.resize_exact(128, 128, image::imageops::FilterType::Lanczos3);
@@ -30,7 +30,7 @@ Once you have the pixel slice, pass it to `QuantizerCelebi` to obtain a
 `QuantizerResult`, which maps each representative color to its pixel count.
 
 ```rust
-use material_color_utilities::quantize::{QuantizerCelebi, Quantizer};
+use material_color_utils::quantize::{QuantizerCelebi, Quantizer};
 
 let mut quantizer = QuantizerCelebi::new();
 let result = quantizer.quantize(&pixels, /*max_colors=*/ 128);
@@ -47,7 +47,7 @@ color for a dynamic color scheme. The result is sorted from most to least
 suitable.
 
 ```rust
-use material_color_utilities::score::Score;
+use material_color_utils::score::Score;
 
 let source_colors: Vec<Argb> = Score::score(&result.color_to_count);
 // source_colors[0] is the best candidate for a scheme source color.
@@ -69,7 +69,7 @@ If you are using the `image` feature, you can use high-level helpers to simplify
 ### Extracting colors from an image
 
 ```rust
-use material_color_utilities::extract_image_colors;
+use material_color_utils::extract_image_colors;
 
 let colors = extract_image_colors(&img)
     .desired_colors(4)
@@ -79,7 +79,7 @@ let colors = extract_image_colors(&img)
 ### Generating a theme from an image
 
 ```rust
-use material_color_utilities::theme_from_image;
+use material_color_utils::theme_from_image;
 
 let theme = theme_from_image(&img)
     .variant(Variant::Vibrant)
@@ -90,7 +90,7 @@ let theme = theme_from_image(&img)
 ### Generating multiple themes from an image (uses `rayon` for parallelization if the feature is enabled)
 
 ```rust
-use material_color_utilities::themes_from_image;
+use material_color_utils::themes_from_image;
 
 let themes = themes_from_image(&img)
     .desired_theme_count(4)
@@ -102,10 +102,10 @@ let themes = themes_from_image(&img)
 If you need more control, you can follow the manual flow:
 
 ```rust
-use material_color_utilities::quantize::{QuantizerCelebi, Quantizer};
-use material_color_utilities::score::Score;
-use material_color_utilities::hct::Hct;
-use material_color_utilities::scheme::SchemeTonalSpot;
+use material_color_utils::quantize::{QuantizerCelebi, Quantizer};
+use material_color_utils::score::Score;
+use material_color_utils::hct::Hct;
+use material_color_utils::scheme::SchemeTonalSpot;
 
 let mut quantizer = QuantizerCelebi::new();
 let result = quantizer.quantize(&pixels, 128);

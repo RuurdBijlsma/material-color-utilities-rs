@@ -5,18 +5,18 @@
 )]
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
-use material_color_utilities::dynamic::color_spec::SpecVersion;
-use material_color_utilities::dynamic::dynamic_scheme::DynamicScheme;
-use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
-use material_color_utilities::hct::Cam16;
-use material_color_utilities::hct::hct_color::Hct;
-use material_color_utilities::scheme::{
+use material_color_utils::dynamic::color_spec::SpecVersion;
+use material_color_utils::dynamic::dynamic_scheme::DynamicScheme;
+use material_color_utils::dynamic::material_dynamic_colors::MaterialDynamicColors;
+use material_color_utils::hct::Cam16;
+use material_color_utils::hct::hct_color::Hct;
+use material_color_utils::scheme::{
     SchemeCmf, SchemeFidelity, SchemeFruitSalad, SchemeNeutral, SchemeRainbow,
     scheme_content::SchemeContent, scheme_expressive::SchemeExpressive,
     scheme_monochrome::SchemeMonochrome, scheme_tonal_spot::SchemeTonalSpot,
     scheme_vibrant::SchemeVibrant,
 };
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::utils::color_utils::Argb;
 use rand::prelude::IndexedRandom;
 use serde::Deserialize;
 use statrs::statistics::Statistics;

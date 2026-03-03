@@ -33,9 +33,9 @@ The recommended way to generate a scheme is to use a variant constructor such as
 light mode with default contrast from an `Hct` source color.
 
 ```rust
-use material_color_utilities::hct::Hct;
-use material_color_utilities::scheme::SchemeTonalSpot;
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::hct::Hct;
+use material_color_utils::scheme::SchemeTonalSpot;
+use material_color_utils::utils::color_utils::Argb;
 
 let source_argb = Argb(0xFF6750A4); // a purple
 let hct = Hct::from_argb(source_argb);
@@ -54,7 +54,7 @@ The available variants are:
 * `SchemeRainbow` — rainbow-like palette
 * `SchemeVibrant` — highly saturated
 
-All are in the `material_color_utilities::scheme` module and share the same
+All are in the `material_color_utils::scheme` module and share the same
 `::new(source_color_hct: Hct, is_dark: bool, contrast_level: f64) -> DynamicScheme`
 signature.
 
@@ -66,11 +66,11 @@ a `Platform` and `SpecVersion`.
 You can also construct a `DynamicScheme` directly, providing your own tonal palettes:
 
 ```rust
-use material_color_utilities::dynamic::DynamicScheme;
-use material_color_utilities::dynamic::variant::Variant;
-use material_color_utilities::hct::Hct;
-use material_color_utilities::palettes::tonal_palette::TonalPalette;
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::dynamic::DynamicScheme;
+use material_color_utils::dynamic::variant::Variant;
+use material_color_utils::hct::Hct;
+use material_color_utils::palettes::tonal_palette::TonalPalette;
+use material_color_utils::utils::color_utils::Argb;
 
 let source_hct = Hct::from_argb(Argb(0xFFEB0057));
 
@@ -94,9 +94,9 @@ The `theme_from_color` function is the easiest way to generate a full theme. It 
 contains both light and dark schemes. There's also `theme_from_immage` to generate a theme from a source image.
 
 ```rust
-use material_color_utilities::theme_from_color;
-use material_color_utilities::dynamic::variant::Variant;
-use material_color_utilities::utils::color_utils::Argb;
+use material_color_utils::theme_from_color;
+use material_color_utils::dynamic::variant::Variant;
+use material_color_utils::utils::color_utils::Argb;
 
 let source_color = Argb(0xFF6750A4);
 
@@ -131,7 +131,7 @@ To obtain both the ARGB value and the HCT representation, use the lower-level
 `DynamicColor` API via `MaterialDynamicColors`:
 
 ```rust
-use material_color_utilities::dynamic::material_dynamic_colors::MaterialDynamicColors;
+use material_color_utils::dynamic::material_dynamic_colors::MaterialDynamicColors;
 
 let mdc = MaterialDynamicColors::new();
 let primary_argb = scheme.get_argb(&mdc.primary());
