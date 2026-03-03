@@ -12,7 +12,7 @@ A Rust port of [Material Color Utilities](https://github.com/material-foundation
 - **Concurrency**: Built to be thread-safe for use in multithreaded apps.
 - **Efficiency**: Cached where possible to allow for nearly free recalculation of colors. _~30 ns to resolve
   already-calculated roles_
-- **Minimal dependencies**: Minimal dependencies. Optional feature flags let you pull in extra functionality only when
+- **Minimal dependencies**: Optional feature flags let you pull in extra functionality only when
   you need it for helper functions.
 
 ---
