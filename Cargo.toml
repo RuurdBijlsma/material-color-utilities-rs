@@ -1,12 +1,12 @@
 [package]
 name = "material-color-utils"
-version = "0.1.1"
+version = "0.1.2"
 description = "Color libraries for Google's Material You"
 license-file = "LICENSE"
 edition = "2024"
 homepage = "https://github.com/RuurdBijlsma/material-color-utilities-rs"
 repository = "https://github.com/RuurdBijlsma/material-color-utilities-rs"
-documentation = "https://docs.rs/material-color-utils/0.1.0/material_color_utils/"
+documentation = "https://docs.rs/material-color-utils"
 exclude = ["kotlin", "dev_guide", "concepts", "tests/assets/json"]
 
 [dependencies]
