@@ -52,6 +52,16 @@ example, MDC doesn’t need quantization, scoring, image extraction.
 | **temperature** | Obtain analogous and complementary colors                                                                                                                                                           |
 | **utilities**   | Color — convert between color spaces needed to implement HCT/CAM16 <br>Math — functions for ex. ensuring hue is between 0 and 360, clamping, etc. <br>String - convert between strings and integers |
 
+## Cargo Features
+
+The library uses Cargo features to control dependencies and functionality. All features are enabled by default.
+
+| Feature | Description                                                        | Default |
+|:--------|:-------------------------------------------------------------------|:--------|
+| `image` | Enables image color extraction helpers using the `image` crate.    | Yes     |
+| `serde` | Enables serialization/deserialization for color types and schemes. | Yes     |
+| `rayon` | Enables parallel processing for image and scheme helpers.          | Yes     |
+
 ## Dynamic Colors vs. Materialized Themes
 
 This library provides two primary ways to work with Material color schemes:
