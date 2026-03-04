@@ -9,7 +9,7 @@
 //!
 //! *   **HCT (Hue, Chroma, Tone):** A perceptually accurate color space that separates hue from lightness (tone).
 //! *   **Dynamic Color:** A system that generates adaptive, accessible color schemes based on a user's source color.
-//! *   **Materialized Theme:** A flattened representation of a color scheme, easy to use in UI frameworks.
+//! *   **Materialized Theme:** A flattened representation of a color scheme.
 //!
 //! ## Usage Examples
 //!
